@@ -132,6 +132,26 @@ body {
     margin-top: 5px;
 }
 
+.site-footer .kc-footer-socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 13px;
+}
+
+.site-footer .kc-footer-socials > a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 24px;
+}
+
+.site-footer .kc-footer-social-icon {
+    display: block;
+    flex: none;
+    width: 16px;
+    height: 16px;
+}
+
 .site-footer .social-links {
     display: flex !important;
     justify-content: flex-start !important;
