@@ -10,7 +10,12 @@ if ($offers === []) {
     return;
 }
 
-$perView = Homepage_Content::items_per_view($kampachiHome, 'offers', absint($kampachiHome['offers_limit'] ?? 3), count($offers));
+$perView = Homepage_Content::items_per_view(
+    $kampachiHome,
+    'offers',
+    absint($kampachiHome['offers_limit'] ?? 3),
+    min(count($offers), 3)
+);
 ?>
 <section class="experiences-section" id="experiences" aria-labelledby="experiences-title">
     <div class="content-container">
@@ -29,16 +34,17 @@ $perView = Homepage_Content::items_per_view($kampachiHome, 'offers', absint($kam
             'div',
             ['class' => 'experiences-subtitle home-cms-description']
         ); ?>
-        <div data-kc-content-carousel data-kc-carousel-per-view="<?php echo esc_attr((string) $perView); ?>"
+        <div data-kc-content-carousel data-kc-carousel-slide
+            data-kc-carousel-per-view="<?php echo esc_attr((string) $perView); ?>"
             role="region" aria-roledescription="carousel" aria-label="Offers and events">
             <div class="experience-grid kc-home-post-track" id="home-offers-track" data-kc-carousel-track
-                style="--kc-carousel-columns:<?php echo esc_attr((string) min($perView, 3)); ?>">
-                <?php foreach ($offers as $offer) : ?>
+                style="--kc-carousel-columns:<?php echo esc_attr((string) $perView); ?>">
+                <?php foreach ($offers as $index => $offer) : ?>
                     <?php
                     $imageUrl = Homepage_Content::image($offer->ID, 'offer');
                     $description = get_the_excerpt($offer);
                     ?>
-                    <article class="experience-card">
+                    <article class="experience-card"<?php echo $index >= $perView ? ' hidden' : ''; ?>>
                         <?php if ($imageUrl !== '') : ?>
                             <img src="<?php echo esc_url($imageUrl); ?>" alt="<?php echo esc_attr($offer->post_title); ?>" loading="lazy" decoding="async">
                         <?php endif; ?>

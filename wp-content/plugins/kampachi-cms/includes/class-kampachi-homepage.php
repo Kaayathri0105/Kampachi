@@ -12,6 +12,8 @@ final class Kampachi_Homepage
 {
     private const OPTION = 'kampachi_homepage_sections';
 
+    private const OFFERS_PER_VIEW_MAX = 3;
+
     private const HERO_MODES = [
         'video' => 'Video only',
         'images' => 'Image slideshow with Ken Burns',
@@ -391,7 +393,12 @@ final class Kampachi_Homepage
         self::section_text($settings, 'offers_title', 'Title');
         self::section_text($settings, 'offers_description', 'Description', 5);
         self::post_picker($offers, $selectedOffers, 'offer_ids', 'Choose an offer');
-        self::items_per_view_field('offers', $settings, absint($settings['offers_limit'] ?? 3), count($offers));
+        self::items_per_view_field(
+            'offers',
+            $settings,
+            absint($settings['offers_limit'] ?? self::OFFERS_PER_VIEW_MAX),
+            min(count($offers), self::OFFERS_PER_VIEW_MAX)
+        );
         echo '</section>';
 
         echo '<section id="kc-section-dishes" class="kc-panel"><h2><span class="kc-section-number">04</span> Signature dishes <small>Unlimited items</small></h2>';
@@ -625,10 +632,10 @@ final class Kampachi_Homepage
             $rawLimit = $raw[$section . '_limit'] ?? $default;
             $clean[$section . '_limit'] = max($section === 'dishes' ? 0 : 1, min($maximum, absint($rawLimit)));
         }
-        foreach (['offers' => absint($previous['offers_limit'] ?? 3), 'sake' => 1] as $section => $default) {
-            $key = $section . '_per_view';
-            $clean[$key] = max(1, absint($raw[$key] ?? $previous[$key] ?? $default));
-        }
+        $offersPerView = $raw['offers_per_view'] ?? $previous['offers_per_view']
+            ?? $previous['offers_limit'] ?? self::OFFERS_PER_VIEW_MAX;
+        $clean['offers_per_view'] = max(1, min(self::OFFERS_PER_VIEW_MAX, absint($offersPerView)));
+        $clean['sake_per_view'] = max(1, absint($raw['sake_per_view'] ?? $previous['sake_per_view'] ?? 1));
         $clean['offer_ids'] = self::selected_posts($raw['offer_ids'] ?? $previous['offer_ids'] ?? [], 'kc_offer');
         $clean['sake_ids'] = self::selected_posts($raw['sake_ids'] ?? $previous['sake_ids'] ?? [], 'kc_sake');
         $clean['outlet_ids'] = self::selected_posts($raw['outlet_ids'] ?? [], 'kc_outlet');
@@ -723,7 +730,14 @@ final class Kampachi_Homepage
         echo '<section class="kch-section kch-intro">';
         self::heading($config, 'intro');
         echo '</section>';
-        self::render_post_carousel($config, 'offers', 'offer_ids', 'offer', 'Offers and events', 3);
+        self::render_post_carousel(
+            $config,
+            'offers',
+            'offer_ids',
+            'offer',
+            'Offers and events',
+            self::OFFERS_PER_VIEW_MAX
+        );
         echo '<section class="kch-section kch-dishes">';
         self::heading($config, 'dishes');
         echo '<div class="kch-grid">';
@@ -786,20 +800,24 @@ final class Kampachi_Homepage
             return;
         }
 
-        $perView = max(1, min(count($ids), absint($config[$section . '_per_view'] ?? $default)));
+        $isOffers = $section === 'offers';
+        $configured = $config[$section . '_per_view'] ?? ($isOffers ? ($config['offers_limit'] ?? $default) : $default);
+        $maximum = $isOffers ? min(count($ids), self::OFFERS_PER_VIEW_MAX) : count($ids);
+        $perView = max(1, min($maximum, absint($configured)));
         echo '<section class="kch-section kch-' . esc_attr($section) . '">';
         self::heading($config, $section);
         echo '<div data-kc-content-carousel data-kc-carousel-per-view="' . esc_attr((string) $perView)
-            . '" role="region" aria-roledescription="carousel" aria-label="' . esc_attr($label) . '">';
+            . '"' . ($isOffers ? ' data-kc-carousel-slide' : '')
+            . ' role="region" aria-roledescription="carousel" aria-label="' . esc_attr($label) . '">';
         echo '<div class="kch-grid kc-home-post-track" data-kc-carousel-track style="--kc-carousel-columns:'
             . esc_attr((string) min($perView, 3)) . '">';
-        foreach ($ids as $id) {
-            self::post_card($id, $kind);
+        foreach ($ids as $index => $id) {
+            self::post_card($id, $kind, $isOffers && $index >= $perView);
         }
         echo '</div></div></section>';
     }
 
-    private static function post_card(int $postId, string $kind): void
+    private static function post_card(int $postId, string $kind, bool $hidden): void
     {
         $post = get_post($postId);
         if (! $post instanceof WP_Post || $post->post_status !== 'publish' || $post->post_type !== 'kc_' . $kind) {
@@ -807,7 +825,8 @@ final class Kampachi_Homepage
         }
         $description = get_the_excerpt($post);
         $brand = $kind === 'sake' ? (string) get_post_meta($postId, '_kampachi_brand', true) : '';
-        echo '<article class="kch-card kch-' . esc_attr($kind) . '-card"><a class="kch-image-link" href="' . esc_url(get_permalink($post)) . '">';
+        echo '<article class="kch-card kch-' . esc_attr($kind) . '-card"' . ($hidden ? ' hidden' : '') . '>';
+        echo '<a class="kch-image-link" href="' . esc_url(get_permalink($post)) . '">';
         if (has_post_thumbnail($post)) {
             echo get_the_post_thumbnail($post, 'large', ['loading' => 'lazy']);
         }
