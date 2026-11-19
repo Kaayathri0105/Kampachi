@@ -4,6 +4,35 @@
     const form = $('#kc-home-form');
     let rowCount = Date.now();
 
+    function initializeDescriptions(scope) {
+        const editor = window.wp?.editor;
+        if (!editor?.getDefaultSettings?.()) return;
+
+        scope.find('.kc-home-description-editor').each(function () {
+            if (this.dataset.editorReady) return;
+
+            editor.initialize(this.id, {
+                tinymce: {
+                    wpautop: true,
+                    toolbar1: 'formatselect,bold,italic,bullist,numlist,outdent,indent,blockquote,'
+                        + 'alignleft,aligncenter,alignright,link,unlink,undo,redo',
+                    toolbar2: 'strikethrough,hr,forecolor,pastetext,removeformat,charmap'
+                },
+                quicktags: true
+            });
+            this.dataset.editorReady = 'true';
+        });
+    }
+
+    $(function () { initializeDescriptions(form); });
+
+    form.on('submit', function () {
+        form.find('.kc-home-description-editor').each(function () {
+            const editor = window.tinymce?.get(this.id);
+            if (editor && !editor.isHidden()) editor.save();
+        });
+    });
+
     form.on('click', '.kc-add', function () {
         const type = $(this).data('target');
         const template = $('#tmpl-kc-' + type).html();
@@ -11,10 +40,14 @@
         const unique = ++rowCount;
         const row = $(template.replace(/987654/g, String(unique)));
         $('#kc-' + type + '-list').append(row);
+        initializeDescriptions(row);
     });
 
     form.on('click', '.kc-remove', function () {
         const row = $(this).closest('.kc-repeat');
+        row.find('.kc-home-description-editor').each(function () {
+            if (this.dataset.editorReady) window.wp?.editor?.remove(this.id);
+        });
         row.remove();
     });
 
@@ -68,12 +101,55 @@
         updateVideoPreview('', 'No video selected', '');
     });
 
-    form.on('change', '.kc-offer-choices input', function () {
-        const checked = $('.kc-offer-choices input:checked');
-        if (checked.length > 3) {
-            $(this).prop('checked', false);
-            window.alert('Choose a maximum of three promotions.');
+    function refreshPostPicker(picker) {
+        const ids = picker.find('.kc-home-selected-posts li').map(function () {
+            return this.getAttribute('data-post-id');
+        }).get();
+        const selected = new Set(ids);
+        const select = picker.find('.kc-home-post-select');
+        const options = select.find('option').filter(function () { return this.value !== ''; });
+
+        options.each(function () {
+            this.disabled = this.hidden = selected.has(this.value);
+        });
+        select.prop('disabled', options.length === ids.length);
+        picker.find('.kc-home-post-add').prop('disabled', !select.val());
+        picker.find('.kc-home-post-ids').val(ids.join(','));
+        picker.find('.kc-home-post-empty').prop('hidden', ids.length !== 0);
+    }
+
+    form.on('change', '.kc-home-post-select', function () {
+        $(this).closest('.kc-home-post-picker').find('.kc-home-post-add').prop('disabled', !$(this).val());
+    });
+
+    form.on('click', '.kc-home-post-add', function () {
+        const picker = $(this).closest('.kc-home-post-picker');
+        const select = picker.find('.kc-home-post-select');
+        const option = select.find(':selected')[0];
+        if (!option || !option.value || option.disabled) return;
+
+        const item = $('<li>').attr('data-post-id', option.value);
+        item.append($('<span>').text(option.textContent));
+        item.append($('<button>', {
+            type: 'button',
+            class: 'button-link-delete kc-home-post-remove',
+            'aria-label': 'Remove ' + option.textContent,
+            text: 'Remove'
+        }));
+        picker.find('.kc-home-selected-posts').append(item);
+        select.val('');
+        refreshPostPicker(picker);
+        if (select.prop('disabled')) {
+            item.find('button').trigger('focus');
+        } else {
+            select.trigger('focus');
         }
-        $('.kc-offer-count').text('Selected: ' + $('.kc-offer-choices input:checked').length + ' / 3');
+    });
+
+    form.on('click', '.kc-home-post-remove', function () {
+        const picker = $(this).closest('.kc-home-post-picker');
+        $(this).closest('li').remove();
+        refreshPostPicker(picker);
+        picker.find('.kc-home-post-select').trigger('focus');
     });
 })(jQuery);

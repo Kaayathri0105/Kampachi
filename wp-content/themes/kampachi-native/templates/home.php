@@ -14,7 +14,6 @@ if (! defined('ABSPATH')) {
 }
 
 $kampachiHome = Homepage_Content::settings();
-$kampachiSakeSlides = [];
 ?>
 
     
@@ -1443,7 +1442,7 @@ $kampachiSakeSlides = [];
         color: #d6b58f;
       }
 
-      .home-sake-copy h2 {
+      .home-sake-copy h3 {
         margin: 0 0 18px;
         font-size: clamp(31px, 3vw, 46px);
         font-weight: 400;
@@ -1495,52 +1494,6 @@ $kampachiSakeSlides = [];
         background: #1b0b0d;
       }
 
-      .home-sake-image.is-changing {
-        opacity: 0.55;
-      }
-
-      .home-sake-copy.is-changing {
-        opacity: 0.55;
-      }
-
-      .home-sake-dots {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 22px 0 0;
-      }
-
-      .home-sake-dot {
-        width: 8px;
-        height: 8px;
-        padding: 0;
-        border: 0;
-        border-radius: 999px;
-        background: rgba(27, 11, 13, 0.38);
-        cursor: pointer;
-        transition:
-          width 180ms ease,
-          background-color 180ms ease;
-      }
-
-      .home-sake-dot[aria-pressed="true"] {
-        width: 24px;
-        background: #1b0b0d;
-      }
-
-      .home-sake-dot:focus-visible {
-        outline: 2px solid #1b0b0d;
-        outline-offset: 4px;
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .home-sake-image,
-        .home-sake-dot {
-          transition: none;
-        }
-      }
-
       @media (max-width: 760px) {
         .signature-layout,
         .home-sake-layout {
@@ -1581,9 +1534,6 @@ $kampachiSakeSlides = [];
           aspect-ratio: 1.55 / 1;
         }
 
-        .home-sake-dots {
-          padding-top: 18px;
-        }
       }
 
       .outlets-section {
@@ -1835,115 +1785,6 @@ $kampachiSakeSlides = [];
 
       }
 
-      const sakeImage = document.getElementById("home-sake-image");
-      const sakeLayout = document.getElementById("home-sake-layout");
-      const sakeMedia = document.querySelector(".home-sake-carousel");
-      const sakeCopy = document.querySelector(".home-sake-copy");
-      const sakeTitle = document.getElementById("home-sake-title");
-      const sakeDescription = document.getElementById("home-sake-description");
-      const sakeLink = document.getElementById("home-sake-link");
-      const sakeControls = document.querySelector(".home-sake-carousel-controls");
-      const sakePrevious = document.getElementById("home-sake-prev");
-      const sakeNext = document.getElementById("home-sake-next");
-      const sakeDots = Array.from(document.querySelectorAll(".home-sake-dot"));
-      const sakeSlides = <?php echo wp_json_encode(
-          $kampachiSakeSlides,
-          JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
-      ) ?: '[]'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>;
-      if (sakeSlides.length > 0 && sakeImage && sakeLayout && sakeMedia && sakeCopy && sakeTitle && sakeDescription && sakeLink) {
-      let activeSakeSlide = 0;
-      let sakeAutoplayTimer = null;
-      let sakeTransitionTimer = null;
-
-      function stopSakeAutoplay() {
-        window.clearInterval(sakeAutoplayTimer);
-        sakeAutoplayTimer = null;
-      }
-
-      function startSakeAutoplay() {
-        stopSakeAutoplay();
-
-        if (document.hidden || sakeSlides.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          return;
-        }
-
-        sakeAutoplayTimer = window.setInterval(() => {
-          showSakeSlide((activeSakeSlide + 1) % sakeSlides.length, false);
-        }, 5000);
-      }
-
-      function showSakeSlide(index, restartAutoplay = true) {
-        activeSakeSlide = (index + sakeSlides.length) % sakeSlides.length;
-        const slide = sakeSlides[activeSakeSlide];
-
-        window.clearTimeout(sakeTransitionTimer);
-        sakeCopy.classList.add("is-changing");
-        sakeImage.classList.add("is-changing");
-        sakeDots.forEach((dot, dotIndex) => {
-          dot.setAttribute(
-            "aria-pressed",
-            String(dotIndex === activeSakeSlide),
-          );
-        });
-        if (sakePrevious && sakeNext) {
-          sakePrevious.disabled = sakeSlides.length < 2;
-          sakeNext.disabled = sakeSlides.length < 2;
-        }
-
-        sakeTransitionTimer = window.setTimeout(() => {
-          sakeTitle.textContent = slide.title;
-          sakeDescription.textContent = slide.description;
-          sakeDescription.hidden = slide.description.trim() === "";
-          sakeLink.textContent = slide.link;
-          sakeLink.href = slide.href;
-          const hasImage = slide.src !== "";
-          sakeMedia.hidden = !hasImage;
-          sakeLayout.classList.toggle("home-sake-layout--text-only", !hasImage);
-          if (hasImage) {
-            sakeImage.src = slide.src;
-            sakeImage.alt = slide.alt;
-          } else {
-            sakeImage.removeAttribute("src");
-            sakeImage.alt = "";
-          }
-
-          window.requestAnimationFrame(() => {
-            sakeCopy.classList.remove("is-changing");
-            sakeImage.classList.remove("is-changing");
-          });
-        }, 120);
-
-        if (restartAutoplay) {
-          startSakeAutoplay();
-        }
-      }
-
-      sakeSlides.forEach((slide) => {
-        if (slide.src === "") return;
-        const preload = new Image();
-        preload.src = slide.src;
-      });
-
-      sakeDots.forEach((dot, index) => {
-        dot.addEventListener("click", () => showSakeSlide(index));
-      });
-      if (sakeControls && sakePrevious && sakeNext) {
-        sakePrevious.addEventListener("click", () => showSakeSlide(activeSakeSlide - 1));
-        sakeNext.addEventListener("click", () => showSakeSlide(activeSakeSlide + 1));
-        sakeControls.hidden = false;
-      }
-
-      document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-          stopSakeAutoplay();
-        } else if (sakeSlides.length > 1 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          startSakeAutoplay();
-        }
-      });
-      if (sakeSlides.length > 1 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        startSakeAutoplay();
-      }
-      }
         })();
     </script>
     <script src="<?php echo esc_url(get_template_directory_uri() . '/assets/header-scroll.js'); ?>"></script>
