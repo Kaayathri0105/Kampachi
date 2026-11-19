@@ -1,6 +1,6 @@
 (() => {
     'use strict';
-    const slideshows = document.querySelectorAll('.kc-landing-hero');
+    const slideshows = document.querySelectorAll('.kc-landing-hero:not([data-kc-home-hero])');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     slideshows.forEach((hero) => {

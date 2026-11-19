@@ -49,6 +49,11 @@ final class Kampachi_Homepage
             return;
         }
 
+        self::enqueue_hero_editor();
+    }
+
+    public static function enqueue_hero_editor(): void
+    {
         wp_enqueue_media();
         Content::enqueueDescriptionEditor();
         wp_enqueue_style(
@@ -73,7 +78,8 @@ final class Kampachi_Homepage
         $pageSlug = get_post_field('post_name', $sourceId > 0 ? $sourceId : $pageId);
 
         if (! is_front_page()
-            && ! (is_page() && in_array($pageSlug, ['home', 'sake'], true))
+            && ! is_post_type_archive('kc_offer')
+            && ! (is_page() && in_array($pageSlug, ['home', 'sake', 'promotion'], true))
         ) {
             return;
         }
@@ -334,7 +340,6 @@ final class Kampachi_Homepage
         $settings = self::options();
         $offers = get_posts(['post_type' => 'kc_offer', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC']);
         $sakes = get_posts(['post_type' => 'kc_sake', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC']);
-        $heroSlides = is_array($settings['hero_slides'] ?? null) ? $settings['hero_slides'] : [];
         $dishes = is_array($settings['dishes'] ?? null) ? $settings['dishes'] : [];
         $selectedOffers = array_map('intval', (array) ($settings['offer_ids'] ?? []));
         $selectedSakes = array_map('intval', (array) ($settings['sake_ids'] ?? []));
@@ -361,29 +366,8 @@ final class Kampachi_Homepage
         echo '</div></section>';
 
         echo '<section id="kc-section-hero" class="kc-panel"><h2><span class="kc-section-number">01</span> Hero</h2>';
-        echo '<div class="kc-field"><label class="kc-label" for="kc_hero_mode">Hero type</label>'
-            . '<select id="kc_hero_mode" name="home[hero_mode]">';
-        foreach (self::HERO_MODES as $mode => $label) {
-            echo '<option value="' . esc_attr($mode) . '"'
-                . selected(self::hero_mode($settings), $mode, false) . '>' . esc_html($label) . '</option>';
-        }
-        echo '</select></div>';
-        $videoId = absint($settings['hero_video_id'] ?? 0);
-        $videoUrl = $videoId ? wp_get_attachment_url($videoId) : false;
-        echo '<div class="kc-field"><label class="kc-label">Hero video <span class="kc-muted">2560 × 1440 · MP4</span></label>';
-        echo '<input class="kc-media-id kc-video-id" type="hidden" name="home[hero_video_id]" value="'
-            . esc_attr((string) $videoId) . '">';
-        echo '<span class="kc-video-name">' . esc_html($videoUrl ? wp_basename($videoUrl) : 'No video selected') . '</span> ';
-        echo '<button type="button" class="button kc-pick-video">Choose video</button> '
-            . '<button type="button" class="button kc-clear-video">Remove</button>';
-        echo '<video class="kc-home-video-preview" controls playsinline preload="metadata" aria-label="Hero video preview"'
-            . ($videoUrl ? ' src="' . esc_url($videoUrl) . '"' : ' hidden') . '></video></div>';
-        echo '<p class="description">The selected hero type controls which media appear. Mixed slides start with the video.</p>';
-        echo '<h3>Hero Images <small>(unlimited)</small></h3><div id="kc-hero-list" class="kc-repeat-list" data-type="hero">';
-        foreach ($heroSlides as $i => $slide) {
-            self::slide_row((int) $i, (array) $slide);
-        }
-        echo '</div><button type="button" class="button kc-add" data-target="hero">+ Add hero image</button></section>';
+        self::render_hero_fields($settings);
+        echo '</section>';
 
         echo '<section id="kc-section-introduction" class="kc-panel"><h2><span class="kc-section-number">02</span> Introduction</h2>';
         self::section_text($settings, 'intro_title', 'Title');
@@ -431,16 +415,53 @@ final class Kampachi_Homepage
         echo '</div>';
     }
 
-    private static function slide_row(int $index, array $data): void
+    public static function render_hero_fields(
+        array $settings,
+        string $prefix = 'home',
+        bool $hideManualImages = false
+    ): void {
+        $heroSlides = is_array($settings['hero_slides'] ?? null) ? $settings['hero_slides'] : [];
+        $name = esc_attr($prefix);
+        echo '<div class="kc-field"><label class="kc-label" for="kc_hero_mode">Hero type</label>'
+            . '<select id="kc_hero_mode" name="' . $name . '[hero_mode]">';
+        foreach (self::HERO_MODES as $mode => $label) {
+            echo '<option value="' . esc_attr($mode) . '"'
+                . selected(self::hero_mode($settings), $mode, false) . '>' . esc_html($label) . '</option>';
+        }
+        echo '</select></div>';
+        $videoId = absint($settings['hero_video_id'] ?? 0);
+        $videoUrl = $videoId ? wp_get_attachment_url($videoId) : false;
+        echo '<div class="kc-field"><label class="kc-label">Hero video <span class="kc-muted">2560 × 1440 · MP4</span></label>';
+        echo '<input class="kc-media-id kc-video-id" type="hidden" name="' . $name . '[hero_video_id]" value="'
+            . esc_attr((string) $videoId) . '">';
+        echo '<span class="kc-video-name">' . esc_html($videoUrl ? wp_basename($videoUrl) : 'No video selected') . '</span> ';
+        echo '<button type="button" class="button kc-pick-video">Choose video</button> '
+            . '<button type="button" class="button kc-clear-video">Remove</button>';
+        echo '<video class="kc-home-video-preview" controls playsinline preload="metadata" aria-label="Hero video preview"'
+            . ($videoUrl ? ' src="' . esc_url($videoUrl) . '"' : ' hidden') . '></video></div>';
+        echo '<p class="description">The selected hero type controls which media appear. Mixed slides start with the video.</p>';
+        echo '<div data-kc-hero-source-panel="manual"' . ($hideManualImages ? ' hidden' : '') . '>';
+        echo '<h3>Hero Images <small>(unlimited)</small></h3><div id="kc-hero-list" class="kc-repeat-list" data-type="hero">';
+        foreach ($heroSlides as $i => $slide) {
+            self::slide_row((int) $i, (array) $slide, $prefix);
+        }
+        echo '</div><button type="button" class="button kc-add" data-target="hero">+ Add hero image</button></div>';
+        echo '<script type="text/html" id="tmpl-kc-hero">';
+        self::slide_row(987654, [], $prefix);
+        echo '</script>';
+    }
+
+    private static function slide_row(int $index, array $data, string $prefix): void
     {
+        $name = $prefix . '[hero_slides][' . $index . ']';
         echo '<div class="kc-repeat kc-slide"><div class="kc-row-head"><strong><span class="dashicons dashicons-format-image"></span> Hero image</strong><button type="button" class="button-link-delete kc-remove">Remove</button></div>';
-        self::media_field('home[hero_slides][' . $index . '][image_id]', absint($data['image_id'] ?? 0), 'Hero image', 'Required: 2560 × 1440 (16:9), preferably WebP.');
-        echo '<label class="kc-label">Ken Burns direction</label><select name="home[hero_slides][' . $index . '][direction]">';
+        self::media_field($name . '[image_id]', absint($data['image_id'] ?? 0), 'Hero image', 'Required: 2560 × 1440 (16:9), preferably WebP.');
+        echo '<label class="kc-label">Ken Burns direction</label><select name="' . esc_attr($name . '[direction]') . '">';
         foreach (['none' => 'No animation', 'zoom-in' => 'Zoom in', 'zoom-out' => 'Zoom out', 'left' => 'Pan left', 'right' => 'Pan right', 'up' => 'Pan up', 'down' => 'Pan down'] as $value => $label) {
             echo '<option value="' . esc_attr($value) . '" ' . selected($data['direction'] ?? 'zoom-in', $value, false) . '>' . esc_html($label) . '</option>';
         }
         echo '</select>';
-        self::repeat_text('home[hero_slides][' . $index . ']', $data, 'title', 'Overlay title (optional)');
+        self::repeat_text($name, $data, 'title', 'Overlay title (optional)');
         echo '</div>';
     }
 
@@ -458,8 +479,13 @@ final class Kampachi_Homepage
      * @param list<WP_Post> $posts
      * @param list<int> $selectedIds
      */
-    private static function post_picker(array $posts, array $selectedIds, string $field, string $label): void
-    {
+    public static function post_picker(
+        array $posts,
+        array $selectedIds,
+        string $field,
+        string $label,
+        string $prefix = 'home'
+    ): void {
         $available = [];
         foreach ($posts as $post) {
             $available[$post->ID] = $post->post_title;
@@ -479,7 +505,7 @@ final class Kampachi_Homepage
                 . esc_html($title) . '</option>';
         }
         echo '</select><button type="button" class="button kc-home-post-add" disabled>Add</button></div>';
-        echo '<input type="hidden" class="kc-home-post-ids" name="home[' . esc_attr($field) . ']" value="'
+        echo '<input type="hidden" class="kc-home-post-ids" name="' . esc_attr($prefix . '[' . $field . ']') . '" value="'
             . esc_attr(implode(',', array_keys($selected))) . '">';
         echo '<ul class="kc-home-selected-posts" aria-label="Selected items">';
         foreach (array_keys($selected) as $postId) {
@@ -521,9 +547,7 @@ final class Kampachi_Homepage
 
     private static function templates(): void
     {
-        echo '<script type="text/html" id="tmpl-kc-hero">';
-        self::slide_row(987654, []);
-        echo '</script><script type="text/html" id="tmpl-kc-dish">';
+        echo '<script type="text/html" id="tmpl-kc-dish">';
         self::dish_row(987654, []);
         echo '</script>';
     }

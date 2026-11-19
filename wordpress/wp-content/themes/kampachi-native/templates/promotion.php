@@ -1647,54 +1647,16 @@ if (class_exists(OffersLanding::class)) {
 
         <div class="paper-surface paper-world">
             <?php
-            $promotionPost = $promotionPage;
-            $promotionSourceId = $promotionPost instanceof WP_Post
-                ? absint(get_post_meta($promotionPost->ID, '_kc_translation_of', true))
-                : 0;
-            if ($promotionPost instanceof WP_Post && $promotionSourceId > 0
-                && ! metadata_exists('post', $promotionPost->ID, '_kampachi_hero_image_ids')
-                && ! metadata_exists('post', $promotionPost->ID, '_kampachi_hero_video_id')) {
-                $sourcePost = get_post($promotionSourceId);
-                if ($sourcePost instanceof WP_Post && $sourcePost->post_type === 'page') {
-                    $promotionPost = $sourcePost;
-                }
-            }
-            $promotionIds = $promotionPost instanceof WP_Post
-                ? get_post_meta($promotionPost->ID, '_kampachi_hero_image_ids', true)
-                : [];
-            $promotionIds = is_array($promotionIds) ? array_values($promotionIds) : [];
-            $promotionSlides = [];
-
-            foreach ($promotionIds as $imageId) {
-                $imageId = absint($imageId);
-                $imageUrl = wp_get_attachment_image_url($imageId, 'full');
-
-                if (! is_string($imageUrl) || $imageUrl === '') {
-                    continue;
-                }
-
-                $promotionSlides[] = [
-                    'url' => $imageUrl,
-                    'direction' => class_exists(\Kampachi\CMS\HeroMotion::class)
-                        ? \Kampachi\CMS\HeroMotion::direction($promotionPost->ID, $imageId)
-                        : 'zoom-in',
-                ];
-            }
-            $promotionVideoId = $promotionPost instanceof WP_Post
-                ? absint(get_post_meta($promotionPost->ID, '_kampachi_hero_video_id', true))
-                : 0;
-            $promotionVideoMime = $promotionVideoId > 0 ? get_post_mime_type($promotionVideoId) : '';
-            $promotionVideoUrl = is_string($promotionVideoMime) && str_starts_with($promotionVideoMime, 'video/')
-                ? wp_get_attachment_url($promotionVideoId)
-                : false;
+            $heroSettings = class_exists(OffersLanding::class) ? OffersLanding::heroSettings($promotionPageId) : [];
+            $heroSlides = $heroSettings !== [] ? OffersLanding::heroSlides($heroSettings) : [];
             ?>
-            <?php if ($promotionSlides !== []) : ?>
-                <?php kampachi_native_render_hero($promotionSlides, '', 'Promotions hero'); ?>
-            <?php elseif (is_string($promotionVideoUrl) && $promotionVideoUrl !== '') : ?>
-                <?php kampachi_native_render_hero([], $promotionVideoUrl, 'Promotions hero'); ?>
-            <?php elseif ($promotionPost instanceof WP_Post
-                && ! metadata_exists('post', $promotionPost->ID, '_kampachi_hero_image_ids')
-                && ! metadata_exists('post', $promotionPost->ID, '_kampachi_hero_video_id')) : ?>
+            <?php if ($heroSlides !== []) : ?>
+                <?php get_template_part('template-parts/offers/hero', null, ['slides' => $heroSlides]); ?>
+            <?php elseif ($promotionPageId > 0 && ! class_exists(OffersLanding::class)
+                && (metadata_exists('post', $promotionPageId, '_kampachi_hero_image_ids')
+                    || metadata_exists('post', $promotionPageId, '_kampachi_hero_video_id'))) : ?>
+                <?php kampachi_native_render_page_hero($promotionPageId); ?>
+            <?php elseif ($promotionPageId > 0 && $heroSettings === []) : ?>
                 <section class="visual-hero visual-hero--promotion" aria-hidden="true">
                     <img class="visual-hero__image visual-hero__image--first" src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/heroes/20230307_KRSB_BY_TML-6799 copy.jpg'); ?>" alt="" fetchpriority="high" decoding="async">
                     <img class="visual-hero__image visual-hero__image--second" src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/heroes/20260622_KRSB_GRANDMENU_PHOTO_1752.jpg'); ?>" alt="" loading="eager" decoding="async">

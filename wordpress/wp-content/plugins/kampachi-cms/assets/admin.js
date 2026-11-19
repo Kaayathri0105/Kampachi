@@ -1,7 +1,7 @@
 (function ($) {
     'use strict';
 
-    const form = $('#kc-home-form');
+    const form = $('#kc-home-form, [data-kc-offer-hero-form]');
     const descriptionEditor = window.kampachiDescriptionEditor;
     let rowCount = Date.now();
 
@@ -85,6 +85,13 @@
 
     form.on('click', '.kc-clear-video', function () {
         updateVideoPreview('', 'No video selected', '');
+    });
+
+    form.on('change', '[data-kc-hero-source]', function () {
+        const selectedSource = this.value;
+        $(this).closest('[data-kc-offer-hero-form]').find('[data-kc-hero-source-panel]').each(function () {
+            this.hidden = this.dataset.kcHeroSourcePanel !== selectedSource;
+        });
     });
 
     function refreshPostPicker(picker) {

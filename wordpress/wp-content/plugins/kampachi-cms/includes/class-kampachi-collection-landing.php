@@ -53,7 +53,7 @@ abstract class CollectionLanding
 
     public static function load(): void
     {
-        add_action('admin_enqueue_scripts', [self::class, 'enqueue']);
+        add_action('admin_enqueue_scripts', [static::class, 'enqueue']);
     }
 
     public static function enqueue(): void
@@ -221,8 +221,7 @@ abstract class CollectionLanding
         wp_nonce_field(self::action());
 
         echo '<section id="kc-collection-hero" class="kc-panel"><h2>Hero</h2>';
-        echo '<input type="hidden" name="kampachi_landing[hero_touched]" value="0" data-kc-collection-hero-touched>';
-        Kampachi_Landings::render_hero($page);
+        static::renderHero($page);
         echo '</section>';
 
         self::renderIntroduction($page->ID);
@@ -230,6 +229,12 @@ abstract class CollectionLanding
         self::renderSeo($page);
         echo '<div class="kc-save-bar"><strong>' . esc_html(static::TITLE) . '</strong>';
         echo '<button type="submit" class="button button-primary">Save Landing Page</button></div></form></div>';
+    }
+
+    protected static function renderHero(WP_Post $page): void
+    {
+        echo '<input type="hidden" name="kampachi_landing[hero_touched]" value="0" data-kc-collection-hero-touched>';
+        Kampachi_Landings::render_hero($page);
     }
 
     protected static function renderMissingPage(): void
@@ -438,6 +443,21 @@ abstract class CollectionLanding
         $landing = isset($_POST['kampachi_landing']) && is_array($_POST['kampachi_landing'])
             ? wp_unslash($_POST['kampachi_landing'])
             : [];
+        static::saveLandingFields($page, $landing);
+        Seo::savePost($page->ID, $page);
+
+        $input = $_POST[self::inputName()] ?? null;
+        $raw = is_array($input) ? wp_unslash($input) : [];
+        if ($raw !== []) {
+            self::saveItems($page->ID, $raw);
+        }
+
+        wp_safe_redirect(add_query_arg('updated', '1', self::adminUrl()));
+        exit;
+    }
+
+    protected static function saveLandingFields(WP_Post $page, array $landing): void
+    {
         if (($landing['hero_touched'] ?? '') !== '1') {
             if (! metadata_exists('post', $page->ID, '_kampachi_hero_image_ids')) {
                 unset($landing['hero_image_ids']);
@@ -449,16 +469,6 @@ abstract class CollectionLanding
         Kampachi_Landings::save_fields($page, $landing);
         $heroImages = get_post_meta($page->ID, '_kampachi_hero_image_ids', true);
         HeroMotion::save($page->ID, is_array($heroImages) ? $heroImages : []);
-        Seo::savePost($page->ID, $page);
-
-        $input = $_POST[self::inputName()] ?? null;
-        $raw = is_array($input) ? wp_unslash($input) : [];
-        if ($raw !== []) {
-            self::saveItems($page->ID, $raw);
-        }
-
-        wp_safe_redirect(add_query_arg('updated', '1', self::adminUrl()));
-        exit;
     }
 
     private static function saveItems(int $pageId, array $raw): void
