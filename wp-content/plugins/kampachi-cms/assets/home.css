@@ -49,6 +49,20 @@
     font-weight: var(--kc-home-font-weight) !important;
 }
 
+[data-kc-home-align],
+[data-kc-home-align] :where(p, div, h1, h2, h3, h4, h5, h6, blockquote, li, button) {
+    text-align: var(--kc-home-text-align) !important;
+}
+
+.hero-cms-copy > [data-kc-home-align],
+.kch-slide-overlay > [data-kc-home-align] {
+    align-self: stretch;
+}
+
+.signature-dish-title[data-kc-home-align] .signature-dish-select {
+    width: 100%;
+}
+
 .kc-home-hero-controls {
     position: absolute;
     z-index: 5;
@@ -56,7 +70,7 @@
     bottom: clamp(18px, 4vw, 45px);
     display: flex;
     align-items: center;
-    gap: clamp(8px, 1.6vw, 24px);
+    gap: clamp(8px, 1vw, 14px);
     color: #fff;
 }
 
@@ -68,14 +82,14 @@
 .kc-home-hero-controls button {
     display: inline-grid;
     place-items: center;
-    width: clamp(44px, 5vw, 66px);
-    height: clamp(44px, 5vw, 66px);
+    width: 44px;
+    height: 44px;
     padding: 0;
     border: 1px solid rgba(255, 255, 255, .65);
     border-radius: 50%;
     background: rgba(16, 12, 8, .58);
     color: #fff;
-    font-size: 22px !important;
+    font-size: 17px !important;
     line-height: 1 !important;
     cursor: pointer;
 }
@@ -91,8 +105,8 @@
 }
 
 .kc-home-hero-controls svg {
-    width: 22px;
-    height: 22px;
+    width: 16px;
+    height: 16px;
 }
 
 [data-kc-hero-sound][data-muted="true"] [data-kc-sound-audible],
@@ -102,7 +116,7 @@
 
 .kc-home-hero-count {
     color: #fff;
-    font-size: clamp(16px, 2vw, 26px) !important;
+    font-size: clamp(14px, 1.6vw, 20px) !important;
     font-variant-numeric: tabular-nums;
     line-height: 1 !important;
     white-space: nowrap;

@@ -21,6 +21,7 @@ final class Kampachi_Homepage
     private const TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
     private const TEXT_SIZES = [12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40, 48, 56, 64];
     private const TEXT_WEIGHTS = ['400' => 'Regular', '700' => 'Bold'];
+    private const TEXT_ALIGNMENTS = ['left' => 'Left', 'center' => 'Center', 'right' => 'Right'];
 
     public static function boot(): void
     {
@@ -100,11 +101,13 @@ final class Kampachi_Homepage
         $tag = is_string($input['tag'] ?? null) ? $input['tag'] : '';
         $size = filter_var($input['size'] ?? '', FILTER_VALIDATE_INT);
         $weight = is_scalar($input['weight'] ?? null) ? (string) $input['weight'] : '';
+        $align = is_string($input['align'] ?? null) ? $input['align'] : '';
 
         return [
             'tag' => in_array($tag, self::TEXT_TAGS, true) ? $tag : '',
             'size' => in_array($size, self::TEXT_SIZES, true) ? $size : 0,
             'weight' => isset(self::TEXT_WEIGHTS[$weight]) ? $weight : '',
+            'align' => isset(self::TEXT_ALIGNMENTS[$align]) ? $align : '',
         ];
     }
 
@@ -124,6 +127,10 @@ final class Kampachi_Homepage
         if (! empty($format['weight'])) {
             $attributes['data-kc-home-weight'] = '';
             $styles[] = '--kc-home-font-weight:' . $format['weight'];
+        }
+        if ($format['align'] !== '') {
+            $attributes['data-kc-home-align'] = '';
+            $styles[] = '--kc-home-text-align:' . $format['align'];
         }
         if ($styles !== []) {
             $attributes['style'] = implode(';', $styles);
@@ -188,6 +195,7 @@ final class Kampachi_Homepage
             (string) ($format['size'] ?: '')
         );
         self::format_select($formatName . '[weight]', 'Weight', self::TEXT_WEIGHTS, $format['weight']);
+        self::format_select($formatName . '[align]', 'Alignment', self::TEXT_ALIGNMENTS, $format['align']);
         echo '</div></div>';
     }
 
