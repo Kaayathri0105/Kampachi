@@ -16,7 +16,7 @@ if (! defined('ABSPATH')) {
 final class Content
 {
     public const POST_TYPES = [
-        'kc_offer', 'kc_sake', 'kc_outlet', 'kc_event', 'kc_job', 'kc_prefecture',
+        'kc_offer', 'kc_sake', 'kc_outlet', 'kc_event', 'kc_job', 'kc_prefecture', Press::POST_TYPE,
     ];
 
     private const LABELS = [
@@ -41,6 +41,8 @@ final class Content
         'back_careers' => 'Back to Careers',
         'back_prefectures' => 'Back to 47in27',
         'back_outlets' => 'Back to Outlets',
+        'back_press' => 'Back to Press & Media',
+        'view_original_article' => 'Read the original article',
         'back_home' => 'Back to Home',
         'contact_title' => 'Contact Us',
         'enquiry_title' => 'Send an Enquiry',

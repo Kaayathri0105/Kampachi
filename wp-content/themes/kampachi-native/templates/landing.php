@@ -9,6 +9,7 @@
 declare(strict_types=1);
 
 use Kampachi\CMS\OutletsLanding;
+use Kampachi\CMS\PressLanding;
 
 if (! defined('ABSPATH')) {
     exit;
@@ -30,7 +31,13 @@ $collectionType = [
     'sake' => 'kc_sake',
     'outlets' => 'kc_outlet',
     'careers' => 'kc_job',
+    'press-media' => 'kc_press',
 ][$slug] ?? '';
+$landingEditor = match ($collectionType) {
+    'kc_outlet' => OutletsLanding::class,
+    'kc_press' => PressLanding::class,
+    default => null,
+};
 ?>
 <main class="kc-landing-page kc-module-<?php echo esc_attr(sanitize_html_class($slug)); ?>">
     <?php kampachi_native_render_page_hero($postId); ?>
@@ -40,8 +47,8 @@ $collectionType = [
     <?php endif; ?>
     <?php if ($collectionType !== '') : ?>
         <?php
-        $entries = $collectionType === 'kc_outlet' && class_exists(OutletsLanding::class)
-            ? OutletsLanding::posts($postId)
+        $entries = $landingEditor !== null && class_exists($landingEditor)
+            ? $landingEditor::posts($postId)
             : (new WP_Query([
                 'post_type' => $collectionType,
                 'post_status' => 'publish',
