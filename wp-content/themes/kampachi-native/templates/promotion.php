@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Kampachi\Native;
 
+use Kampachi\CMS\OffersLanding;
 use WP_Post;
 use WP_Term;
 
@@ -35,7 +36,7 @@ if (trim($promotionTitle) === '') {
     $promotionTitle = $promotionPageId > 0 ? get_the_title($promotionPageId) : post_type_archive_title('', false);
 }
 
-$promotionPosts = get_posts([
+$promotionPosts = class_exists(OffersLanding::class) ? OffersLanding::posts($promotionPageId) : get_posts([
     'post_type' => 'kc_offer',
     'post_status' => 'publish',
     'posts_per_page' => -1,
@@ -75,7 +76,12 @@ foreach ($promotionPosts as $promotion) {
     ];
 }
 
-asort($promotionCategories, SORT_NATURAL | SORT_FLAG_CASE);
+if (class_exists(OffersLanding::class)) {
+    $promotionCategories = OffersLanding::orderCategories($promotionPageId, $promotionCategories);
+} else {
+    asort($promotionCategories, SORT_NATURAL | SORT_FLAG_CASE);
+    $promotionCategories = ['all' => 'All Offers'] + $promotionCategories;
+}
 ?>
 
     
@@ -1750,9 +1756,9 @@ asort($promotionCategories, SORT_NATURAL | SORT_FLAG_CASE);
 
                     <div class="promotion-toolbar">
                         <div class="promotion-filters" role="group" aria-label="Filter promotions">
-                            <button class="promotion-filter is-active" type="button" data-promotion-filter="all" aria-pressed="true">All offers</button>
                             <?php foreach ($promotionCategories as $categoryKey => $categoryName) : ?>
-                                <button class="promotion-filter" type="button" data-promotion-filter="<?php echo esc_attr($categoryKey); ?>" aria-pressed="false"><?php echo esc_html($categoryName); ?></button>
+                                <?php $isAllOffers = $categoryKey === 'all'; ?>
+                                <button class="promotion-filter<?php echo $isAllOffers ? ' is-active' : ''; ?>" type="button" data-promotion-filter="<?php echo esc_attr($categoryKey); ?>" aria-pressed="<?php echo $isAllOffers ? 'true' : 'false'; ?>"><?php echo esc_html($categoryName); ?></button>
                             <?php endforeach; ?>
                         </div>
 

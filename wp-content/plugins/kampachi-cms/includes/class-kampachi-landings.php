@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\HeroMotion;
+use Kampachi\CMS\OffersLanding;
+
 if (! defined('ABSPATH')) {
     exit;
 }
@@ -33,24 +36,33 @@ final class Kampachi_Landings
     public static function register_menus(): void
     {
         foreach (['kc_offer' => 'promotion', 'kc_outlet' => 'outlets'] as $type => $slug) {
-            add_submenu_page(
+            $callback = $slug === 'promotion'
+                ? [OffersLanding::class, 'render']
+                : static function () use ($slug): void {
+                    $page = get_page_by_path($slug);
+                    echo '<div class="wrap kc-home-admin kc-shared-admin kc-module-admin"><h1>'
+                        . esc_html(self::PAGES[$slug]) . ' Landing Page</h1><section class="kc-module-panel">';
+                    echo '<h2>Landing Page Content</h2>';
+                    if ($page instanceof WP_Post) {
+                        echo '<p><a class="button button-primary" href="'
+                            . esc_url(get_edit_post_link($page->ID, 'raw')) . '">Edit landing page &amp; hero</a></p>';
+                        echo '<p><a class="button" href="' . esc_url(get_permalink($page)) . '">View landing page</a></p>';
+                    } else {
+                        echo '<p>Create the page with slug <code>' . esc_html($slug) . '</code>.</p>';
+                    }
+                    echo '</section></div>';
+                };
+            $hook = add_submenu_page(
                 'edit.php?post_type=' . $type,
-                'Landing Page',
+                $slug === 'promotion' ? 'Offers Landing' : 'Landing Page',
                 'Landing Page',
                 'edit_pages',
                 'kampachi-landing-' . $slug,
-                static function () use ($slug): void {
-                    $page = get_page_by_path($slug);
-                    echo '<div class="wrap kc-home-admin kc-shared-admin kc-module-admin"><h1>' . esc_html(self::PAGES[$slug]) . ' Landing Page</h1><section class="kc-module-panel"><h2>Landing Page Content</h2>';
-                    if ($page instanceof WP_Post) {
-                        echo '<p><a class="button button-primary" href="' . esc_url(get_edit_post_link($page->ID, 'raw')) . '">Edit landing page &amp; hero</a></p>';
-                        echo '<p><a class="button" href="' . esc_url(get_permalink($page)) . '">View landing page</a></p>';
-                    } else {
-                        echo '<p>Please activate the Kampachi CMS plugin again or create the page with slug <code>' . esc_html($slug) . '</code>.</p>';
-                    }
-                    echo '</section></div>';
-                }
+                $callback
             );
+            if ($slug === 'promotion' && $hook !== false) {
+                add_action('load-' . $hook, [OffersLanding::class, 'load']);
+            }
         }
     }
 
@@ -85,12 +97,17 @@ final class Kampachi_Landings
             return;
         }
 
+        self::enqueue_media();
+    }
+
+    public static function enqueue_media(): void
+    {
         wp_enqueue_media();
         wp_enqueue_script(
             'kampachi-landings-admin',
             plugins_url('../assets/landings-admin.js', __FILE__),
             ['jquery'],
-            '2.3.0',
+            (string) filemtime(dirname(__DIR__) . '/assets/landings-admin.js'),
             true
         );
     }
@@ -115,7 +132,12 @@ final class Kampachi_Landings
             $value = is_string($value) ? $value : '';
             echo '<p><label for="kc_' . esc_attr($key) . '"><strong>' . esc_html($label) . '</strong></label></p>';
 
-            if ($type === 'textarea') {
+            if ($type === 'textarea' && $post->post_name === 'promotion') {
+                wp_editor($value, 'kc_promotion_page_intro', [
+                    'textarea_name' => 'kampachi_landing[intro_description]',
+                    'textarea_rows' => 6,
+                ]);
+            } elseif ($type === 'textarea') {
                 echo '<textarea class="large-text" rows="4" id="kc_' . esc_attr($key) . '" name="kampachi_landing[' . esc_attr($key) . ']">' . esc_textarea($value) . '</textarea>';
             } else {
                 echo '<input class="large-text" type="text" id="kc_' . esc_attr($key) . '" name="kampachi_landing[' . esc_attr($key) . ']" value="' . esc_attr($value) . '">';
@@ -126,6 +148,11 @@ final class Kampachi_Landings
             return;
         }
 
+        self::render_hero($post);
+    }
+
+    public static function render_hero(WP_Post $post): void
+    {
         $videoId = absint(get_post_meta($post->ID, '_kampachi_hero_video_id', true));
         $slideIds = get_post_meta($post->ID, '_kampachi_hero_image_ids', true);
         $slideIds = is_array($slideIds) ? array_map('absint', $slideIds) : [];
@@ -140,7 +167,7 @@ final class Kampachi_Landings
         echo '<button class="button kc-landing-media-picker" type="button" data-field="kc-landing-images" data-type="image" data-multiple="1">Choose hero images</button> ';
         echo '<button class="button kc-landing-media-clear" type="button" data-field="kc-landing-images">Clear</button>';
         echo '<p id="kc-landing-images-preview" class="description">' . esc_html($slideIds ? count($slideIds) . ' selected images' : 'No hero images selected') . '</p>';
-        \Kampachi\CMS\HeroMotion::editor($post->ID, 'kampachi_landing[hero_image_ids]');
+        HeroMotion::editor($post->ID, 'kampachi_landing[hero_image_ids]');
         echo '</div>';
     }
 
@@ -168,30 +195,48 @@ final class Kampachi_Landings
             ? wp_unslash($_POST['kampachi_landing'])
             : [];
 
+        self::save_fields($post, $raw);
+    }
+
+    /** Save landing metadata after the caller has checked its form nonce. */
+    public static function save_fields(WP_Post $post, array $raw): void
+    {
+        if (! isset(self::PAGES[$post->post_name]) || ! current_user_can('edit_post', $post->ID)) {
+            return;
+        }
+
+        $postId = $post->ID;
         foreach (['intro_subtitle', 'intro_title', 'intro_description'] as $field) {
-            $input = $raw[$field] ?? '';
-            update_post_meta(
-                $postId,
-                '_kampachi_' . $field,
-                is_string($input) ? sanitize_textarea_field($input) : ''
-            );
+            $input = $raw[$field] ?? null;
+            if (! is_string($input)) {
+                continue;
+            }
+
+            $value = $post->post_name === 'promotion' && $field === 'intro_description'
+                ? wp_kses_post($input)
+                : sanitize_textarea_field($input);
+            update_post_meta($postId, '_kampachi_' . $field, wp_slash($value));
         }
 
         if (in_array($post->post_name, ['catering-events', 'sake'], true)) {
             return;
         }
 
-        $videoId = absint($raw['hero_video_id'] ?? 0);
-        $mime = $videoId > 0 ? get_post_mime_type($videoId) : '';
-        update_post_meta(
-            $postId,
-            '_kampachi_hero_video_id',
-            is_string($mime) && str_starts_with($mime, 'video/') ? $videoId : 0
-        );
+        if (array_key_exists('hero_video_id', $raw)) {
+            $videoId = absint($raw['hero_video_id']);
+            $mime = $videoId > 0 ? get_post_mime_type($videoId) : '';
+            update_post_meta(
+                $postId,
+                '_kampachi_hero_video_id',
+                is_string($mime) && str_starts_with($mime, 'video/') ? $videoId : 0
+            );
+        }
 
-        $inputIds = $raw['hero_image_ids'] ?? '';
-        $ids = is_string($inputIds) ? explode(',', $inputIds) : [];
-        $images = array_values(array_unique(array_filter(array_map('absint', $ids), 'wp_attachment_is_image')));
-        update_post_meta($postId, '_kampachi_hero_image_ids', array_slice($images, 0, 20));
+        if (array_key_exists('hero_image_ids', $raw)) {
+            $inputIds = $raw['hero_image_ids'];
+            $ids = is_string($inputIds) ? explode(',', $inputIds) : [];
+            $images = array_values(array_unique(array_filter(array_map('absint', $ids), 'wp_attachment_is_image')));
+            update_post_meta($postId, '_kampachi_hero_image_ids', array_slice($images, 0, 20));
+        }
     }
 }
