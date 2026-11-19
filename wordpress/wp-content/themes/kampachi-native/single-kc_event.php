@@ -49,20 +49,7 @@ while (have_posts()) {
     }
     ?>
     <main class="kc-catering-page kc-catering-detail" id="main-content">
-        <?php if ($images !== []) : ?>
-            <div class="kc-catering-detail-gallery" data-kc-carousel aria-label="Event gallery" role="region" aria-roledescription="carousel">
-                <?php foreach ($images as $index => $image) : ?>
-                    <img data-kc-image class="kc-catering-detail-photo kc-motion-<?php echo esc_attr((string) ($image['direction'] ?? 'zoom-in')); ?><?php echo $index === 0 ? ' is-active' : ''; ?>" src="<?php echo esc_url($image['url']); ?>" alt="<?php echo esc_attr($image['alt']); ?>" <?php if ($index > 0) : ?>aria-hidden="true"<?php endif; ?>>
-                <?php endforeach; ?>
-                <?php if (count($images) > 1) : ?>
-                    <div class="kc-catering-detail-controls">
-                        <button type="button" data-kc-prev aria-label="Previous image">←</button>
-                        <span data-kc-count><?php echo esc_html(sprintf('%02d / %02d', 1, count($images))); ?></span>
-                        <button type="button" data-kc-next aria-label="Next image">→</button>
-                    </div>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
+        <?php kampachi_native_render_hero($images, '', get_the_title() . ' hero'); ?>
         <section class="kc-catering-detail-content">
             <div class="kc-catering-container">
                 <a class="kc-catering-detail-back" href="<?php echo esc_url(home_url('/catering-events/')); ?>">← <?php echo esc_html(kampachi_native_label('back_events')); ?></a>

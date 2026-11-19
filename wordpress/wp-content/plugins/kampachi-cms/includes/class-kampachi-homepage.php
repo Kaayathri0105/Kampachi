@@ -73,17 +73,6 @@ final class Kampachi_Homepage
 
     public static function frontend_assets(): void
     {
-        $pageId = get_queried_object_id();
-        $sourceId = absint(get_post_meta($pageId, '_kc_translation_of', true));
-        $pageSlug = get_post_field('post_name', $sourceId > 0 ? $sourceId : $pageId);
-
-        if (! is_front_page()
-            && ! is_post_type_archive('kc_offer')
-            && ! (is_page() && in_array($pageSlug, ['home', 'sake', 'promotion'], true))
-        ) {
-            return;
-        }
-
         wp_enqueue_style(
             'kampachi-home-frontend',
             plugins_url('../assets/home.css', __FILE__),

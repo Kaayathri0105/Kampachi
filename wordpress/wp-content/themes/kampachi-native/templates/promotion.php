@@ -1651,16 +1651,16 @@ if (class_exists(OffersLanding::class)) {
             $heroSlides = $heroSettings !== [] ? OffersLanding::heroSlides($heroSettings) : [];
             ?>
             <?php if ($heroSlides !== []) : ?>
-                <?php get_template_part('template-parts/offers/hero', null, ['slides' => $heroSlides]); ?>
+                <?php kampachi_native_render_hero($heroSlides, '', 'Offers & Events hero'); ?>
             <?php elseif ($promotionPageId > 0 && ! class_exists(OffersLanding::class)
                 && (metadata_exists('post', $promotionPageId, '_kampachi_hero_image_ids')
                     || metadata_exists('post', $promotionPageId, '_kampachi_hero_video_id'))) : ?>
                 <?php kampachi_native_render_page_hero($promotionPageId); ?>
             <?php elseif ($promotionPageId > 0 && $heroSettings === []) : ?>
-                <section class="visual-hero visual-hero--promotion" aria-hidden="true">
-                    <img class="visual-hero__image visual-hero__image--first" src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/heroes/20230307_KRSB_BY_TML-6799 copy.jpg'); ?>" alt="" fetchpriority="high" decoding="async">
-                    <img class="visual-hero__image visual-hero__image--second" src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/heroes/20260622_KRSB_GRANDMENU_PHOTO_1752.jpg'); ?>" alt="" loading="eager" decoding="async">
-                </section>
+                <?php kampachi_native_render_hero([
+                    ['url' => get_theme_file_uri('assets/images/heroes/20230307_KRSB_BY_TML-6799 copy.jpg')],
+                    ['url' => get_theme_file_uri('assets/images/heroes/20260622_KRSB_GRANDMENU_PHOTO_1752.jpg')],
+                ], '', 'Offers & Events hero'); ?>
             <?php endif; ?>
             <section class="promotions-collection" aria-labelledby="promotions-title">
                 <div class="content-container">
@@ -1721,16 +1721,6 @@ if (class_exists(OffersLanding::class)) {
     <script>
     (() => {
         'use strict';
-
-        const heroVideo = document.querySelector('.hero-video');
-        if (heroVideo) {
-            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                heroVideo.pause();
-                heroVideo.removeAttribute('autoplay');
-            } else {
-                heroVideo.play().catch(() => {});
-            }
-        }
 
         const promotionFilters = document.querySelectorAll('[data-promotion-filter]');
         const promotionFilterCounts = document.querySelectorAll('[data-promotion-filter-count]');

@@ -47,32 +47,7 @@ while (have_posts()) :
     }
     ?>
     <main class="kc-catering-page kc-outlet-page" id="main-content">
-        <?php if ($hero !== []) : ?>
-            <section class="kc-catering-hero" data-kc-hero aria-roledescription="carousel" aria-label="Outlet hero images and videos">
-                <div class="kc-catering-hero-track">
-                    <?php foreach ($hero as $index => $media) : ?>
-                        <div class="kc-catering-hero-slide kc-motion-<?php echo esc_attr((string) ($media['direction'] ?? 'zoom-in')); ?><?php echo $index === 0 ? ' is-active' : ''; ?>" data-kc-hero-slide <?php if ($index > 0) : ?>aria-hidden="true"<?php endif; ?>>
-                            <?php if ($media['type'] === 'video') : ?>
-                                <video muted playsinline preload="<?php echo $index === 0 ? 'metadata' : 'none'; ?>" <?php if (count($hero) === 1) : ?>loop<?php endif; ?> data-kc-hero-video aria-label="Outlet video <?php echo esc_attr((string) ($index + 1)); ?>">
-                                    <source src="<?php echo esc_url($media['url']); ?>" type="<?php echo esc_attr($media['mime']); ?>">
-                                </video>
-                            <?php else : ?>
-                                <img src="<?php echo esc_url($media['url']); ?>" alt="<?php echo esc_attr($media['alt']); ?>" <?php if ($index === 0) : ?>loading="eager" fetchpriority="high"<?php else : ?>loading="lazy"<?php endif; ?>>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-                <span class="kc-catering-hero-shade" aria-hidden="true"></span>
-                <div class="kc-catering-hero-controls" aria-label="Hero controls">
-                    <?php if (count($hero) > 1) : ?>
-                        <button type="button" data-kc-hero-prev aria-label="Previous slide">←</button>
-                        <span class="kc-catering-hero-count" data-kc-hero-count>01 / <?php echo esc_html(sprintf('%02d', count($hero))); ?></span>
-                        <button type="button" data-kc-hero-next aria-label="Next slide">→</button>
-                    <?php endif; ?>
-                    <button type="button" data-kc-hero-toggle aria-label="Pause hero" aria-pressed="true">Pause</button>
-                </div>
-            </section>
-        <?php endif; ?>
+        <?php kampachi_native_render_hero($hero, '', 'Outlet hero'); ?>
 
         <section class="kc-catering-intro<?php echo $hero !== [] ? ' kc-catering-intro--with-hero' : ''; ?>" aria-labelledby="kc-outlet-heading">
             <div class="kc-catering-container kc-catering-intro-inner">

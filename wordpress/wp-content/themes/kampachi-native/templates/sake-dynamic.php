@@ -62,26 +62,7 @@ $sakes = new WP_Query([
 $total = $sakes->post_count;
 ?>
 <main class="kc-catering-page kc-sake-page" id="main-content">
-    <?php if ($hero !== []) : ?>
-        <section class="kc-catering-hero" data-kc-home-hero data-kc-hero-swipe data-kc-hero-image-delay="6500"
-            aria-roledescription="carousel" aria-label="Sake hero images and videos">
-            <div class="kc-catering-hero-track">
-                <?php foreach ($hero as $index => $media) : ?>
-                    <div class="kc-catering-hero-slide kc-motion-<?php echo esc_attr((string) ($media['direction'] ?? 'zoom-in')); ?><?php echo $index === 0 ? ' is-active' : ''; ?>" data-kc-hero-slide <?php if ($index > 0) : ?>aria-hidden="true"<?php endif; ?>>
-                        <?php if ($media['type'] === 'video') : ?>
-                            <video muted playsinline preload="<?php echo $index === 0 ? 'metadata' : 'none'; ?>" <?php if (count($hero) === 1) : ?>loop<?php endif; ?> data-kc-hero-video aria-label="Sake hero video <?php echo esc_attr((string) ($index + 1)); ?>">
-                                <source src="<?php echo esc_url($media['url']); ?>" type="<?php echo esc_attr($media['mime']); ?>">
-                            </video>
-                        <?php else : ?>
-                            <img src="<?php echo esc_url($media['url']); ?>" alt="<?php echo esc_attr($media['alt']); ?>" <?php if ($index === 0) : ?>loading="eager" fetchpriority="high"<?php else : ?>loading="lazy"<?php endif; ?>>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-            <span class="kc-catering-hero-shade" aria-hidden="true"></span>
-            <?php \Kampachi_Homepage::hero_controls(count($hero), in_array('video', array_column($hero, 'type'), true)); ?>
-        </section>
-    <?php endif; ?>
+    <?php kampachi_native_render_hero($hero, '', 'Sake hero'); ?>
 
     <section class="kc-catering-intro<?php echo $hero !== [] ? ' kc-catering-intro--with-hero' : ''; ?>" aria-labelledby="kc-sake-heading">
         <div class="kc-catering-container kc-catering-intro-inner">

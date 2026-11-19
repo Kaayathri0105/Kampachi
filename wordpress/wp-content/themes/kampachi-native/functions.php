@@ -320,54 +320,38 @@ function kampachi_native_post_image(int $postId, string $size = 'large'): string
 }
 
 /**
- * Shared media carousel for landing pages and 47in27.
+ * Render page banners with the same layout and controls as the homepage.
  *
- * @param array<int, array{url: string, title?: string, text?: string, direction?: string}> $slides
+ * @param list<array<string, mixed>> $slides
  */
-function kampachi_native_render_hero(array $slides, string $videoUrl = '', string $label = 'Kampachi hero'): void
-{
-    $availableSlides = array_values(array_filter($slides, static function (mixed $slide): bool {
-        return is_array($slide) && ! empty($slide['url']) && is_string($slide['url']);
-    }));
-
-    if ($availableSlides === [] && $videoUrl === '') {
-        return;
-    }
-
-    echo '<section class="kc-landing-hero" aria-label="' . esc_attr($label) . '">';
-
+function kampachi_native_render_hero(
+    array $slides,
+    string $videoUrl = '',
+    string $label = 'Kampachi hero',
+    string $id = ''
+): void {
     if ($videoUrl !== '') {
-        echo '<video class="kc-landing-video" autoplay muted loop playsinline preload="metadata" aria-label="' . esc_attr($label) . '">';
-        echo '<source src="' . esc_url($videoUrl) . '" type="video/mp4">';
-        echo '</video>';
-    } else {
-        foreach ($availableSlides as $index => $slide) {
-            $direction = sanitize_html_class((string) ($slide['direction'] ?? 'zoom-in'));
-            $active = $index === 0 ? ' is-active' : '';
-            echo '<div class="kc-landing-slide kc-motion-' . esc_attr($direction) . $active . '">';
-            echo '<img src="' . esc_url($slide['url']) . '" alt="" ';
-            echo $index === 0 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
-            echo '>';
-
-            if (! empty($slide['title']) || ! empty($slide['text'])) {
-                echo '<div class="kc-landing-slide-copy">';
-
-                if (! empty($slide['title'])) {
-                    echo '<strong>' . esc_html((string) $slide['title']) . '</strong>';
-                }
-
-                if (! empty($slide['text'])) {
-                    echo '<p>' . esc_html((string) $slide['text']) . '</p>';
-                }
-
-                echo '</div>';
-            }
-
-            echo '</div>';
-        }
+        array_unshift($slides, ['url' => $videoUrl, 'mime' => 'video/mp4']);
     }
 
-    echo '<span class="kc-landing-hero-shade" aria-hidden="true"></span></section>';
+    $availableSlides = [];
+    foreach ($slides as $slide) {
+        if (! is_array($slide) || ! is_string($slide['url'] ?? null) || $slide['url'] === '') {
+            continue;
+        }
+
+        $mime = (string) ($slide['mime'] ?? '');
+        $slide['type'] = $slide['type'] ?? (str_starts_with($mime, 'video/') ? 'video' : 'image');
+        $availableSlides[] = $slide;
+    }
+
+    if ($availableSlides !== []) {
+        get_template_part('template-parts/hero', null, [
+            'slides' => $availableSlides,
+            'label' => $label,
+            'id' => $id,
+        ]);
+    }
 }
 
 /**
