@@ -159,25 +159,38 @@ body #outlets .outlets-grid--carousel::-webkit-scrollbar {
     margin-block-start: 0;
 }
 
-.kc-home-side-carousel:has(> :is(.kc-home-post-controls, .outlets-carousel-controls):not([hidden])) {
-    margin-inline: max(calc(-1 * var(--kc-side-arrow-gutter)), calc((100% - 100vw) / 2 + 12px));
-    padding-inline: var(--kc-side-arrow-gutter);
+@media (min-width: 761px) {
+    .kc-home-side-carousel:has(> :is(.kc-home-post-controls, .outlets-carousel-controls):not([hidden])) {
+        margin-inline: max(calc(-1 * var(--kc-side-arrow-gutter)), calc((100% - 100vw) / 2 + 12px));
+        padding-inline: var(--kc-side-arrow-gutter);
+    }
+
+    .kc-home-side-carousel > :is(.kc-home-post-controls, .outlets-carousel-controls):not([hidden]) {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0;
+        pointer-events: none;
+    }
+
+    .kc-home-side-carousel > :is(.kc-home-post-controls, .outlets-carousel-controls) > button {
+        flex: 0 0 var(--kc-side-arrow-size);
+        width: var(--kc-side-arrow-size);
+        height: var(--kc-side-arrow-size);
+        pointer-events: auto;
+    }
 }
 
-.kc-home-side-carousel > :is(.kc-home-post-controls, .outlets-carousel-controls):not([hidden]) {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0;
-    pointer-events: none;
-}
+@media (max-width: 760px) {
+    .kc-home-side-carousel > :is(.kc-home-post-controls, .outlets-carousel-controls) {
+        gap: 8px;
+        margin-block: 0 12px;
+    }
 
-.kc-home-side-carousel > :is(.kc-home-post-controls, .outlets-carousel-controls) > button {
-    flex: 0 0 var(--kc-side-arrow-size);
-    width: var(--kc-side-arrow-size);
-    height: var(--kc-side-arrow-size);
-    pointer-events: auto;
+    .home-sake-carousel-shell .home-sake-layout {
+        gap: 0;
+    }
 }
