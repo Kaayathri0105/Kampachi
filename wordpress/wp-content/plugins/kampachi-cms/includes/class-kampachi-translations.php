@@ -14,7 +14,7 @@ final class Kampachi_Translations
 {
     private static bool $creating = false;
 
-    private const TYPES = ['page', 'kc_offer', 'kc_sake', 'kc_outlet', 'kc_job', 'kc_prefecture', 'kc_event'];
+    private const TYPES = ['page', 'kc_offer', 'kc_sake', 'kc_outlet', 'kc_job', 'kc_prefecture', 'kc_event', 'kc_press'];
 
     private const MEDIA_KEYS = [
         '_kampachi_hero_image_ids',

@@ -28,6 +28,7 @@ final class AdminStyle
         'kc_outlet',
         'kc_job',
         'kc_prefecture',
+        Press::POST_TYPE,
     ];
 
     private const LANDING_SLUGS = [
@@ -40,6 +41,7 @@ final class AdminStyle
         'about-us',
         'privacy-policy',
         'contact-us',
+        Press::PAGE_SLUG,
     ];
 
     public static function boot(): void

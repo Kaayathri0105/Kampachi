@@ -16,8 +16,10 @@ abstract class CollectionLanding
 {
     protected const KEY = '';
     protected const TITLE = '';
+    protected const ITEMS_LABEL = '';
     protected const POST_TYPE = '';
     protected const PAGE_SLUG = '';
+    protected const PAGE_TITLE = '';
     protected const TAXONOMY = '';
     protected const HAS_ARCHIVE = false;
 
@@ -43,6 +45,10 @@ abstract class CollectionLanding
         add_filter('wpseo_opengraph_image', [static::class, 'filterSocialImage']);
         add_filter('rank_math/opengraph/facebook/image', [static::class, 'filterSocialImage']);
         add_filter('aioseo_facebook_tags', [static::class, 'filterFacebookTags']);
+
+        if (static::PAGE_TITLE !== '') {
+            add_action('admin_post_' . self::createAction(), [static::class, 'create']);
+        }
     }
 
     public static function load(): void
@@ -228,7 +234,67 @@ abstract class CollectionLanding
 
     protected static function renderMissingPage(): void
     {
-        echo '<p>Create a WordPress page with the slug <code>' . esc_html(static::PAGE_SLUG) . '</code> first.</p>';
+        if (static::PAGE_TITLE === '') {
+            echo '<p>Create a WordPress page with the slug <code>' . esc_html(static::PAGE_SLUG) . '</code> first.</p>';
+
+            return;
+        }
+
+        if (! self::canCreate()) {
+            echo '<p>Ask a user who can publish pages to set up this landing page.</p>';
+
+            return;
+        }
+
+        echo '<section class="kc-panel"><h2>Set up the landing page</h2>';
+        echo '<p>Create and publish this landing page with the current published ' . esc_html(self::itemsLabel()) . '.</p>';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<input type="hidden" name="action" value="' . esc_attr(self::createAction()) . '">';
+        wp_nonce_field(self::createAction());
+        submit_button('Create ' . static::TITLE . ' Page');
+        echo '</form></section>';
+    }
+
+    private static function createAction(): string
+    {
+        return 'kampachi_create_' . static::KEY . '_landing';
+    }
+
+    private static function canCreate(): bool
+    {
+        return static::PAGE_TITLE !== '' && current_user_can('edit_pages') && current_user_can('publish_pages');
+    }
+
+    public static function create(): void
+    {
+        if (! self::canCreate()) {
+            wp_die(
+                esc_html__('You do not have permission to publish this landing page.', 'kampachi-cms'),
+                '',
+                ['response' => 403]
+            );
+        }
+
+        check_admin_referer(self::createAction());
+        if (self::page() === null) {
+            $result = wp_insert_post([
+                'post_type' => 'page',
+                'post_status' => 'publish',
+                'post_name' => static::PAGE_SLUG,
+                'post_title' => static::PAGE_TITLE,
+            ], true);
+            if (is_wp_error($result)) {
+                wp_die(esc_html($result->get_error_message()));
+            }
+        }
+
+        wp_safe_redirect(self::adminUrl());
+        exit;
+    }
+
+    private static function itemsLabel(): string
+    {
+        return static::ITEMS_LABEL !== '' ? static::ITEMS_LABEL : static::KEY;
     }
 
     private static function renderIntroduction(int $pageId): void
@@ -261,7 +327,8 @@ abstract class CollectionLanding
         $hidden = array_intersect(self::ids($settings['hidden'] ?? []), $ids);
 
         echo '<section id="kc-collection-items" class="kc-panel"><h2>Dynamic Items</h2>';
-        echo '<p>Drag ' . esc_html(static::KEY) . ' to change their order. Clear Show to hide an item on this landing page.</p>';
+        $itemsLabel = self::itemsLabel();
+        echo '<p>Drag ' . esc_html($itemsLabel) . ' to change their order. Clear Show to hide an item on this landing page.</p>';
         $fields = ['order' => $ids, 'hidden' => $hidden];
         if ($categories !== []) {
             $fields['categories'] = array_keys($categories);
@@ -274,15 +341,15 @@ abstract class CollectionLanding
             self::renderCategories($categories);
         }
         echo '<div class="kc-field"><label class="kc-label" for="kc-collection-landing-search">Search '
-            . esc_html(static::KEY) . '</label>';
+            . esc_html($itemsLabel) . '</label>';
         echo '<input type="search" id="kc-collection-landing-search" data-kc-collection-search></div>';
         echo '<ul class="kc-collection-landing-posts" data-kc-collection-order aria-label="'
-            . esc_attr(ucfirst(static::KEY) . ' on the landing page') . '">';
+            . esc_attr(ucfirst($itemsLabel) . ' on the landing page') . '">';
         foreach ($posts as $post) {
             self::renderItem($post, in_array($post->ID, $hidden, true));
         }
         echo '</ul><p role="status" data-kc-collection-empty' . ($posts === [] ? '' : ' hidden')
-            . '>No ' . esc_html(static::KEY) . ' match this view.</p></section>';
+            . '>No ' . esc_html($itemsLabel) . ' match this view.</p></section>';
     }
 
     /** @param array<string, string> $categories */
