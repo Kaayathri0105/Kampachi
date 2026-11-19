@@ -108,9 +108,13 @@ body {
 }
 
 .site-footer .footer-links a,
+.site-footer .footer-address address {
+    display: block !important;
+}
+
+.site-footer .footer-links a,
 .site-footer .footer-address address,
 .site-footer .footer-contact > a {
-    display: block !important;
     color: rgba(245, 235, 224, 0.86) !important;
     font-size: 13px !important;
     font-style: normal !important;
@@ -128,6 +132,15 @@ body {
     text-underline-offset: 4px;
 }
 
+.site-footer .footer-contact > a {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
 .site-footer .footer-contact > a + a {
     margin-top: 5px;
 }
@@ -135,17 +148,28 @@ body {
 .site-footer .kc-footer-socials {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 13px;
+    gap: 4px;
+    margin-inline-start: -10px;
 }
 
 .site-footer .kc-footer-socials > a {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    min-height: 24px;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
 }
 
-.site-footer .kc-footer-social-icon {
+.site-footer .kc-footer-socials > a:hover {
+    opacity: 0.75;
+}
+
+.site-footer .kc-footer-socials > a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+}
+
+.site-footer .kc-footer-icon {
     display: block;
     flex: none;
     width: 16px;
