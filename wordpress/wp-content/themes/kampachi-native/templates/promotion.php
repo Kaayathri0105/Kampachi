@@ -1671,7 +1671,6 @@ asort($promotionCategories, SORT_NATURAL | SORT_FLAG_CASE);
         .promotion-contact-link span { font-size: 19px !important; line-height: 1 !important; }
 
     </style>
-    <link rel="stylesheet" href="<?php echo esc_url(get_template_directory_uri() . '/assets/typography.css'); ?>">
     <link rel="stylesheet" href="<?php echo esc_url(get_template_directory_uri() . '/assets/header.css'); ?>">
     <link rel="stylesheet" href="<?php echo esc_url(get_template_directory_uri() . '/assets/site-theme.css'); ?>">
     <link rel="stylesheet" href="<?php echo esc_url(get_template_directory_uri() . '/assets/components/hero-banners.css'); ?>">
