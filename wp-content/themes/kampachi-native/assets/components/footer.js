@@ -1,0 +1,1 @@
+/* Shared markup is rendered from CMS settings by the WordPress theme. */

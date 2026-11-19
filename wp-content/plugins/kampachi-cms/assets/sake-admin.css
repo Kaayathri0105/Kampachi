@@ -1,0 +1,19 @@
+.kc-sake-bottles-editor{padding:6px 4px 15px;max-width:1060px}
+.kc-sake-bottles-editor>p{line-height:1.7}
+.kc-sake-bottles-list{display:grid;gap:20px;margin:20px 0}
+.kc-sake-bottle{padding:20px;border:1px solid #d3dae1;border-radius:6px;background:#f8fafb;min-width:0}
+.kc-sake-bottle-heading{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding-bottom:15px;margin-bottom:15px;border-bottom:1px solid #dce1e7}
+.kc-sake-bottle-heading h3{flex:1;min-width:90px;margin:0;padding:0;border:0;font-size:15px}
+.kc-sake-bottle-handle{cursor:grab;color:#637789}
+.kc-sake-bottle label,.kc-sake-bottle-outlets legend{display:block;font-weight:600;margin-bottom:7px}
+.kc-sake-bottle-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px}
+.kc-sake-bottle-fields p{margin:0 0 16px}
+.kc-sake-bottle .widefat{width:100%;max-width:none}
+.kc-sake-bottle-image-editor{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:20px 0}
+.kc-sake-bottle-image-editor img{width:90px;height:110px;object-fit:contain;background:#fff;border:1px solid #dce1e7}
+.kc-sake-bottle-outlets{margin-top:20px;padding:16px;border:1px solid #dce1e7;background:#fff}
+.kc-sake-bottle-outlets legend{padding:0 6px}
+.kc-sake-bottle-outlets label{display:inline-flex;align-items:center;gap:7px;margin:0 20px 10px 0;font-weight:400}
+.kc-sake-bottle-outlets .description{margin:6px 0 0;line-height:1.6}
+.kc-sake-bottles-editor [hidden]{display:none!important}
+@media(max-width:782px){.kc-sake-bottle{padding:16px 12px}.kc-sake-bottle-fields{grid-template-columns:1fr}.kc-sake-bottle-heading h3{flex-basis:calc(100% - 40px)}.kc-sake-bottle-heading .button-link-delete{margin-left:auto}}

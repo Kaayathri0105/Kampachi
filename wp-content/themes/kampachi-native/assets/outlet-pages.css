@@ -1,0 +1,30 @@
+.kc-outlet-page{background:#f4e9de;min-height:70vh}
+.kc-outlet-section{padding:30px 0 clamp(68px,9vw,120px)}
+.kc-outlet-section-heading{text-align:center;margin:0 auto 35px}
+.kc-outlet-section-heading h2{font-family:"Cormorant Garamond","Noto Serif JP",Georgia,serif;font-size:clamp(32px,3.3vw,48px);font-weight:400;margin:9px 0}
+.kc-outlet-dishes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:25px}
+.kc-outlet-dish{margin:0;background:#fbf8f4;box-shadow:0 8px 26px #26180e0b;min-width:0}
+.kc-outlet-dish img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.kc-outlet-dish figcaption{padding:22px 25px 28px}
+.kc-outlet-dish h3{font-weight:400;font-size:25px;margin:0 0 10px}
+.kc-outlet-dish p{color:#5c5149;line-height:1.8;font-size:15px;margin:0;white-space:pre-line}
+.kc-outlet-additional .kc-catering-container{max-width:950px;line-height:1.8}
+.kc-outlet-information{background:#f9f2eb;padding-top:90px}
+.kc-outlet-information-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:25px}
+.kc-outlet-information-item{border-top:1px solid #c9b8a8;padding:23px 12px 0}
+.kc-outlet-information-item h3{font-weight:400;font-size:23px;margin:0 0 16px}
+.kc-outlet-information-item p,.kc-outlet-information-item a{color:#54493f;font-size:15px;line-height:1.9;overflow-wrap:anywhere}
+.kc-outlet-menus{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;max-width:900px;margin:0 auto}
+.kc-outlet-menus a{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px 25px;border:1px solid #c6b5a7;color:#342722;text-decoration:none;background:#fbf7f3;transition:background .2s}
+.kc-outlet-menus a:hover{background:#e9d9ca}
+.kc-outlet-map-section{background:#f9f2eb}
+.kc-outlet-map-section iframe{display:block;width:100%;height:clamp(300px,44vw,520px);border:0}
+.kc-outlet-directions{font-size:13px;color:#813a39;text-underline-offset:5px}
+@media(max-width:900px){.kc-outlet-dishes{grid-template-columns:repeat(2,minmax(0,1fr))}.kc-outlet-information-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.kc-outlet-dishes,.kc-outlet-information-grid,.kc-outlet-menus{grid-template-columns:1fr}.kc-outlet-section{padding-bottom:70px}.kc-outlet-information{padding-top:65px}}
+.kc-outlet-visit-menus {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(65, 45, 32, .16);
+}
+

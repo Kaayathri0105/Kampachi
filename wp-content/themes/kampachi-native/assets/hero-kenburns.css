@@ -1,0 +1,220 @@
+/*
+ * Consistent 24-second Ken Burns motion across Kampachi image-based hero banners.
+ * Matches the pace and overscan of the Promotions visual-hero animation.
+ * Does not replace Promotions' two-image crossfade or animate video elements.
+ * Enqueued after module CSS; applies to CMS media and legacy static templates.
+ */
+
+@keyframes kampachi-shared-hero-kenburns {
+    from {
+        transform: translate3d(var(--kb-start-x, -1.5%), var(--kb-start-y, 1%), 0)
+            scale(var(--kb-start-scale, 1.08));
+    }
+
+    to {
+        transform: translate3d(var(--kb-end-x, 1.5%), var(--kb-end-y, -1%), 0)
+            scale(var(--kb-end-scale, 1.15));
+    }
+}
+
+/* Allow existing CMS zoom and pan directions to shape the same shared motion. */
+:where(.hero-cms-zoom-out, .kc-motion-zoom-out, .kc47-motion-zoom-out) {
+    --kb-start-scale: 1.16;
+    --kb-end-scale: 1.08;
+}
+
+:where(.hero-cms-left, .kc-motion-left, .kc47-motion-left) {
+    --kb-start-x: 2%;
+    --kb-end-x: -2%;
+    --kb-start-y: 0%;
+    --kb-end-y: 0%;
+}
+
+:where(.hero-cms-right, .kc-motion-right, .kc47-motion-right) {
+    --kb-start-x: -2%;
+    --kb-end-x: 2%;
+    --kb-start-y: 0%;
+    --kb-end-y: 0%;
+}
+
+:where(.hero-cms-up, .kc-motion-up, .kc47-motion-up) {
+    --kb-start-x: 0%;
+    --kb-end-x: 0%;
+    --kb-start-y: 2%;
+    --kb-end-y: -2%;
+}
+
+:where(.hero-cms-down, .kc-motion-down, .kc47-motion-down) {
+    --kb-start-x: 0%;
+    --kb-end-x: 0%;
+    --kb-start-y: -2%;
+    --kb-end-y: 2%;
+}
+
+/* Inactive carousel images must not consume animation work. */
+.hero-cms-slide .hero-cms-photo,
+.kc-landing-slide img,
+.kc47-hero-slide .kc47-hero-photo,
+.kc-catering-hero-slide img,
+.kc-catering-detail-gallery .kc-catering-detail-photo {
+    animation: none;
+    transform-origin: center center;
+}
+
+/* Home, CMS landing pages and promotion/offer detail page heroes. */
+.hero-cms-slide.is-active .hero-cms-photo,
+.kc-landing-slide.is-active img,
+.kc47-hero-slide.is-active .kc47-hero-photo,
+.kc-catering-hero-slide.is-active img,
+.kc-catering-detail-gallery .kc-catering-detail-photo.is-active,
+.offer-hero img,
+.sake-hero img {
+    animation: kampachi-shared-hero-kenburns 24s linear infinite alternate;
+    transform-origin: center center;
+    backface-visibility: hidden;
+}
+
+/* Sliders stop moving while a slide is not visible. Videos remain untouched. */
+@media (prefers-reduced-motion: reduce) {
+    .hero-cms-slide .hero-cms-photo,
+    .kc-landing-slide img,
+    .kc47-hero-slide .kc47-hero-photo,
+    .kc-catering-hero-slide img,
+    .kc-catering-detail-gallery .kc-catering-detail-photo,
+    .offer-hero img,
+    .sake-hero img {
+        animation: none !important;
+        transform: none !important;
+    }
+}
+
+/* CMS direction selectors: prevent v3's shared keyframes overriding "No animation". */
+.hero-cms-slide.is-active .hero-cms-none,
+.kc-landing-slide.is-active.kc-motion-none img,
+.kc47-hero-slide.is-active.kc47-motion-none .kc47-hero-photo,
+.kc-catering-hero-slide.is-active.kc-motion-none img,
+.kc-catering-detail-photo.is-active.kc-motion-none {
+    animation: none !important;
+    transform: none !important;
+}
+
+/* Shared pan/zoom variables for other CMS-managed hero gallery slides. */
+.kc-catering-hero-slide.kc-motion-left,
+.kc-landing-slide.kc-motion-left,
+.kc47-hero-slide.kc47-motion-left { --kb-start-x: 2%; --kb-end-x: -2%; --kb-start-y: 0%; --kb-end-y: 0%; }
+.kc-catering-hero-slide.kc-motion-right,
+.kc-landing-slide.kc-motion-right,
+.kc47-hero-slide.kc47-motion-right { --kb-start-x: -2%; --kb-end-x: 2%; --kb-start-y: 0%; --kb-end-y: 0%; }
+.kc-catering-hero-slide.kc-motion-up,
+.kc-landing-slide.kc-motion-up,
+.kc47-hero-slide.kc47-motion-up { --kb-start-x: 0%; --kb-end-x: 0%; --kb-start-y: 2%; --kb-end-y: -2%; }
+.kc-catering-hero-slide.kc-motion-down,
+.kc-landing-slide.kc-motion-down,
+.kc47-hero-slide.kc47-motion-down { --kb-start-x: 0%; --kb-end-x: 0%; --kb-start-y: -2%; --kb-end-y: 2%; }
+.kc-catering-hero-slide.kc-motion-zoom-out,
+.kc-landing-slide.kc-motion-zoom-out,
+.kc47-hero-slide.kc47-motion-zoom-out { --kb-start-scale: 1.16; --kb-end-scale: 1.08; }
+
+/* Homes' direction class is applied to the photo element itself, not its wrapper. */
+.hero-cms-photo.hero-cms-left { --kb-start-x: 2%; --kb-end-x: -2%; --kb-start-y: 0%; --kb-end-y: 0%; }
+.hero-cms-photo.hero-cms-right { --kb-start-x: -2%; --kb-end-x: 2%; --kb-start-y: 0%; --kb-end-y: 0%; }
+.hero-cms-photo.hero-cms-up { --kb-start-x: 0%; --kb-end-x: 0%; --kb-start-y: 2%; --kb-end-y: -2%; }
+.hero-cms-photo.hero-cms-down { --kb-start-x: 0%; --kb-end-x: 0%; --kb-start-y: -2%; --kb-end-y: 2%; }
+.hero-cms-photo.hero-cms-zoom-out { --kb-start-scale: 1.16; --kb-end-scale: 1.08; }
+
+/* Directions for Event and Sake detail image galleries. */
+.kc-catering-detail-photo.kc-motion-left { --kb-start-x: 2%; --kb-end-x: -2%; --kb-start-y: 0%; --kb-end-y: 0%; }
+.kc-catering-detail-photo.kc-motion-right { --kb-start-x: -2%; --kb-end-x: 2%; --kb-start-y: 0%; --kb-end-y: 0%; }
+.kc-catering-detail-photo.kc-motion-up { --kb-start-x: 0%; --kb-end-x: 0%; --kb-start-y: 2%; --kb-end-y: -2%; }
+.kc-catering-detail-photo.kc-motion-down { --kb-start-x: 0%; --kb-end-x: 0%; --kb-start-y: -2%; --kb-end-y: 2%; }
+.kc-catering-detail-photo.kc-motion-zoom-out { --kb-start-scale: 1.16; --kb-end-scale: 1.08; }
+
+/* Full-screen banners follow the visible viewport, including mobile browser chrome.
+ * Important overrides legacy template styles and module min/max-height clamps.
+ * Slides and their media continue to fill these clipping containers.
+ */
+body :is(
+    .hero,
+    .visual-hero,
+    .kc-landing-hero,
+    .kc47-hero,
+    .kc-catering-hero,
+    .kc-catering-detail-gallery,
+    .offer-hero,
+    .sake-hero,
+    .kappou-banner,
+    .kampachi-native-cover
+) {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    height: 100vh !important;
+    height: 100svh !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    overflow: hidden;
+}
+
+body :is(
+    .hero,
+    .visual-hero,
+    .kc-landing-hero,
+    .kc47-hero,
+    .kc-catering-hero,
+    .kc-catering-detail-gallery,
+    .offer-hero,
+    .sake-hero,
+    .kappou-banner
+) > :is(img, video),
+body .kampachi-native-cover {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Legacy fallback cover can live inside the constrained content wrapper. */
+body .kampachi-native-wrap .kampachi-native-cover {
+    width: 100vw !important;
+    max-width: none !important;
+    margin-inline: calc(50% - 50vw);
+}
+
+/* Banner media starts at the top of the page beneath the fixed header.
+ * Scope to banner pages so text-only pages retain their header clearance.
+ */
+body main:has(:is(
+    .hero, .visual-hero, .kc-landing-hero, .kc47-hero,
+    .kc-catering-hero, .kc-catering-detail-gallery, .offer-hero, .sake-hero
+)) {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+body:has(main :is(
+    .hero, .visual-hero, .kc-landing-hero, .kc47-hero,
+    .kc-catering-hero, .kc-catering-detail-gallery, .offer-hero, .sake-hero
+)):not(.menu-open) .site-header:not(.is-scrolled) {
+    background: rgba(24, 20, 17, 0.48) !important;
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    backdrop-filter: blur(12px) !important;
+}
+
+/* Keep native scrollbars hidden even when other styles customise scrollbar parts. */
+body #outlets #outlets-track.outlets-grid--carousel {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+body #outlets #outlets-track.outlets-grid--carousel::-webkit-scrollbar,
+body #outlets #outlets-track.outlets-grid--carousel::-webkit-scrollbar-track,
+body #outlets #outlets-track.outlets-grid--carousel::-webkit-scrollbar-thumb {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}

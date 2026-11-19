@@ -1,0 +1,412 @@
+/**
+ * Kampachi admin visual consistency: based on the native Homepage editor.
+ * Scoped to Kampachi dashboards and Kampachi-owned post-editor meta boxes.
+ * No front-end styles, no WordPress core layout overrides.
+ */
+
+/* Unified page wrapper and typography */
+.kc-shared-admin {
+    --kc-ink: #222522;
+    --kc-muted: #65706b;
+    --kc-accent: #315c43;
+    --kc-edge: #dce2dd;
+    max-width: 1240px;
+    color: var(--kc-ink);
+}
+.kc-shared-admin > h1 {
+    margin: 8px 0 12px;
+    font-size: 30px;
+    font-weight: 650;
+    letter-spacing: -.7px;
+    line-height: 1.25;
+}
+.kc-shared-admin > p {
+    max-width: 900px;
+    margin: 0 0 20px;
+    color: var(--kc-muted);
+    line-height: 1.75;
+    font-size: 14px;
+}
+.kc-shared-admin a:focus-visible,
+.kc-shared-admin button:focus-visible {
+    outline: 2px solid var(--kc-accent);
+    outline-offset: 2px;
+}
+
+/* All module sections look like Homepage's .kc-panel */
+.kc-shared-admin :is(.kc-header-section, .kc-catering-section, .kc47-panel, .kc-module-panel) {
+    max-width: none;
+    scroll-margin-top: 80px;
+    background: #fff;
+    border: 1px solid var(--kc-edge);
+    border-radius: 13px;
+    padding: 28px 32px;
+    margin: 18px 0 24px;
+    box-shadow: 0 4px 18px rgba(25, 38, 28, .035);
+}
+.kc-shared-admin :is(.kc-header-section, .kc-catering-section, .kc47-panel, .kc-module-panel) > h2,
+.kc-shared-admin .kc-header-section-heading > h2,
+.kc-shared-admin .kc-catering-section-head > h2 {
+    display: flex;
+    gap: 13px;
+    align-items: center;
+    padding: 0 0 19px;
+    margin: 0 0 20px;
+    border-bottom: 1px solid #e9ede9;
+    color: var(--kc-ink);
+    font-size: 20px;
+    font-weight: 650;
+    letter-spacing: -.3px;
+    line-height: 1.4;
+}
+.kc-shared-admin .kc-header-section-heading,
+.kc-shared-admin .kc-catering-section-head {
+    margin-bottom: 24px;
+}
+.kc-shared-admin .kc-header-section-heading p,
+.kc-shared-admin .kc-catering-section-head p,
+.kc-shared-admin :is(.kc-header-section, .kc-catering-section, .kc47-panel, .kc-module-panel) > p {
+    max-width: 900px;
+    color: var(--kc-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+.kc-shared-admin .kc-catering-section-head > span {
+    display: inline-block;
+    margin-bottom: 10px;
+    color: var(--kc-accent);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+}
+.kc-shared-admin .kc-section-number {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: #eaf0eb;
+    color: var(--kc-accent);
+    font-size: 12px;
+    font-weight: 650;
+    letter-spacing: 0;
+}
+
+/* Standard fields, labels, descriptions and buttons */
+.kc-shared-admin :is(.kc-catering-field, .kc47-field) {
+    margin: 20px 0 26px;
+}
+.kc-shared-admin :is(.kc-catering-field, .kc47-field) > label,
+.kc-shared-admin .kc-header-row label,
+.kc-shared-admin .kc-header-child-item label,
+.kc-shared-admin .kc-header-booking-item label,
+.kc-shared-admin .form-table th,
+.kc-shared-admin .kc47-media > label {
+    color: #35453a;
+    font-size: 13px;
+    font-weight: 650;
+}
+.kc-shared-admin :is(input[type="text"], input[type="number"], input[type="email"], input[type="url"], input[type="date"], textarea, select) {
+    max-width: 100%;
+    border-color: #cdd8cf;
+    border-radius: 7px;
+    box-shadow: none;
+    min-height: 39px;
+    padding: 7px 11px;
+    background: #fff;
+    color: var(--kc-ink);
+}
+.kc-shared-admin textarea {
+    min-height: 95px;
+}
+.kc-shared-admin :is(input[type="text"], input[type="number"], input[type="email"], input[type="url"], input[type="date"], textarea, select):focus {
+    border-color: #729c82;
+    box-shadow: 0 0 0 1px #729c82;
+    outline: 0;
+}
+.kc-shared-admin :is(input[type="checkbox"], input[type="radio"]) {
+    accent-color: var(--kc-accent);
+}
+.kc-shared-admin .form-table {
+    margin: 10px 0 18px;
+    border-collapse: collapse;
+}
+.kc-shared-admin .form-table th {
+    width: 230px;
+    padding: 19px 20px 19px 0;
+}
+.kc-shared-admin .form-table td {
+    padding: 14px 0;
+    vertical-align: middle;
+}
+.kc-shared-admin .form-table :is(input.regular-text, .large-text) {
+    width: min(100%, 560px);
+}
+.kc-shared-admin .description {
+    color: #6c776f;
+    font-size: 12px;
+    line-height: 1.65;
+}
+.kc-shared-admin :is(.button, .button-secondary) {
+    border-radius: 7px;
+    min-height: 36px;
+    padding: 3px 14px;
+    font-weight: 550;
+}
+.kc-shared-admin .button-primary,
+.kc-shared-admin input.button-primary {
+    border-color: var(--kc-accent);
+    background: var(--kc-accent);
+    color: #fff;
+}
+.kc-shared-admin .button-primary:hover,
+.kc-shared-admin input.button-primary:hover,
+.kc-shared-admin .button-primary:focus,
+.kc-shared-admin input.button-primary:focus {
+    border-color: #244831;
+    background: #244831;
+    color: #fff;
+}
+.kc-shared-admin .kc-save-bar {
+    margin: 30px 0 18px;
+    max-width: 100%;
+}
+.kc-shared-admin .kc-save-bar .submit {
+    margin: 0;
+    padding: 0;
+}
+.kc-shared-admin .kc-save-bar .submit input {
+    min-height: 43px;
+    padding-inline: 22px;
+}
+.kc-shared-admin .kc-module-panel > p {
+    margin: 16px 0;
+}
+.kc-shared-admin .kc-module-panel .button + .button {
+    margin-left: 7px;
+}
+
+/* Header logo, menu rows, outlet booking rows */
+.kc-shared-admin .kc-header-section {
+    max-width: none;
+}
+.kc-shared-admin .kc-header-nav-item,
+.kc-shared-admin .kc-header-booking-item,
+.kc-shared-admin .kc-header-child-item {
+    border: 1px solid #dde6de;
+    border-radius: 10px;
+    background: #f9fbf9;
+    padding: 18px;
+}
+.kc-shared-admin .kc-header-child-item {
+    background: #fff;
+    padding: 13px;
+}
+.kc-shared-admin .kc-header-subitems {
+    border-color: #cadcce;
+}
+.kc-shared-admin .kc-header-sortlist {
+    gap: 14px;
+}
+.kc-shared-admin .kc-header-handle {
+    color: #648571;
+}
+.kc-shared-admin .kc-header-placeholder,
+.kc-shared-admin .kc-catering-placeholder {
+    border-color: #729c82;
+    background: #edf6ef;
+}
+.kc-shared-admin .kc-shell-preview:not([hidden]) {
+    padding: 8px;
+    border: 1px solid #dce2dd;
+    border-radius: 9px;
+    background: #fff;
+}
+
+/* Catering and Sake sortable lists, media, and their section actions */
+.kc-shared-admin .kc-catering-admin-actions {
+    gap: 10px;
+    padding: 10px 0 16px;
+}
+.kc-shared-admin .kc-catering-order {
+    max-width: none;
+}
+.kc-shared-admin .kc-catering-sort li,
+.kc-shared-admin .kc-catering-value,
+.kc-shared-admin .kc-catering-hero-item {
+    border: 1px solid #dde6de;
+    border-radius: 9px;
+    background: #f9fbf9;
+}
+.kc-shared-admin .kc-catering-sort li {
+    padding: 15px 17px;
+}
+.kc-shared-admin .kc-catering-sort li .dashicons-move {
+    color: #648571;
+}
+.kc-shared-admin .kc-catering-outlets label {
+    border-color: #dde6de;
+    border-radius: 9px;
+    background: #f8faf8;
+}
+
+/* 47in27 jump navigation and repeatable editor rows */
+.kc-shared-admin .kc47-jump {
+    top: 32px;
+    gap: 6px;
+    margin: 18px 0 20px;
+    padding: 13px;
+    border: 1px solid var(--kc-edge);
+    border-radius: 11px;
+    background: #fff;
+}
+.kc-shared-admin .kc47-jump a {
+    padding: 9px 13px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #3e4b42;
+    font-weight: 600;
+}
+.kc-shared-admin .kc47-jump a:hover,
+.kc-shared-admin .kc47-jump a:focus {
+    background: #eef3ef;
+    color: #244532;
+}
+.kc-shared-admin .kc47-slide {
+    border-color: #dde6de;
+    border-radius: 10px;
+    background: #f9fbf9;
+}
+.kc-shared-admin .kc47-outlets {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 10px;
+}
+.kc-shared-admin .kc47-outlets label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid #dde6de;
+    border-radius: 8px;
+    background: #f8faf8;
+}
+.kc-shared-admin .kc47-outlets label:has(input:checked) {
+    border-color: #729c82;
+    background: #f0f7f0;
+}
+
+/* Kampachi-specific WordPress post meta boxes: no change to Gutenberg itself */
+:is(.kc-catering-metabox, .kc-outlet-editor, .kc-editorial-admin) {
+    --kc-accent: #315c43;
+    --kc-edge: #dce2dd;
+    color: #26372a;
+    max-width: 100%;
+}
+:is(.kc-catering-metabox, .kc-outlet-editor, .kc-editorial-admin) :is(h3, .kc-outlet-section-heading h3) {
+    color: #222522;
+    font-size: 17px;
+    font-weight: 650;
+}
+:is(.kc-catering-metabox, .kc-outlet-editor, .kc-editorial-admin) :is(label, .kc-outlet-field label) {
+    color: #35453a;
+    font-weight: 650;
+}
+:is(.kc-catering-metabox, .kc-outlet-editor, .kc-editorial-admin) :is(input[type="text"], input[type="number"], input[type="url"], input[type="email"], textarea, select) {
+    max-width: 100%;
+    border: 1px solid #cdd8cf;
+    border-radius: 7px;
+    background: #fff;
+    min-height: 39px;
+    padding: 7px 11px;
+}
+:is(.kc-catering-metabox, .kc-outlet-editor, .kc-editorial-admin) :is(input, textarea, select):focus {
+    border-color: #729c82;
+    box-shadow: 0 0 0 1px #729c82;
+}
+:is(.kc-catering-metabox, .kc-outlet-editor, .kc-editorial-admin) :is(.kc-catering-thumb, .kc-catering-value, .kc-outlet-repeat-item, .kc-outlet-media-row, .kc-editorial-section, .kc-editorial-photo) {
+    border-color: #dde6de;
+    border-radius: 9px;
+    background: #f9fbf9;
+}
+.kc-outlet-section-heading {
+    border-color: #e9ede9;
+}
+.kc-outlet-section-heading span {
+    color: #315c43;
+}
+.kc-editorial-section {
+    gap: 14px;
+}
+
+@media (max-width: 782px) {
+    .kc-shared-admin {
+        margin: 15px 10px 40px 0;
+    }
+    .kc-shared-admin > h1 {
+        font-size: 25px;
+    }
+    .kc-shared-admin :is(.kc-header-section, .kc-catering-section, .kc47-panel, .kc-module-panel) {
+        padding: 20px 16px;
+    }
+    .kc-shared-admin .form-table,
+    .kc-shared-admin .form-table tbody,
+    .kc-shared-admin .form-table tr,
+    .kc-shared-admin .form-table th,
+    .kc-shared-admin .form-table td {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+    }
+    .kc-shared-admin .form-table th {
+        padding: 16px 0 4px;
+    }
+    .kc-shared-admin .form-table td {
+        padding: 2px 0 13px;
+    }
+    .kc-shared-admin .kc47-jump {
+        top: 46px;
+        position: relative;
+    }
+    .kc-shared-admin .kc47-outlets {
+        grid-template-columns: 1fr;
+    }
+    .kc-shared-admin .kc-save-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .kc-shared-admin .kc-save-bar .submit input {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .kc-shared-admin * {
+        scroll-behavior: auto !important;
+    }
+}
+
+/* The shared page-introduction meta box is scoped to its Kampachi-only ID. */
+#kampachi_landing_sections .inside > p > label {
+    display: block;
+    color: #35453a;
+    font-size: 13px;
+    font-weight: 650;
+}
+#kampachi_landing_sections .inside > :is(input.large-text, textarea.large-text) {
+    max-width: 100%;
+    border: 1px solid #cdd8cf;
+    border-radius: 7px;
+    padding: 9px 11px;
+}
+#kampachi_landing_sections .kc-landing-media {
+    padding: 18px;
+    margin: 22px 0 8px;
+    background: #f9fbf9;
+    border: 1px solid #dde6de;
+    border-radius: 10px;
+}

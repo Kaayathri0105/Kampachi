@@ -1,0 +1,72 @@
+.kc-footer-link-row {
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) minmax(180px, 1fr);
+    gap: 16px 24px;
+    margin: 16px 0;
+    padding: 20px;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.kc-footer-link-row label {
+    display: grid;
+    min-width: 0;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.kc-footer-link-row input[type="text"],
+.kc-footer-link-row select {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+}
+
+.kc-footer-link-row [hidden] {
+    display: none !important;
+}
+
+.kc-footer-link-row .kc-footer-new-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 400;
+}
+
+.kc-footer-link-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+}
+
+.kc-footer-add-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+@media (max-width: 782px) {
+    .kc-settings-admin .form-table,
+    .kc-settings-admin .form-table tbody,
+    .kc-settings-admin .form-table tr,
+    .kc-settings-admin .form-table th,
+    .kc-settings-admin .form-table td {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .kc-settings-admin .form-table .regular-text {
+        width: 100%;
+    }
+
+    .kc-footer-link-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .kc-footer-link-actions {
+        justify-content: flex-start;
+    }
+}

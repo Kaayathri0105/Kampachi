@@ -1,0 +1,192 @@
+<?php
+
+/**
+ * Kampachi homepage data adapter for the original native homepage design.
+ *
+ * The CMS option stores presentation choices, while published posts remain
+ * the single source of truth for offers, sake and outlets.
+ *
+ * @package KampachiNative
+ */
+
+declare(strict_types=1);
+
+namespace Kampachi\Native;
+
+use WP_Post;
+
+if (! defined('ABSPATH')) {
+    exit;
+}
+
+final class Homepage_Content
+{
+    private const OPTION = 'kampachi_homepage_sections';
+
+    private const SECTIONS = ['intro', 'offers', 'dishes', 'sake', 'outlets'];
+
+    public static function settings(): array
+    {
+        $settings = get_option(self::OPTION, []);
+
+        return is_array($settings) ? $settings : [];
+    }
+
+    public static function enabled(array $settings, string $section): bool
+    {
+        if ($section === 'outlets') {
+            return true;
+        }
+
+        if (! in_array($section, array_merge(['hero'], self::SECTIONS), true)) {
+            return false;
+        }
+
+        $visibility = $settings['section_visibility'] ?? null;
+
+        return ! is_array($visibility) || ! array_key_exists($section, $visibility)
+            || (bool) $visibility[$section];
+    }
+
+    public static function ordered_sections(array $settings): array
+    {
+        $order = $settings['section_order'] ?? [];
+        $order = is_array($order) ? $order : [];
+        $sections = array_values(array_diff(self::SECTIONS, ['outlets']));
+        usort($sections, static function (string $a, string $b) use ($order): int {
+            $left = isset($order[$a]) ? (int) $order[$a] : array_search($a, self::SECTIONS, true) + 1;
+            $right = isset($order[$b]) ? (int) $order[$b] : array_search($b, self::SECTIONS, true) + 1;
+
+            return ($left <=> $right)
+                ?: (array_search($a, self::SECTIONS, true) <=> array_search($b, self::SECTIONS, true));
+        });
+
+        $sections = array_values(array_filter(
+            $sections,
+            static fn (string $section): bool => self::enabled($settings, $section)
+        ));
+
+        $sections[] = 'outlets';
+
+        return $sections;
+    }
+
+    public static function content(array $settings, string $section, string $field, string $default = ''): string
+    {
+        $key = $section . '_' . $field;
+        if (array_key_exists($key, $settings)) {
+            return is_string($settings[$key]) ? $settings[$key] : '';
+        }
+
+        return $default;
+    }
+
+    public static function description(array $settings, string $section, string $default = ''): string
+    {
+        return wp_kses_post(self::content($settings, $section, 'description', $default));
+    }
+
+    public static function limit(array $settings, string $section, int $fallback, int $maximum): int
+    {
+        $key = $section . '_limit';
+        if (! array_key_exists($key, $settings)) {
+            return $fallback;
+        }
+
+        return max(0, min($maximum, absint($settings[$key])));
+    }
+
+    /**
+     * Return only published posts of the requested type in the editor's order.
+     * Before the first homepage save, use the existing published content.
+     * After a save, deliberately empty selections stay empty.
+     *
+     * @return array<int, WP_Post>
+     */
+    public static function posts(array $settings, string $key, string $postType, int $limit = 0): array
+    {
+        if (array_key_exists($key, $settings)) {
+            $ids = is_array($settings[$key]) ? $settings[$key] : [];
+            $posts = [];
+            foreach (array_unique(array_map('absint', $ids)) as $id) {
+                if ($id === 0) {
+                    continue;
+                }
+
+                $post = get_post($id);
+                if ($post instanceof WP_Post && $post->post_type === $postType && $post->post_status === 'publish') {
+                    $posts[] = $post;
+                }
+
+                if ($limit > 0 && count($posts) >= $limit) {
+                    break;
+                }
+            }
+
+            return $posts;
+        }
+
+        $posts = get_posts([
+            'post_type' => $postType,
+            'post_status' => 'publish',
+            'posts_per_page' => $limit > 0 ? $limit : -1,
+            'orderby' => ['menu_order' => 'ASC', 'date' => 'DESC'],
+            'no_found_rows' => true,
+            'suppress_filters' => false,
+        ]);
+
+        return is_array($posts) ? $posts : [];
+    }
+
+    public static function image(int $postId, string $type): string
+    {
+        if (function_exists('kampachi_native_post_image')) {
+            $featured = kampachi_native_post_image($postId, 'large');
+            if ($featured !== '') {
+                return $featured;
+            }
+        }
+
+        $key = $type === 'sake' ? '_kampachi_sake_image_ids' : '_kampachi_outlet_hero_ids';
+        $ids = get_post_meta($postId, $key, true);
+        if (! is_array($ids)) {
+            return '';
+        }
+
+        foreach ($ids as $id) {
+            $url = wp_get_attachment_image_url(absint($id), 'large');
+            if (is_string($url) && $url !== '') {
+                return $url;
+            }
+        }
+
+        return '';
+    }
+
+    /** @return array<int, array<string, string>> */
+    public static function sake_slides(array $settings): array
+    {
+        $limit = self::limit($settings, 'sake', 6, 24);
+        if ($limit === 0) {
+            return [];
+        }
+
+        $posts = self::posts($settings, 'sake_ids', 'kc_sake', $limit);
+        $slides = [];
+
+        foreach ($posts as $post) {
+            $url = self::image($post->ID, 'sake');
+
+            $slides[] = [
+                'src' => $url,
+                'alt' => $post->post_title,
+                'title' => $post->post_title,
+                'description' => trim(wp_strip_all_tags($post->post_excerpt)),
+                'link' => kampachi_native_label('discover'),
+                'href' => get_permalink($post),
+            ];
+        }
+
+        return $slides;
+    }
+}

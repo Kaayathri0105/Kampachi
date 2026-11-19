@@ -1,0 +1,241 @@
+/* Shared photo banner with page-specific, opposite-direction Ken Burns motion. */
+.visual-hero {
+    --hero-first-start-x: -1.5%;
+    --hero-first-start-y: 0%;
+    --hero-first-end-x: 2%;
+    --hero-first-end-y: 0%;
+    --hero-second-start-x: 1.5%;
+    --hero-second-start-y: 0%;
+    --hero-second-end-x: -2%;
+    --hero-second-end-y: 0%;
+    position: relative;
+    width: 100%;
+    height: 75svh;
+    min-height: 75svh;
+    overflow: hidden;
+    isolation: isolate;
+    background: #181614;
+}
+
+.visual-hero__image {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    will-change: opacity, transform;
+}
+
+.visual-hero__image--first {
+    animation: kampachi-hero-first 24s linear infinite;
+}
+
+.visual-hero__image--second {
+    animation: kampachi-hero-second 24s linear infinite;
+}
+
+/* Promotion: move the first photo diagonally up and right. */
+.visual-hero--promotion {
+    --hero-first-start-x: -1.5%;
+    --hero-first-start-y: 1.5%;
+    --hero-first-end-x: 2%;
+    --hero-first-end-y: -1.5%;
+    --hero-second-start-x: 1.5%;
+    --hero-second-start-y: -1.5%;
+    --hero-second-end-x: -2%;
+    --hero-second-end-y: 1.5%;
+}
+
+/* Sake: pan horizontally from left to right, then reverse for the next photo. */
+.visual-hero--sake {
+    --hero-first-start-x: -2%;
+    --hero-first-start-y: 0%;
+    --hero-first-end-x: 2%;
+    --hero-first-end-y: 0%;
+    --hero-second-start-x: 2%;
+    --hero-second-start-y: 0%;
+    --hero-second-end-x: -2%;
+    --hero-second-end-y: 0%;
+}
+
+/* IWA brand page: move diagonally up and right; the next photo reverses. */
+.visual-hero--sake-iwa {
+    --hero-first-start-x: -1.5%;
+    --hero-first-start-y: 1.5%;
+    --hero-first-end-x: 1.5%;
+    --hero-first-end-y: -1.5%;
+    --hero-second-start-x: 1.5%;
+    --hero-second-start-y: -1.5%;
+    --hero-second-end-x: -1.5%;
+    --hero-second-end-y: 1.5%;
+}
+
+/* Izumibashi brand page: reverse the IWA diagonal for a distinct pan. */
+.visual-hero--sake-izumibashi {
+    --hero-first-start-x: 1.5%;
+    --hero-first-start-y: -1.5%;
+    --hero-first-end-x: -1.5%;
+    --hero-first-end-y: 1.5%;
+    --hero-second-start-x: -1.5%;
+    --hero-second-start-y: 1.5%;
+    --hero-second-end-x: 1.5%;
+    --hero-second-end-y: -1.5%;
+}
+
+/* Keep the sake bottles and cup in frame on the portrait photo. */
+.visual-hero--sake .visual-hero__image--first {
+    object-position: center 65%;
+}
+
+/* 47in27: reverse the horizontal movement used on the Sake hero. */
+.visual-hero--47in27 {
+    --hero-first-start-x: 2%;
+    --hero-first-start-y: 0%;
+    --hero-first-end-x: -2%;
+    --hero-first-end-y: 0%;
+    --hero-second-start-x: -2%;
+    --hero-second-start-y: 0%;
+    --hero-second-end-x: 2%;
+    --hero-second-end-y: 0%;
+}
+
+/* Catering: move the pair vertically in opposite directions. */
+.visual-hero--catering {
+    --hero-first-start-x: 0%;
+    --hero-first-start-y: 2%;
+    --hero-first-end-x: 0%;
+    --hero-first-end-y: -2%;
+    --hero-second-start-x: 0%;
+    --hero-second-start-y: -2%;
+    --hero-second-end-x: 0%;
+    --hero-second-end-y: 2%;
+}
+
+/* Frame the private dining table grill as the second catering image pans. */
+.visual-hero--catering .visual-hero__image--second {
+    object-position: center 68%;
+}
+
+/* EQ: pan diagonally from top-left to bottom-right, then reverse. */
+.visual-hero--eq {
+    --hero-first-start-x: -1.5%;
+    --hero-first-start-y: -1.5%;
+    --hero-first-end-x: 1.5%;
+    --hero-first-end-y: 1.5%;
+    --hero-second-start-x: 1.5%;
+    --hero-second-start-y: 1.5%;
+    --hero-second-end-x: -1.5%;
+    --hero-second-end-y: -1.5%;
+}
+
+/* Pavilion: use a slower diagonal pan in the opposite orientation. */
+.visual-hero--pavilion {
+    --hero-first-start-x: 1.5%;
+    --hero-first-start-y: 1.5%;
+    --hero-first-end-x: -1.5%;
+    --hero-first-end-y: -1.5%;
+    --hero-second-start-x: -1.5%;
+    --hero-second-start-y: -1.5%;
+    --hero-second-end-x: 1.5%;
+    --hero-second-end-y: 1.5%;
+}
+
+/* Plaza33: pan from top-right to bottom-left, then reverse. */
+.visual-hero--plaza33 {
+    --hero-first-start-x: 2%;
+    --hero-first-start-y: -2%;
+    --hero-first-end-x: -2%;
+    --hero-first-end-y: 2%;
+    --hero-second-start-x: -2%;
+    --hero-second-start-y: 2%;
+    --hero-second-end-x: 2%;
+    --hero-second-end-y: -2%;
+}
+
+@keyframes kampachi-hero-first {
+    0% {
+        opacity: 1;
+        transform: scale(1.08) translate3d(var(--hero-first-start-x), var(--hero-first-start-y), 0);
+    }
+
+    40% {
+        opacity: 1;
+        transform: scale(1.14) translate3d(var(--hero-first-end-x), var(--hero-first-end-y), 0);
+    }
+
+    48% {
+        opacity: 0;
+        transform: scale(1.15) translate3d(var(--hero-first-end-x), var(--hero-first-end-y), 0);
+    }
+
+    90% {
+        opacity: 0;
+        transform: scale(1.08) translate3d(var(--hero-first-start-x), var(--hero-first-start-y), 0);
+    }
+
+    95%,
+    100% {
+        opacity: 1;
+        transform: scale(1.08) translate3d(var(--hero-first-start-x), var(--hero-first-start-y), 0);
+    }
+}
+
+@keyframes kampachi-hero-second {
+    0%,
+    100% {
+        opacity: 0;
+        transform: scale(1.16) translate3d(var(--hero-second-start-x), var(--hero-second-start-y), 0);
+    }
+
+    40% {
+        opacity: 0;
+        transform: scale(1.08) translate3d(var(--hero-second-start-x), var(--hero-second-start-y), 0);
+    }
+
+    48% {
+        opacity: 1;
+        transform: scale(1.08) translate3d(var(--hero-second-start-x), var(--hero-second-start-y), 0);
+    }
+
+    90% {
+        opacity: 1;
+        transform: scale(1.14) translate3d(var(--hero-second-end-x), var(--hero-second-end-y), 0);
+    }
+
+    98% {
+        opacity: 0;
+        transform: scale(1.15) translate3d(var(--hero-second-end-x), var(--hero-second-end-y), 0);
+    }
+}
+
+.visual-hero + .kappou-intro {
+    min-height: 0;
+    padding: clamp(58px, 7vh, 88px) 24px;
+}
+
+.visual-hero + .promotions-collection {
+    padding-top: clamp(58px, 7vh, 88px);
+}
+
+@media (max-width: 700px) {
+    .visual-hero {
+        height: 70svh;
+        min-height: 70svh;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .visual-hero__image {
+        animation: none;
+        transform: none;
+    }
+
+    .visual-hero__image--first {
+        opacity: 1;
+    }
+
+    .visual-hero__image--second {
+        opacity: 0;
+    }
+}

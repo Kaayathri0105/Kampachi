@@ -1,0 +1,56 @@
+.kc-header-section {
+    max-width: 1140px;
+    margin: 22px 0;
+    padding: 20px 24px;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 8px;
+}
+.kc-header-section h2 { margin: 0 0 8px; font-size: 20px; }
+.kc-header-section-heading { margin-bottom: 16px; }
+.kc-header-section-heading p { color: #59616a; }
+.kc-header-section .form-table th { width: 225px; }
+.kc-header-sortlist { display: grid; gap: 10px; }
+.kc-header-nav-item, .kc-header-booking-item {
+    background: #f9fafb;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 13px;
+}
+.kc-header-row, .kc-header-child-item, .kc-header-booking-item {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.kc-header-row label, .kc-header-child-item label, .kc-header-booking-item label {
+    display: grid;
+    gap: 5px;
+    flex: 1 1 190px;
+    font-weight: 600;
+}
+.kc-header-row input, .kc-header-child-item input, .kc-header-booking-item input,
+.kc-header-booking-item select { width: 100%; max-width: none; min-height: 34px; font-weight: 400; }
+.kc-header-booking-item label { flex-basis: 170px; }
+.kc-header-handle { cursor: grab; color: #6d7681; align-self: center; }
+.kc-header-subitems {
+    margin: 12px 0 0 30px;
+    padding: 12px;
+    border-left: 2px solid #d9dfe7;
+}
+.kc-header-subitems > strong { display: block; margin-bottom: 10px; }
+.kc-header-child-item { background: #fff; padding: 10px; border: 1px solid #d9dfe7; border-radius: 4px; }
+.kc-header-add-child { margin-top: 10px !important; }
+.kc-header-remove { align-self: center; padding: 5px 0 !important; }
+.kc-header-placeholder { min-height: 50px; border: 2px dashed #3858e9; border-radius: 4px; background: #edf2ff; }
+@media (max-width: 782px) {
+    .kc-header-section { padding: 16px; }
+    .kc-header-row, .kc-header-child-item, .kc-header-booking-item { align-items: stretch; }
+    .kc-header-row label, .kc-header-child-item label, .kc-header-booking-item label { flex-basis: 100%; }
+    .kc-header-subitems { margin-left: 4px; }
+    .kc-header-handle { align-self: start; }
+}
+
+/* Side-by-side editable bilingual menu labels. */
+.kc-header-nav-item .kc-header-row label:has([data-field="japanese_title"]) { min-width: 180px; }
+.kc-header-nav-item [data-field="japanese_title"] { font-family: "Yu Gothic", "Meiryo", sans-serif; }
