@@ -70,7 +70,6 @@ $prefectures = new WP_Query([
     'ignore_sticky_posts' => true,
 ]);
 ?>
-<link rel="stylesheet" href="<?php echo esc_url(get_theme_file_uri('assets/typography.css')); ?>">
 <link rel="stylesheet" href="<?php echo esc_url(get_theme_file_uri('assets/site-theme.css')); ?>">
 <link rel="stylesheet" href="<?php echo esc_url(get_theme_file_uri('assets/header.css')); ?>">
 <link rel="stylesheet" href="<?php echo esc_url(get_theme_file_uri('assets/components/hero-banners.css')); ?>">
