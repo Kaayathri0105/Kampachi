@@ -52,13 +52,42 @@
 }
 
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-    .kc-sake-bottle-photo {
-        transition: transform .7s ease;
+    .kc-sake-bottle-card-image[data-kc-sake-magnifying] {
+        --kc-sake-lens-radius: clamp(36px, 7vw, 64px);
+        cursor: zoom-in;
     }
 
-    .kc-sake-bottle-card-image:hover .kc-sake-bottle-photo {
-        transform: scale(1.055);
+    .kc-sake-bottle-card-image[data-kc-sake-magnifying] .kc-sake-magnifier {
+        position: absolute;
+        inset: 0;
+        display: block;
+        clip-path: circle(var(--kc-sake-lens-radius) at var(--kc-sake-lens-x) var(--kc-sake-lens-y));
+        pointer-events: none;
     }
+
+    .kc-sake-magnifier .kc-sake-bottle-photo {
+        transform-origin: var(--kc-sake-lens-x) var(--kc-sake-lens-y);
+        transform: scale(2);
+    }
+
+    .kc-sake-bottle-card-image[data-kc-sake-magnifying]::after {
+        position: absolute;
+        top: var(--kc-sake-lens-y);
+        left: var(--kc-sake-lens-x);
+        width: calc(2 * var(--kc-sake-lens-radius));
+        height: calc(2 * var(--kc-sake-lens-radius));
+        box-sizing: border-box;
+        border: 1px solid rgba(255, 255, 255, .85);
+        border-radius: 50%;
+        box-shadow: 0 1px 8px rgba(0, 0, 0, .3);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        content: "";
+    }
+}
+
+.kc-sake-magnifier {
+    display: none;
 }
 
 .kc-sake-bottle-placeholder{color:#76685b;letter-spacing:.1em;font-size:13px;text-align:center}
