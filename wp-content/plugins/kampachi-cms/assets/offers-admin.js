@@ -4,27 +4,19 @@
     const $root = $('[data-offer-editor]');
     if (!$root.length) return;
 
+    const descriptionEditor = window.kampachiDescriptionEditor;
     let unique = Date.now();
     const rowSelector = '[data-offer-hero], [data-offer-menu], [data-offer-detail]';
 
     function prepareEditors($scope) {
         $scope.find('textarea.kc-offers-rich').each(function () {
-            if (!this.id) this.id = 'kc-offer-detail-' + (++unique);
-            if (window.wp && wp.editor && wp.editor.initialize) {
-                wp.editor.initialize(this.id, {
-                    tinymce: { wpautop: true, toolbar1: 'bold,italic,bullist,numlist,link,unlink,undo,redo', toolbar2: '' },
-                    quicktags: true,
-                    mediaButtons: false
-                });
-            }
+            descriptionEditor.initialize(this);
         });
     }
 
     function removeEditors($scope) {
         $scope.find('textarea.kc-offers-rich').each(function () {
-            const editor = window.tinymce ? tinymce.get(this.id) : null;
-            if (editor) editor.save();
-            if (this.id && window.wp && wp.editor && wp.editor.remove) wp.editor.remove(this.id);
+            descriptionEditor.remove(this);
         });
     }
 
@@ -164,12 +156,13 @@
     function validateDates() {
         if (!start || !end) return;
         end.min = start.value;
-        end.setCustomValidity(start.value && end.value && end.value < start.value ? 'End date must be on or after the start date.' : '');
+        end.setCustomValidity(start.value && end.value && end.value < start.value
+            ? 'Expiry date must be on or after the start date.' : '');
         if (startTime && endTime) {
             const sameDay = start.value !== '' && start.value === end.value;
             endTime.min = sameDay ? startTime.value : '';
             endTime.setCustomValidity(sameDay && startTime.value && endTime.value && endTime.value < startTime.value
-                ? 'End time must be on or after the start time for a same-day offer.' : '');
+                ? 'Expiry time must be on or after the start time for a same-day offer.' : '');
         }
     }
     if (start && end) {
@@ -180,7 +173,9 @@
         validateDates();
     }
     $root.closest('form').on('submit', function () {
-        if (window.tinymce) tinymce.triggerSave();
+        $root.find('textarea.kc-offers-rich').each(function () {
+            descriptionEditor.save(this);
+        });
         renumber();
         syncHero();
     });
