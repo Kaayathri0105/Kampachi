@@ -143,6 +143,7 @@
         const label = carousel.getAttribute('aria-label');
         let start = 0;
         let visible = 0;
+        let slideAnimation;
 
         const controls = document.createElement('div');
         controls.className = 'kc-home-post-controls';
@@ -158,6 +159,15 @@
             button.addEventListener('click', () => {
                 start = (start + direction + total) % total;
                 renderView();
+
+                if (carousel.hasAttribute('data-kc-carousel-slide') && !reducedMotion.matches && track.animate) {
+                    slideAnimation?.cancel();
+                    slideAnimation = track.animate(
+                        [{ transform: `translateX(${direction * 20}px)`, opacity: 0.78 },
+                            { transform: 'translateX(0)', opacity: 1 }],
+                        { duration: 220, easing: 'ease-out' }
+                    );
+                }
             });
             return button;
         }
