@@ -281,8 +281,8 @@ body .site-footer .footer-bottom {
     }
 
     .site-footer .footer-top {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
-        gap: 31px 18px !important;
+        grid-template-columns: minmax(88px, 0.55fr) minmax(0, 1fr) !important;
+        gap: 24px 16px !important;
         padding-bottom: 32px !important;
     }
 
@@ -315,6 +315,24 @@ body .site-footer .footer-bottom {
 
     .site-footer .footer-contact {
         grid-column: 1 / -1;
+    }
+
+    .site-footer .footer-contact > a {
+        min-height: 36px;
+        margin-bottom: 4px;
+    }
+
+    .site-footer .footer-contact > a > span {
+        min-width: 0;
+    }
+
+    .site-footer .kc-footer-socials {
+        margin-inline-start: -14px;
+    }
+
+    .site-footer .kc-footer-socials > a {
+        width: 44px;
+        height: 44px;
     }
 
     .site-footer .footer-cta {
