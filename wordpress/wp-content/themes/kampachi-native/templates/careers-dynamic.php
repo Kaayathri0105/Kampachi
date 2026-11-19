@@ -64,7 +64,8 @@ $jobs = new WP_Query([
                         <div class="kc-vacancy-description">
                             <?php echo esc_html(get_the_excerpt()); ?>
                         </div>
-                        <div class="kc-vacancy-actions"><a href="<?php echo esc_url(get_permalink($jobId)); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?> ↗</a>
+                        <div class="kc-vacancy-actions">
+                            <a class="kc-discover" href="<?php echo esc_url(get_permalink($jobId)); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?></a>
                             <?php if ($applyUrl !== '') : ?><a href="<?php echo esc_url($applyUrl); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html(kampachi_native_label('apply_online')); ?> ↗</a><?php endif; ?>
                             <?php if (is_email($applyEmail)) : ?><a href="<?php echo esc_url('mailto:' . $applyEmail . '?subject=' . rawurlencode('Application: ' . get_the_title())); ?>"><?php echo esc_html(kampachi_native_label('apply_email')); ?> ↗</a><?php endif; ?>
                             <?php if ($whatsappUrl !== '') : ?><a href="<?php echo esc_url($whatsappUrl); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html(kampachi_native_label('apply_whatsapp')); ?> ↗</a><?php endif; ?>

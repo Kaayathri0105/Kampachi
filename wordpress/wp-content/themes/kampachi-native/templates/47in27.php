@@ -195,7 +195,7 @@ $prefectures = new WP_Query([
                                 <div class="dining-card-copy">
                                     <h3><?php the_title(); ?></h3>
                                     <p><?php echo esc_html(get_the_excerpt()); ?></p>
-                                    <span class="kc47-discover"><?php echo esc_html(kampachi_native_label('discover')); ?> <span aria-hidden="true">↗</span></span>
+                                    <span class="kc-discover"><?php echo esc_html(kampachi_native_label('discover')); ?></span>
                                 </div>
                             </a>
                         </article>

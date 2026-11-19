@@ -55,8 +55,8 @@ if ($outlets === []) {
                         <div class="outlet-card__content">
                             <h3><?php echo esc_html($outlet->post_title); ?></h3>
                             <?php if ($excerpt !== '') : ?><p class="outlet-card__description"><?php echo esc_html($excerpt); ?></p><?php endif; ?>
-                            <a class="outlet-card__link" href="<?php echo esc_url(get_permalink($outlet)); ?>" aria-label="<?php echo esc_attr('Discover Kampachi at ' . $outlet->post_title); ?>">
-                                <?php echo esc_html(kampachi_native_label('discover')); ?> <span aria-hidden="true">↗</span>
+                            <a class="kc-discover kc-discover--card" href="<?php echo esc_url(get_permalink($outlet)); ?>" aria-label="<?php echo esc_attr('Discover Kampachi at ' . $outlet->post_title); ?>">
+                                <?php echo esc_html(kampachi_native_label('discover')); ?>
                             </a>
                         </div>
                     </article>

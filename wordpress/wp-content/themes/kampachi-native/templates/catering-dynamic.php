@@ -180,8 +180,8 @@ foreach (Catering::hero_media_ids($heroOwnerId) as $mediaId) {
                                         <?php endforeach; ?>
                                     </div>
                                 <?php endif; ?>
-                                <a class="kc-catering-discover" href="<?php echo esc_url($ctaUrl); ?>">
-                                    <?php echo esc_html($ctaLabel); ?><span aria-hidden="true">↗</span>
+                                <a class="kc-discover kc-discover--card" href="<?php echo esc_url($ctaUrl); ?>">
+                                    <?php echo esc_html($ctaLabel); ?>
                                 </a>
                             </div>
                         </article>

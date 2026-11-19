@@ -35,8 +35,6 @@ body:not(.home){background:var(--kc-paper)!important;color:var(--kc-ink)}
 .kc-module-card h2 a{text-decoration:none;color:var(--kc-ink)}
 .kc-module-card-content>p:not(.kc-card-kicker){font-size:14px;line-height:1.85;color:#71645c;margin:0 0 22px}
 .kc-card-kicker{margin:0;color:#9d794f;font-size:10px}
-.kc-outline-button{margin-top:auto;display:inline-block;border:1px solid #53443d;padding:13px 22px;font:11px Arial,sans-serif;text-transform:uppercase;letter-spacing:.14em;color:#241e1b;text-decoration:none;transition:background .2s,color .2s}
-.kc-outline-button:hover,.kc-outline-button:focus-visible{background:#241e1b;color:#fff}
 .kc-filter-nav{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:-12px auto 44px}
 .kc-filter-nav a{font:12px Arial,sans-serif;letter-spacing:.06em;text-decoration:none;color:#61554c;padding:11px 17px;border-bottom:1px solid transparent}
 .kc-filter-nav a[aria-current="page"],.kc-filter-nav a:hover{border-color:#8d6945;color:#241e1b}

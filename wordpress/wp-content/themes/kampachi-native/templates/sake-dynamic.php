@@ -129,7 +129,7 @@ $total = $sakes->post_count;
                                 <h2><?php echo esc_html($name); ?></h2>
                                 <?php if ($summary !== '') : ?><p class="kc-catering-card-description"><?php echo esc_html($summary); ?></p><?php endif; ?>
 
-                                <a class="kc-catering-discover" href="<?php echo esc_url(get_permalink($sakeId)); ?>" aria-label="<?php echo esc_attr(sprintf('Discover bottles from %s', $name)); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?> <span aria-hidden="true">↗</span></a>
+                                <a class="kc-discover kc-discover--card" href="<?php echo esc_url(get_permalink($sakeId)); ?>" aria-label="<?php echo esc_attr(sprintf('Discover bottles from %s', $name)); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?></a>
                             </div>
                         </article>
                     <?php endwhile; ?>

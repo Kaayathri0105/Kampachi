@@ -1456,27 +1456,6 @@ $kampachiHome = Homepage_Content::settings();
         line-height: 1.8;
       }
 
-      .home-sake-link {
-        display: inline-flex;
-        align-items: center;
-        min-height: 46px;
-        padding: 0 20px;
-        border: 1px solid rgba(244, 240, 235, 0.75);
-        color: #f4f0eb;
-        font-size: 11px;
-        letter-spacing: 0.13em;
-        text-decoration: none;
-        text-transform: uppercase;
-        transition:
-          background-color 180ms ease,
-          color 180ms ease;
-      }
-
-      .home-sake-link:hover {
-        background: #f4f0eb;
-        color: #1b0b0d;
-      }
-
       .home-sake-image {
         display: block;
         width: 100%;
@@ -1656,35 +1635,6 @@ $kampachiHome = Homepage_Content::settings();
         letter-spacing: 0.015em;
       }
 
-      .outlet-card__link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: auto;
-        padding-bottom: 4px;
-        border-bottom: 1px solid rgba(27, 11, 13, 0.65);
-        color: #1b0b0d;
-        font-size: 12px;
-        letter-spacing: 0.1em;
-        text-decoration: none;
-        text-transform: uppercase;
-        transition:
-          color 180ms ease,
-          border-color 180ms ease,
-          gap 180ms ease;
-      }
-
-      .outlet-card__link:hover {
-        gap: 12px;
-        border-color: #8d654d;
-        color: #8d654d;
-      }
-
-      .outlet-card__link:focus-visible {
-        outline: 2px solid #8d654d;
-        outline-offset: 5px;
-      }
-
       @media (max-width: 900px) {
         .outlets-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1717,8 +1667,7 @@ $kampachiHome = Homepage_Content::settings();
 
       @media (prefers-reduced-motion: reduce) {
         .outlet-card,
-        .outlet-card__image,
-        .outlet-card__link {
+        .outlet-card__image {
           transition: none;
         }
 

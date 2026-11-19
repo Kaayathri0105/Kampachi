@@ -1435,24 +1435,6 @@ if (class_exists(OffersLanding::class)) {
             text-align: right;
         }
 
-        .promotion-contact-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 9px;
-            align-self: flex-start;
-            margin-top: auto;
-            transition: gap 180ms ease, border-color 180ms ease;
-        }
-
-        .promotion-contact-link:hover {
-            gap: 14px;
-        }
-
-        .promotion-contact-link span {
-            font-size: 16px;
-            line-height: 1;
-        }
-
         .promotion-pagination {
             display: flex;
             align-items: center;
@@ -1652,30 +1634,6 @@ if (class_exists(OffersLanding::class)) {
 
     
         .promotion-card h2 { font-size: 22px !important; }
-        .promotion-contact-link {
-            display: inline-flex !important;
-            align-items: center;
-            gap: 9px;
-            align-self: flex-start;
-            margin-top: auto;
-            padding: 0 0 7px !important;
-            border: 0 !important;
-            border-bottom: 1px solid #81776f !important;
-            border-radius: 0 !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            color: #211f1d !important;
-            font-family: "Cormorant Garamond", "Noto Serif JP", serif !important;
-            font-size: 15px !important;
-            letter-spacing: 0.13em;
-            line-height: 1.2 !important;
-            text-decoration: none !important;
-            text-transform: uppercase;
-            transition: gap 180ms ease, color 180ms ease, border-color 180ms ease;
-        }
-        .promotion-contact-link:hover { gap: 14px; border-bottom-color: #6f2228 !important; color: #6f2228 !important; }
-        .promotion-contact-link span { font-size: 19px !important; line-height: 1 !important; }
-
     </style>
     <link rel="stylesheet" href="<?php echo esc_url(get_template_directory_uri() . '/assets/header.css'); ?>">
     <link rel="stylesheet" href="<?php echo esc_url(get_template_directory_uri() . '/assets/site-theme.css'); ?>">
@@ -1779,7 +1737,7 @@ if (class_exists(OffersLanding::class)) {
                                     <?php if ($promotionCard['description'] !== '') : ?>
                                         <p class="promotion-card-description"><?php echo esc_html($promotionCard['description']); ?></p>
                                     <?php endif; ?>
-                                    <a class="content-button content-button--outline promotion-contact-link" href="<?php echo esc_url($promotionCard['url']); ?>" aria-label="<?php echo esc_attr('Discover ' . $promotionCard['title']); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?> <span aria-hidden="true">↗</span></a>
+                                    <a class="kc-discover kc-discover--card" href="<?php echo esc_url($promotionCard['url']); ?>" aria-label="<?php echo esc_attr('Discover ' . $promotionCard['title']); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?></a>
                                 </div>
                             </article>
                         <?php endforeach; ?>

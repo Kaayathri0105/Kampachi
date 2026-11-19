@@ -41,7 +41,7 @@ $perView = Homepage_Content::items_per_view($kampachiHome, 'sake', 1, count($kam
                             <?php if ($slide['description'] !== '') : ?>
                                 <p><?php echo esc_html($slide['description']); ?></p>
                             <?php endif; ?>
-                            <a class="home-sake-link" href="<?php echo esc_url($slide['href']); ?>">
+                            <a class="kc-discover" href="<?php echo esc_url($slide['href']); ?>">
                                 <?php echo esc_html($slide['link']); ?>
                             </a>
                         </div>

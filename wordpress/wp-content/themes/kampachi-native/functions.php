@@ -135,7 +135,7 @@ function kampachi_native_assets(): void
         $homeCss = get_theme_file_path('assets/home-cms.css');
         wp_enqueue_style('kampachi-home-cms', get_theme_file_uri('assets/home-cms.css'), ['kampachi-native'], (string) md5_file($homeCss));
     }
-    foreach (['typography', 'site-theme', 'header', 'shell'] as $name) {
+    foreach (['typography', 'site-theme', 'header', 'shell', 'discover'] as $name) {
         $relative = 'assets/' . $name . '.css';
         $path = get_theme_file_path($relative);
         if (is_file($path)) {
@@ -491,7 +491,8 @@ function kampachi_native_render_post_card(int $postId): void
         echo '<p>' . esc_html($excerpt) . '</p>';
     }
 
-    echo '<a class="kc-outline-button" href="' . esc_url(get_permalink($postId)) . '">' . esc_html(kampachi_native_label('discover')) . ' <span aria-hidden="true">↗</span></a>';
+    echo '<a class="kc-discover kc-discover--card" href="' . esc_url(get_permalink($postId)) . '">';
+    echo esc_html(kampachi_native_label('discover')) . '</a>';
     echo '</div></article>';
 }
 
