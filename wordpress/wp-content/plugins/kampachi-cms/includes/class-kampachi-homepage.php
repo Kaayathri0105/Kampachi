@@ -69,10 +69,10 @@ final class Kampachi_Homepage
     {
         $pageId = get_queried_object_id();
         $sourceId = absint(get_post_meta($pageId, '_kc_translation_of', true));
+        $pageSlug = get_post_field('post_name', $sourceId > 0 ? $sourceId : $pageId);
 
         if (! is_front_page()
-            && get_post_field('post_name', $pageId) !== 'home'
-            && ($sourceId === 0 || get_post_field('post_name', $sourceId) !== 'home')
+            && ! (is_page() && in_array($pageSlug, ['home', 'sake'], true))
         ) {
             return;
         }

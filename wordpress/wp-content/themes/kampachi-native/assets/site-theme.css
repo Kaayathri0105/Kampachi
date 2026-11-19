@@ -227,8 +227,9 @@ body {
     color: #000000 !important;
 }
 
-.site-footer .footer-bottom {
+body .site-footer .footer-bottom {
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
@@ -245,6 +246,13 @@ body {
     line-height: 1.5 !important;
     text-align: left !important;
     text-decoration: none !important;
+}
+
+.site-footer .footer-privacy {
+    flex: none;
+    margin-inline-start: auto !important;
+    text-align: end !important;
+    white-space: nowrap;
 }
 
 @media (max-width: 1080px) {
@@ -318,10 +326,9 @@ body {
         width: 100%;
     }
 
-    .site-footer .footer-bottom {
+    body .site-footer .footer-bottom {
         align-items: flex-start;
-        flex-direction: column;
-        gap: 8px;
+        gap: 12px;
     }
 }
 

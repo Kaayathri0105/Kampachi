@@ -235,6 +235,6 @@ final class Kampachi_Landings
 
     private static function has_rich_intro(WP_Post $post): bool
     {
-        return in_array($post->post_name, ['promotion', 'outlets', Press::PAGE_SLUG], true);
+        return in_array($post->post_name, ['promotion', 'sake', 'outlets', Press::PAGE_SLUG], true);
     }
 }

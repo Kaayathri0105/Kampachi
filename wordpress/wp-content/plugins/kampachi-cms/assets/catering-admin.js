@@ -83,7 +83,7 @@
         $editor.find('[data-kc-hero-ids]').val(ids.join(','));
     }
 
-    function heroMediaRow(item) {
+    function heroMediaRow(item, previewVideo) {
         const id = Number(item.id);
 
         if (!Number.isSafeInteger(id) || id <= 0) {
@@ -106,7 +106,11 @@
                 ? item.sizes.thumbnail.url
                 : isImage ? item.url : '';
 
-        if (thumbnail) {
+        if (isVideo && previewVideo && item.url) {
+            $('<video class="kc-catering-hero-preview" controls muted playsinline preload="metadata"></video>')
+                .attr({ src: item.url, 'aria-label': 'Preview ' + (item.title || 'hero video') })
+                .appendTo($row);
+        } else if (thumbnail) {
             $('<img class="kc-catering-hero-preview" alt="">').attr('src', thumbnail).appendTo($row);
         } else {
             const $preview = $('<span class="kc-catering-hero-preview kc-catering-video-placeholder"></span>');
@@ -152,7 +156,7 @@
                     return;
                 }
 
-                const $row = heroMediaRow(item);
+                const $row = heroMediaRow(item, $editor.is('[data-kc-preview-video]'));
 
                 if ($row) {
                     $list.append($row);
