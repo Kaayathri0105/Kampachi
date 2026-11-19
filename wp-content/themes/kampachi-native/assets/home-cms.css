@@ -141,3 +141,43 @@ body #outlets .outlets-grid--carousel::-webkit-scrollbar {
         scroll-behavior: auto;
     }
 }
+
+.kc-home-side-carousel {
+    --kc-side-arrow-size: 44px;
+    --kc-side-arrow-gap: clamp(6px, 1vw, 12px);
+    --kc-side-arrow-gutter: calc(var(--kc-side-arrow-size) + var(--kc-side-arrow-gap));
+    position: relative;
+    display: flow-root;
+    transition-property: none;
+}
+
+.experiences-section .kc-home-side-carousel {
+    margin-block-start: clamp(28px, 3vw, 44px);
+}
+
+.kc-home-side-carousel > .experience-grid {
+    margin-block-start: 0;
+}
+
+.kc-home-side-carousel:has(> :is(.kc-home-post-controls, .outlets-carousel-controls):not([hidden])) {
+    margin-inline: max(calc(-1 * var(--kc-side-arrow-gutter)), calc((100% - 100vw) / 2 + 12px));
+    padding-inline: var(--kc-side-arrow-gutter);
+}
+
+.kc-home-side-carousel > :is(.kc-home-post-controls, .outlets-carousel-controls):not([hidden]) {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    pointer-events: none;
+}
+
+.kc-home-side-carousel > :is(.kc-home-post-controls, .outlets-carousel-controls) > button {
+    flex: 0 0 var(--kc-side-arrow-size);
+    width: var(--kc-side-arrow-size);
+    height: var(--kc-side-arrow-size);
+    pointer-events: auto;
+}
