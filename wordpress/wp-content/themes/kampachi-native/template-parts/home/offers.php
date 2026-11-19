@@ -13,8 +13,21 @@ if ($limit === 0 || $offers === []) {
 ?>
 <section class="experiences-section" id="experiences" aria-labelledby="experiences-title">
     <div class="content-container">
-        <h2 class="experiences-heading" id="experiences-title"><?php echo esc_html(wp_strip_all_tags(Homepage_Content::content($kampachiHome, 'offers', 'title', kampachi_setting('offers_title')))); ?></h2>
-        <div class="experiences-subtitle home-cms-description"><?php echo Homepage_Content::description($kampachiHome, 'offers'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+        <?php echo Homepage_Content::section_text(
+            $kampachiHome,
+            'offers',
+            'title',
+            'h2',
+            ['class' => 'experiences-heading', 'id' => 'experiences-title'],
+            kampachi_setting('offers_title')
+        ); ?>
+        <?php echo Homepage_Content::section_text(
+            $kampachiHome,
+            'offers',
+            'description',
+            'div',
+            ['class' => 'experiences-subtitle home-cms-description']
+        ); ?>
         <div class="experience-grid">
             <?php foreach ($offers as $offer) : ?>
                 <?php

@@ -10,6 +10,16 @@ final class Kampachi_Homepage
 {
     private const OPTION = 'kampachi_homepage_sections';
 
+    private const HERO_MODES = [
+        'video' => 'Video only',
+        'images' => 'Image slideshow with Ken Burns',
+        'mixed' => 'Video and image slideshow',
+    ];
+
+    private const TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+    private const TEXT_SIZES = [12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40, 48, 56, 64];
+    private const TEXT_WEIGHTS = ['400' => 'Regular', '700' => 'Bold'];
+
     public static function boot(): void
     {
         add_action('admin_menu', [self::class, 'register_menu'], 999);
@@ -33,19 +43,46 @@ final class Kampachi_Homepage
         }
 
         wp_enqueue_media();
-        wp_enqueue_editor();
-        wp_enqueue_style('kampachi-home-admin', plugins_url('../assets/admin.css', __FILE__), [], '2.8.3');
-        wp_enqueue_script('kampachi-home-admin', plugins_url('../assets/admin.js', __FILE__), ['jquery', 'wp-util'], '1.0.0', true);
+        wp_enqueue_style(
+            'kampachi-home-admin',
+            plugins_url('../assets/admin.css', __FILE__),
+            [],
+            (string) filemtime(dirname(__DIR__) . '/assets/admin.css')
+        );
+        wp_enqueue_script(
+            'kampachi-home-admin',
+            plugins_url('../assets/admin.js', __FILE__),
+            ['jquery'],
+            (string) filemtime(dirname(__DIR__) . '/assets/admin.js'),
+            true
+        );
     }
 
     public static function frontend_assets(): void
     {
-        if (! is_front_page()) {
+        $pageId = get_queried_object_id();
+        $sourceId = absint(get_post_meta($pageId, '_kc_translation_of', true));
+
+        if (! is_front_page()
+            && get_post_field('post_name', $pageId) !== 'home'
+            && ($sourceId === 0 || get_post_field('post_name', $sourceId) !== 'home')
+        ) {
             return;
         }
 
-        wp_enqueue_style('kampachi-home-frontend', plugins_url('../assets/home.css', __FILE__), [], '1.0.0');
-        wp_enqueue_script('kampachi-home-frontend', plugins_url('../assets/home.js', __FILE__), [], '1.0.0', true);
+        wp_enqueue_style(
+            'kampachi-home-frontend',
+            plugins_url('../assets/home.css', __FILE__),
+            [],
+            (string) filemtime(dirname(__DIR__) . '/assets/home.css')
+        );
+        wp_enqueue_script(
+            'kampachi-home-frontend',
+            plugins_url('../assets/home.js', __FILE__),
+            [],
+            (string) filemtime(dirname(__DIR__) . '/assets/home.js'),
+            true
+        );
     }
 
     private static function options(): array
@@ -55,17 +92,140 @@ final class Kampachi_Homepage
         return is_array($options) ? $options : [];
     }
 
-    private static function text_editor(string $key, string $label, string $value, int $rows = 3): void
+    public static function text_format(mixed $input): array
     {
-        echo '<div class="kc-field"><label class="kc-label" for="kc_' . esc_attr($key) . '">' . esc_html($label) . '</label>';
-        wp_editor($value, 'kc_' . $key, [
-            'textarea_name' => 'home[' . $key . ']',
-            'textarea_rows' => $rows,
-            'media_buttons' => false,
-            'teeny' => true,
-            'quicktags' => true,
-        ]);
-        echo '</div>';
+        $input = is_array($input) ? $input : [];
+        $tag = is_string($input['tag'] ?? null) ? $input['tag'] : '';
+        $size = filter_var($input['size'] ?? '', FILTER_VALIDATE_INT);
+        $weight = is_scalar($input['weight'] ?? null) ? (string) $input['weight'] : '';
+
+        return [
+            'tag' => in_array($tag, self::TEXT_TAGS, true) ? $tag : '',
+            'size' => in_array($size, self::TEXT_SIZES, true) ? $size : 0,
+            'weight' => isset(self::TEXT_WEIGHTS[$weight]) ? $weight : '',
+        ];
+    }
+
+    /**
+     * @param array<string, string> $attributes
+     * @return array{0: string, 1: string}
+     */
+    public static function text_presentation(mixed $format, string $defaultTag, array $attributes = []): array
+    {
+        $format = self::text_format($format);
+        $tag = ($format['tag'] ?? '') ?: $defaultTag;
+        $styles = [];
+        if (! empty($format['size'])) {
+            $attributes['data-kc-home-size'] = '';
+            $styles[] = '--kc-home-font-size:' . $format['size'] . 'px';
+        }
+        if (! empty($format['weight'])) {
+            $attributes['data-kc-home-weight'] = '';
+            $styles[] = '--kc-home-font-weight:' . $format['weight'];
+        }
+        if ($styles !== []) {
+            $attributes['style'] = implode(';', $styles);
+        }
+
+        $markup = '';
+        foreach ($attributes as $name => $value) {
+            $markup .= ' ' . esc_attr($name) . '="' . esc_attr($value) . '"';
+        }
+
+        return [$tag, $markup];
+    }
+
+    public static function plain_text(string $value): string
+    {
+        $value = preg_replace('~<br\s*/?>\s*|</(?:p|div|li|h[1-6])>\s*~i', "\n", $value) ?? $value;
+
+        return trim(html_entity_decode(wp_strip_all_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+    }
+
+    /**
+     * Keep previously saved markup when the editor has not changed the text.
+     * New text is stored as escaped text with line breaks.
+     */
+    private static function save_text(mixed $input, mixed $previous): string
+    {
+        $input = is_string($input) ? trim(str_replace(["\r\n", "\r"], "\n", $input)) : '';
+        $previous = is_string($previous) ? $previous : '';
+
+        if ($input === self::plain_text($previous)) {
+            return wp_kses_post($previous);
+        }
+
+        return nl2br(esc_html(sanitize_textarea_field($input)), false);
+    }
+
+    private static function text_editor(
+        string $name,
+        string $formatName,
+        string $label,
+        string $value,
+        mixed $format,
+        int $rows = 3
+    ): void {
+        $format = self::text_format($format);
+        $id = 'kc_' . sanitize_html_class(str_replace(['[', ']'], ['_', ''], $name));
+        $tags = ['p' => 'Paragraph'];
+        foreach (array_slice(self::TEXT_TAGS, 1) as $tag) {
+            $tags[$tag] = 'Heading ' . substr($tag, 1);
+        }
+
+        echo '<div class="kc-field kc-home-text"><label class="kc-label" for="' . esc_attr($id) . '">'
+            . esc_html($label) . '</label>';
+        echo '<textarea class="widefat" id="' . esc_attr($id) . '" name="' . esc_attr($name)
+            . '" rows="' . esc_attr((string) $rows) . '">' . esc_textarea(self::plain_text($value)) . '</textarea>';
+        echo '<div class="kc-home-text-options">';
+        self::format_select($formatName . '[tag]', 'Text type', $tags, $format['tag']);
+        self::format_select(
+            $formatName . '[size]',
+            'Font size',
+            array_combine(self::TEXT_SIZES, array_map(static fn (int $size): string => $size . ' px', self::TEXT_SIZES)),
+            (string) ($format['size'] ?: '')
+        );
+        self::format_select($formatName . '[weight]', 'Weight', self::TEXT_WEIGHTS, $format['weight']);
+        echo '</div></div>';
+    }
+
+    private static function format_select(string $name, string $label, array $options, string $selected): void
+    {
+        echo '<label>' . esc_html($label) . '<select name="' . esc_attr($name) . '">'
+            . '<option value="">Default</option>';
+        foreach ($options as $value => $caption) {
+            echo '<option value="' . esc_attr((string) $value) . '"'
+                . selected($selected, (string) $value, false) . '>' . esc_html($caption) . '</option>';
+        }
+        echo '</select></label>';
+    }
+
+    private static function section_value(array $settings, string $key): string
+    {
+        $fallback = match ($key) {
+            'intro_title' => 'hero_title',
+            'intro_description' => 'hero_description',
+            'offers_title' => 'offers_title',
+            default => '',
+        };
+        $value = $settings[$key] ?? '';
+        if (! array_key_exists($key, $settings) && $fallback !== '' && function_exists('kampachi_setting')) {
+            $value = kampachi_setting($fallback);
+        }
+
+        return is_string($value) ? $value : '';
+    }
+
+    private static function section_text(array $settings, string $key, string $label, int $rows = 3): void
+    {
+        self::text_editor(
+            'home[' . $key . ']',
+            'home[format][' . $key . ']',
+            $label,
+            self::section_value($settings, $key),
+            $settings['format'][$key] ?? [],
+            $rows
+        );
     }
 
     private static function media_field(string $name, int $id, string $label, string $note): void
@@ -82,10 +242,60 @@ final class Kampachi_Homepage
         echo '<p class="description">' . esc_html($note) . '</p></div>';
     }
 
-    private static function rich_repeat_field(string $name, string $label, string $value): void
+    private static function repeat_text(string $prefix, array $data, string $key, string $label): void
     {
-        echo '<div class="kc-field"><label class="kc-label">' . esc_html($label) . '</label>';
-        echo '<textarea class="kc-rich" name="' . esc_attr($name) . '" rows="3">' . esc_textarea($value) . '</textarea></div>';
+        self::text_editor(
+            $prefix . '[' . $key . ']',
+            $prefix . '[format][' . $key . ']',
+            $label,
+            (string) ($data[$key] ?? ''),
+            $data['format'][$key] ?? []
+        );
+    }
+
+    public static function hero_mode(array $settings): string
+    {
+        $mode = $settings['hero_mode'] ?? '';
+        if (is_string($mode) && isset(self::HERO_MODES[$mode])) {
+            return $mode;
+        }
+
+        return ! empty($settings['hero_slides']) ? 'images' : 'video';
+    }
+
+    public static function displayed_slides(array $settings, array $videos, array $images): array
+    {
+        return match ($settings['hero_mode'] ?? null) {
+            'video' => $videos,
+            'images' => $images,
+            'mixed' => array_merge($videos, $images),
+            default => $images !== [] ? $images : $videos,
+        };
+    }
+
+    public static function hero_controls(int $count, bool $hasVideo): void
+    {
+        if ($count < 2 && ! $hasVideo) {
+            return;
+        }
+
+        echo '<div class="kc-home-hero-controls" role="group" aria-label="Hero controls" hidden>';
+        if ($hasVideo) {
+            echo '<button type="button" data-kc-hero-sound aria-label="Turn sound on" hidden>';
+            echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"'
+                . ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">';
+            echo '<path d="M11 5 6 9H3v6h3l5 4V5Z"/>';
+            echo '<path data-kc-sound-muted d="m16 10 4 4m0-4-4 4"/>';
+            echo '<path data-kc-sound-audible d="M15 9a4.2 4.2 0 0 1 0 6m3-9a8.5 8.5 0 0 1 0 12"/>';
+            echo '</svg></button>';
+        }
+        if ($count > 1) {
+            $total = str_pad((string) $count, 2, '0', STR_PAD_LEFT);
+            echo '<button type="button" data-kc-hero-prev aria-label="Previous slide">&#8592;</button>';
+            echo '<span class="kc-home-hero-count" data-kc-hero-count aria-live="off">01 / ' . esc_html($total) . '</span>';
+            echo '<button type="button" data-kc-hero-next aria-label="Next slide">&#8594;</button>';
+        }
+        echo '</div>';
     }
 
     public static function editor(): void
@@ -134,13 +344,25 @@ final class Kampachi_Homepage
         }
         echo '</div></section>';
 
-        echo '<section id="kc-section-hero" class="kc-panel"><h2><span class="kc-section-number">01</span> Hero <small>Video or image slideshow</small></h2>';
+        echo '<section id="kc-section-hero" class="kc-panel"><h2><span class="kc-section-number">01</span> Hero</h2>';
+        echo '<div class="kc-field"><label class="kc-label" for="kc_hero_mode">Hero type</label>'
+            . '<select id="kc_hero_mode" name="home[hero_mode]">';
+        foreach (self::HERO_MODES as $mode => $label) {
+            echo '<option value="' . esc_attr($mode) . '"'
+                . selected(self::hero_mode($settings), $mode, false) . '>' . esc_html($label) . '</option>';
+        }
+        echo '</select></div>';
         $videoId = absint($settings['hero_video_id'] ?? 0);
-        $videoUrl = $videoId ? wp_get_attachment_url($videoId) : '';
-        echo '<div class="kc-field"><label class="kc-label">Hero video <span class="kc-muted">2560 × 1440 · MP4</span></label><input class="kc-media-id kc-video-id" type="hidden" name="home[hero_video_id]" value="' . esc_attr((string) $videoId) . '">';
+        $videoUrl = $videoId ? wp_get_attachment_url($videoId) : false;
+        echo '<div class="kc-field"><label class="kc-label">Hero video <span class="kc-muted">2560 × 1440 · MP4</span></label>';
+        echo '<input class="kc-media-id kc-video-id" type="hidden" name="home[hero_video_id]" value="'
+            . esc_attr((string) $videoId) . '">';
         echo '<span class="kc-video-name">' . esc_html($videoUrl ? wp_basename($videoUrl) : 'No video selected') . '</span> ';
-        echo '<button type="button" class="button kc-pick-video">Choose video</button> <button type="button" class="button kc-clear-video">Remove</button></div>';
-        echo '<p class="description">Uploaded hero images will appear instead of the video when both are selected. Remove the images to show the video.</p>';
+        echo '<button type="button" class="button kc-pick-video">Choose video</button> '
+            . '<button type="button" class="button kc-clear-video">Remove</button>';
+        echo '<video class="kc-home-video-preview" controls playsinline preload="metadata" aria-label="Hero video preview"'
+            . ($videoUrl ? ' src="' . esc_url($videoUrl) . '"' : ' hidden') . '></video></div>';
+        echo '<p class="description">The selected hero type controls which media appear. Mixed slides start with the video.</p>';
         echo '<h3>Hero Images <small>(unlimited)</small></h3><div id="kc-hero-list" class="kc-repeat-list" data-type="hero">';
         foreach ($heroSlides as $i => $slide) {
             self::slide_row((int) $i, (array) $slide);
@@ -148,13 +370,13 @@ final class Kampachi_Homepage
         echo '</div><button type="button" class="button kc-add" data-target="hero">+ Add hero image</button></section>';
 
         echo '<section id="kc-section-introduction" class="kc-panel"><h2><span class="kc-section-number">02</span> Introduction</h2>';
-        self::text_editor('intro_title', 'Title', (string) ($settings['intro_title'] ?? ''));
-        self::text_editor('intro_description', 'Description', (string) ($settings['intro_description'] ?? ''), 6);
+        self::section_text($settings, 'intro_title', 'Title');
+        self::section_text($settings, 'intro_description', 'Description', 6);
         echo '</section>';
 
         echo '<section id="kc-section-promotions" class="kc-panel"><h2><span class="kc-section-number">03</span> Offers &amp; Events <small>From Offers &amp; Events · maximum 3 cards</small></h2>';
-        self::text_editor('offers_title', 'Title', (string) ($settings['offers_title'] ?? ''));
-        self::text_editor('offers_description', 'Description', (string) ($settings['offers_description'] ?? ''), 5);
+        self::section_text($settings, 'offers_title', 'Title');
+        self::section_text($settings, 'offers_description', 'Description', 5);
         echo '<div class="kc-choices kc-offer-choices">';
         foreach ($offers as $post) {
             echo '<label><input type="checkbox" name="home[offer_ids][]" value="' . esc_attr((string) $post->ID) . '" ' . checked(in_array($post->ID, $selectedOffers, true), true, false) . '> ' . esc_html($post->post_title) . '</label>';
@@ -167,8 +389,8 @@ final class Kampachi_Homepage
         echo '</section>';
 
         echo '<section id="kc-section-dishes" class="kc-panel"><h2><span class="kc-section-number">04</span> Signature dishes <small>Unlimited items</small></h2>';
-        self::text_editor('dishes_title', 'Title', (string) ($settings['dishes_title'] ?? ''));
-        self::text_editor('dishes_description', 'Description', (string) ($settings['dishes_description'] ?? ''), 5);
+        self::section_text($settings, 'dishes_title', 'Title');
+        self::section_text($settings, 'dishes_description', 'Description', 5);
         echo '<div id="kc-dish-list" class="kc-repeat-list" data-type="dish">';
         foreach ($dishes as $i => $dish) {
             self::dish_row((int) $i, (array) $dish);
@@ -178,8 +400,8 @@ final class Kampachi_Homepage
         echo '</section>';
 
         echo '<section id="kc-section-sake" class="kc-panel"><h2><span class="kc-section-number">05</span> Artisanal Sake <small>From Sake Collection</small></h2>';
-        self::text_editor('sake_title', 'Title', (string) ($settings['sake_title'] ?? ''));
-        self::text_editor('sake_description', 'Description', (string) ($settings['sake_description'] ?? ''), 5);
+        self::section_text($settings, 'sake_title', 'Title');
+        self::section_text($settings, 'sake_description', 'Description', 5);
         echo '<div class="kc-choices">';
         foreach ($sakes as $post) {
             echo '<label><input type="checkbox" name="home[sake_ids][]" value="' . esc_attr((string) $post->ID) . '" ' . checked(in_array($post->ID, $selectedSakes, true), true, false) . '> ' . esc_html($post->post_title) . '</label>';
@@ -192,8 +414,8 @@ final class Kampachi_Homepage
         echo '</section>';
 
         echo '<section id="kc-section-outlets" class="kc-panel"><h2><span class="kc-section-number">06</span> Restaurants <small>From Outlets</small></h2>';
-        self::text_editor('outlets_title', 'Title', (string) ($settings['outlets_title'] ?? ''));
-        self::text_editor('outlets_description', 'Description', (string) ($settings['outlets_description'] ?? ''), 5);
+        self::section_text($settings, 'outlets_title', 'Title');
+        self::section_text($settings, 'outlets_description', 'Description', 5);
         echo '<p>Every published Outlet post appears automatically at the bottom of the homepage, in the outlet order. Unpublished outlets are excluded.</p>';
         echo '</section>';
         echo '<div class="kc-save-bar"><span><strong>Homepage settings</strong></span><button type="submit" class="button button-primary button-large">Save homepage changes</button></div>';
@@ -211,7 +433,7 @@ final class Kampachi_Homepage
             echo '<option value="' . esc_attr($value) . '" ' . selected($data['direction'] ?? 'zoom-in', $value, false) . '>' . esc_html($label) . '</option>';
         }
         echo '</select>';
-        self::rich_repeat_field('home[hero_slides][' . $index . '][title]', 'Optional overlay title (rich text)', (string) ($data['title'] ?? ''));
+        self::repeat_text('home[hero_slides][' . $index . ']', $data, 'title', 'Overlay title (optional)');
         echo '</div>';
     }
 
@@ -219,8 +441,9 @@ final class Kampachi_Homepage
     {
         echo '<div class="kc-repeat kc-dish"><div class="kc-row-head"><strong><span class="dashicons dashicons-food"></span> Signature dish</strong><button type="button" class="button-link-delete kc-remove">Remove</button></div>';
         self::media_field('home[dishes][' . $index . '][image_id]', absint($data['image_id'] ?? 0), 'Dish image', 'Required: 1:1 square (recommended 1200 × 1200), preferably WebP.');
-        self::rich_repeat_field('home[dishes][' . $index . '][title]', 'Dish title (rich text)', (string) ($data['title'] ?? ''));
-        self::rich_repeat_field('home[dishes][' . $index . '][description]', 'Dish description (rich text)', (string) ($data['description'] ?? ''));
+        $prefix = 'home[dishes][' . $index . ']';
+        self::repeat_text($prefix, $data, 'title', 'Dish title');
+        self::repeat_text($prefix, $data, 'description', 'Dish description');
         echo '</div>';
     }
 
@@ -275,18 +498,24 @@ final class Kampachi_Homepage
         }
         check_admin_referer('kampachi_homepage_save', 'kampachi_home_nonce');
         $raw = isset($_POST['home']) && is_array($_POST['home']) ? wp_unslash($_POST['home']) : [];
-        $clean = [];
+        $previous = self::options();
+        $clean = ['format' => []];
         foreach (['intro', 'offers', 'dishes', 'sake', 'outlets'] as $section) {
-            foreach (['subtitle', 'title', 'description'] as $field) {
+            $subtitle = $section . '_subtitle';
+            $clean[$subtitle] = self::sanitize_rich($previous[$subtitle] ?? '');
+            foreach (['title', 'description'] as $field) {
                 $key = $section . '_' . $field;
-                $clean[$key] = self::sanitize_rich($raw[$key] ?? '');
+                $existing = self::section_value($previous, $key);
+                $clean[$key] = self::save_text($raw[$key] ?? self::plain_text($existing), $existing);
+                $clean['format'][$key] = self::text_format($raw['format'][$key] ?? $previous['format'][$key] ?? []);
             }
         }
         $video = absint($raw['hero_video_id'] ?? 0);
+        $clean['hero_mode'] = self::hero_mode($raw);
         $clean['hero_video_id'] = $video && str_starts_with((string) get_post_mime_type($video), 'video/') ? $video : 0;
         $clean['hero_slides'] = [];
         $validDirections = ['none', 'zoom-in', 'zoom-out', 'left', 'right', 'up', 'down'];
-        foreach ((array) ($raw['hero_slides'] ?? []) as $slide) {
+        foreach ((array) ($raw['hero_slides'] ?? []) as $index => $slide) {
             if (! is_array($slide)) {
                 continue;
             }
@@ -298,12 +527,13 @@ final class Kampachi_Homepage
             $clean['hero_slides'][] = [
                 'image_id' => $id,
                 'direction' => in_array($direction, $validDirections, true) ? $direction : 'zoom-in',
-                'title' => self::sanitize_rich($slide['title'] ?? ''),
-                'text' => self::sanitize_rich($slide['text'] ?? ''),
+                'title' => self::save_text($slide['title'] ?? '', $previous['hero_slides'][$index]['title'] ?? ''),
+                'text' => self::sanitize_rich($previous['hero_slides'][$index]['text'] ?? ''),
+                'format' => ['title' => self::text_format($slide['format']['title'] ?? [])],
             ];
         }
         $clean['dishes'] = [];
-        foreach ((array) ($raw['dishes'] ?? []) as $dish) {
+        foreach ((array) ($raw['dishes'] ?? []) as $index => $dish) {
             if (! is_array($dish)) {
                 continue;
             }
@@ -313,8 +543,15 @@ final class Kampachi_Homepage
             }
             $clean['dishes'][] = [
                 'image_id' => $id,
-                'title' => self::sanitize_rich($dish['title'] ?? ''),
-                'description' => self::sanitize_rich($dish['description'] ?? ''),
+                'title' => self::save_text($dish['title'] ?? '', $previous['dishes'][$index]['title'] ?? ''),
+                'description' => self::save_text(
+                    $dish['description'] ?? '',
+                    $previous['dishes'][$index]['description'] ?? ''
+                ),
+                'format' => [
+                    'title' => self::text_format($dish['format']['title'] ?? []),
+                    'description' => self::text_format($dish['format']['description'] ?? []),
+                ],
             ];
         }
         $sections = ['hero', 'intro', 'offers', 'dishes', 'sake', 'outlets'];
@@ -348,14 +585,49 @@ final class Kampachi_Homepage
     private static function heading(array $config, string $prefix): void
     {
         echo '<div class="kch-section-heading">';
-        foreach (['title' => 'div', 'description' => 'div'] as $key => $tag) {
+        foreach (['title', 'description'] as $key) {
             $value = (string) ($config[$prefix . '_' . $key] ?? '');
             if ($value === '') {
                 continue;
             }
-            echo '<' . $tag . ' class="kch-section-' . esc_attr($key) . '">' . self::content($value) . '</' . $tag . '>';
+            echo self::formatted_text($value, $config['format'][$prefix . '_' . $key] ?? [], 'kch-section-' . $key);
         }
         echo '</div>';
+    }
+
+    private static function render_hero(array $slides): void
+    {
+        $count = count($slides);
+        echo '<section class="kch-hero" aria-label="Kampachi hero" data-kc-home-hero>';
+        foreach ($slides as $index => $slide) {
+            echo '<div class="kch-slide' . ($index === 0 ? ' is-active' : '') . '" aria-hidden="'
+                . ($index === 0 ? 'false' : 'true') . '" data-kc-hero-slide>';
+            if (isset($slide['mime'])) {
+                echo '<video class="kch-hero-video" muted playsinline preload="metadata"'
+                    . ($count === 1 ? ' loop' : '') . ' aria-label="Kampachi dining video">';
+                echo '<source src="' . esc_url($slide['url']) . '" type="' . esc_attr($slide['mime']) . '"></video>';
+            } else {
+                $direction = sanitize_html_class((string) ($slide['data']['direction'] ?? 'zoom-in'));
+                echo '<div class="kch-slide-photo kch-' . esc_attr($direction)
+                    . '" style="background-image:url(' . esc_url($slide['url']) . ')"></div>';
+                echo '<div class="kch-slide-overlay">' . self::formatted_text(
+                    (string) ($slide['data']['title'] ?? ''),
+                    $slide['data']['format']['title'] ?? [],
+                    'kch-slide-title'
+                ) . '</div>';
+            }
+            echo '</div>';
+        }
+        self::hero_controls($count, isset($slides[0]['mime']));
+        echo '</section>';
+    }
+
+    private static function formatted_text(string $value, mixed $format, string $class): string
+    {
+        [$tag, $attributes] = self::text_presentation($format, 'div', ['class' => $class]);
+        $content = $tag === 'div' ? self::content($value) : nl2br(esc_html(self::plain_text($value)), false);
+
+        return '<' . $tag . $attributes . '>' . $content . '</' . $tag . '>';
     }
 
     public static function render(): bool
@@ -365,26 +637,28 @@ final class Kampachi_Homepage
             return false;
         }
 
-        $video = absint($config['hero_video_id'] ?? 0);
-        $videoUrl = $video ? wp_get_attachment_url($video) : false;
-        $slides = (array) ($config['hero_slides'] ?? []);
-        echo '<main class="kch-home">';
-        echo '<section class="kch-hero" aria-label="Kampachi hero">';
-        if ($videoUrl) {
-            echo '<video class="kch-hero-video" autoplay muted loop playsinline preload="metadata"><source src="' . esc_url($videoUrl) . '" type="' . esc_attr((string) get_post_mime_type($video)) . '"></video>';
-        } else {
-            foreach ($slides as $index => $slide) {
-                $image = wp_get_attachment_image_url(absint($slide['image_id'] ?? 0), 'full');
-                if (! $image) {
-                    continue;
-                }
-                $direction = sanitize_html_class((string) ($slide['direction'] ?? 'zoom-in'));
-                echo '<div class="kch-slide ' . ($index === 0 ? 'is-active' : '') . '"><div class="kch-slide-photo kch-' . esc_attr($direction) . '" style="background-image:url(' . esc_url($image) . ')"></div><div class="kch-slide-overlay">';
-                echo '<div class="kch-slide-title">' . self::content((string) ($slide['title'] ?? '')) . '</div>';
-                echo '</div></div>';
+        $videoId = absint($config['hero_video_id'] ?? 0);
+        $url = $videoId > 0 ? wp_get_attachment_url($videoId) : false;
+        $mime = $videoId > 0 ? (string) get_post_mime_type($videoId) : '';
+        $videos = is_string($url) && $url !== '' && str_starts_with($mime, 'video/')
+            ? [['url' => $url, 'mime' => $mime]]
+            : [];
+        $images = [];
+        foreach ((array) ($config['hero_slides'] ?? []) as $slide) {
+            if (! is_array($slide)) {
+                continue;
+            }
+            $url = wp_get_attachment_image_url(absint($slide['image_id'] ?? 0), 'full');
+            if (is_string($url) && $url !== '') {
+                $images[] = ['url' => $url, 'data' => $slide];
             }
         }
-        echo '</section>';
+
+        $slides = self::displayed_slides($config, $videos, $images);
+        echo '<main class="kch-home">';
+        if (($config['section_visibility']['hero'] ?? true) && $slides !== []) {
+            self::render_hero($slides);
+        }
         echo '<section class="kch-section kch-intro">';
         self::heading($config, 'intro');
         echo '</section>';
@@ -403,7 +677,14 @@ final class Kampachi_Homepage
             if (! wp_attachment_is_image($id)) {
                 continue;
             }
-            echo '<article class="kch-card kch-dish-card">' . wp_get_attachment_image($id, 'large', false, ['loading' => 'lazy']) . '<div class="kch-card-body"><div class="kch-card-title">' . self::content((string) ($dish['title'] ?? '')) . '</div><div class="kch-card-description">' . self::content((string) ($dish['description'] ?? '')) . '</div></div></article>';
+            echo '<article class="kch-card kch-dish-card">'
+                . wp_get_attachment_image($id, 'large', false, ['loading' => 'lazy']) . '<div class="kch-card-body">'
+                . self::formatted_text((string) ($dish['title'] ?? ''), $dish['format']['title'] ?? [], 'kch-card-title')
+                . self::formatted_text(
+                    (string) ($dish['description'] ?? ''),
+                    $dish['format']['description'] ?? [],
+                    'kch-card-description'
+                ) . '</div></article>';
         }
         echo '</div></section>';
         echo '<section class="kch-section kch-sake">';

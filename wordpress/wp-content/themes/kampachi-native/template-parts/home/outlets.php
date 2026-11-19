@@ -14,8 +14,20 @@ if ($outlets === []) {
 ?>
 <section class="outlets-section" id="outlets" aria-labelledby="outlets-title">
     <div class="content-container outlets-container">
-        <h2 class="outlets-heading" id="outlets-title"><?php echo esc_html(wp_strip_all_tags(Homepage_Content::content($kampachiHome, 'outlets', 'title'))); ?></h2>
-        <div class="outlets-intro home-cms-description"><?php echo Homepage_Content::description($kampachiHome, 'outlets'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+        <?php echo Homepage_Content::section_text(
+            $kampachiHome,
+            'outlets',
+            'title',
+            'h2',
+            ['class' => 'outlets-heading', 'id' => 'outlets-title']
+        ); ?>
+        <?php echo Homepage_Content::section_text(
+            $kampachiHome,
+            'outlets',
+            'description',
+            'div',
+            ['class' => 'outlets-intro home-cms-description']
+        ); ?>
         <?php if ($hasCarousel) : ?>
             <div class="outlets-carousel-controls" aria-label="Restaurant carousel controls" hidden>
                 <button class="outlets-carousel-prev" type="button" aria-label="Previous restaurants" aria-controls="outlets-track">

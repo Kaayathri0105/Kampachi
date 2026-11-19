@@ -49,3 +49,37 @@
 .kc-layout-item input[type=checkbox]{margin:0}
 .kc-layout-item select{min-width:70px;margin-left:auto}
 .kc-limit-field select{min-width:100px}
+
+#kc-home-form .kc-home-text textarea {
+    display: block;
+    width: 100%;
+    resize: vertical;
+}
+
+#kc-home-form .kc-home-text-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-top: 8px;
+}
+
+#kc-home-form .kc-home-text-options label {
+    display: grid;
+    gap: 4px;
+}
+
+#kc-home-form .kc-home-text-options select {
+    min-width: 0;
+}
+
+#kc-home-form .kc-home-video-preview {
+    display: block;
+    width: min(100%, 520px);
+    max-height: 300px;
+    margin-top: 12px;
+    background: #000;
+}
+
+#kc-home-form .kc-home-video-preview[hidden] {
+    display: none;
+}
