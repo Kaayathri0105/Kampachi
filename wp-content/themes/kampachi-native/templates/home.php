@@ -1781,7 +1781,6 @@ $kampachiSakeSlides = [];
         }
       }
     </style>
-    <link rel="stylesheet" href="<?php echo esc_url(get_template_directory_uri() . '/assets/typography.css'); ?>" />
     <link rel="stylesheet" href="<?php echo esc_url(get_template_directory_uri() . '/assets/header.css'); ?>" />
     <link rel="stylesheet" href="<?php echo esc_url(get_template_directory_uri() . '/assets/site-theme.css'); ?>" />
   
