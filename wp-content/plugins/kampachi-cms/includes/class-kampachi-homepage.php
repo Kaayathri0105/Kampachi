@@ -418,17 +418,20 @@ final class Kampachi_Homepage
     public static function render_hero_fields(
         array $settings,
         string $prefix = 'home',
-        bool $hideManualImages = false
+        bool $hideManualImages = false,
+        bool $showMode = true
     ): void {
         $heroSlides = is_array($settings['hero_slides'] ?? null) ? $settings['hero_slides'] : [];
         $name = esc_attr($prefix);
-        echo '<div class="kc-field"><label class="kc-label" for="kc_hero_mode">Hero type</label>'
-            . '<select id="kc_hero_mode" name="' . $name . '[hero_mode]">';
-        foreach (self::HERO_MODES as $mode => $label) {
-            echo '<option value="' . esc_attr($mode) . '"'
-                . selected(self::hero_mode($settings), $mode, false) . '>' . esc_html($label) . '</option>';
+        if ($showMode) {
+            echo '<div class="kc-field"><label class="kc-label" for="kc_hero_mode">Hero type</label>'
+                . '<select id="kc_hero_mode" name="' . $name . '[hero_mode]">';
+            foreach (self::HERO_MODES as $mode => $label) {
+                echo '<option value="' . esc_attr($mode) . '"'
+                    . selected(self::hero_mode($settings), $mode, false) . '>' . esc_html($label) . '</option>';
+            }
+            echo '</select></div>';
         }
-        echo '</select></div>';
         $videoId = absint($settings['hero_video_id'] ?? 0);
         $videoUrl = $videoId ? wp_get_attachment_url($videoId) : false;
         echo '<div class="kc-field"><label class="kc-label">Hero video <span class="kc-muted">2560 × 1440 · MP4</span></label>';
@@ -439,7 +442,9 @@ final class Kampachi_Homepage
             . '<button type="button" class="button kc-clear-video">Remove</button>';
         echo '<video class="kc-home-video-preview" controls playsinline preload="metadata" aria-label="Hero video preview"'
             . ($videoUrl ? ' src="' . esc_url($videoUrl) . '"' : ' hidden') . '></video></div>';
-        echo '<p class="description">The selected hero type controls which media appear. Mixed slides start with the video.</p>';
+        if ($showMode) {
+            echo '<p class="description">The selected hero type controls which media appear. Mixed slides start with the video.</p>';
+        }
         echo '<div data-kc-hero-source-panel="manual"' . ($hideManualImages ? ' hidden' : '') . '>';
         echo '<h3>Hero Images <small>(unlimited)</small></h3><div id="kc-hero-list" class="kc-repeat-list" data-type="hero">';
         foreach ($heroSlides as $i => $slide) {

@@ -88,9 +88,10 @@ body:not(.home){background:var(--kc-paper)!important;color:var(--kc-ink)}
     z-index: 2;
     inset: 0;
     display: grid;
-    place-items: center;
-    padding: 24px;
-    background: rgba(15, 7, 4, .34);
+    place-items: end center;
+    box-sizing: border-box;
+    padding: 24px 24px clamp(88px, 12svh, 132px);
+    background: linear-gradient(to top, rgba(15, 7, 4, .82), rgba(15, 7, 4, .1) 48%, transparent 75%);
     pointer-events: none;
 }
 
