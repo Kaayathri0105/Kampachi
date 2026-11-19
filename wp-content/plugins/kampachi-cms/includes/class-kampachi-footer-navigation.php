@@ -101,8 +101,16 @@ final class FooterNavigation
         if ($item['type'] === 'page') {
             $value = $row['post_id'] ?? null;
             $id = is_int($value) || (is_string($value) && ctype_digit($value)) ? (int) $value : 0;
-            if (self::publishedPost($id) === null) {
+            $post = self::publishedPost($id);
+            if ($post === null) {
                 return null;
+            }
+
+            if ($post->post_type === Outlets::POST_TYPE) {
+                $item['label'] = Outlets::locationName($post);
+                if ($item['label'] === '') {
+                    return null;
+                }
             }
 
             $item['post_id'] = $id;

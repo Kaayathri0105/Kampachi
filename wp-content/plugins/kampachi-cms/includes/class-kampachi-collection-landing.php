@@ -396,7 +396,7 @@ abstract class CollectionLanding
                 $names[] = $term->name;
             }
         }
-        $title = get_the_title($post);
+        $title = static::POST_TYPE === Outlets::POST_TYPE ? Outlets::locationName($post) : get_the_title($post);
         echo '<li data-item="' . esc_attr((string) $post->ID) . '" data-categories="'
             . esc_attr(implode(' ', $keys)) . '">';
         self::reorderControls($title);

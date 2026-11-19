@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\Outlets;
+
 if (! defined('ABSPATH')) {
     exit;
 }
@@ -118,12 +120,7 @@ final class Kampachi_Header_Editor
         $result = [];
         foreach (['home', 'promotion', 'sake', '47in27', 'catering-events', 'outlets', 'contact-us'] as $slug) {
             $page = get_page_by_path($slug, OBJECT, 'page');
-            $children = [];
-            if ($slug === 'outlets') {
-                foreach (self::published_outlets() as $outlet) {
-                    $children[] = ['title' => get_the_title($outlet), 'url' => get_permalink($outlet)];
-                }
-            }
+            $children = $slug === 'outlets' ? self::location_children() : [];
 
             if ($page instanceof WP_Post && $page->post_status === 'publish') {
                 $result[] = [
@@ -150,37 +147,39 @@ final class Kampachi_Header_Editor
     {
         $settings = get_option('kampachi_cms_settings', []);
         if (is_array($settings) && array_key_exists('header_booking_items', $settings)) {
-            return is_array($settings['header_booking_items']) ? $settings['header_booking_items'] : [];
+            return self::sanitize_booking($settings['header_booking_items']);
         }
 
         $result = [];
-        foreach (self::published_outlets() as $outlet) {
+        foreach (Outlets::publishedLocations() as $outlet) {
             $result[] = [
                 'outlet_id' => $outlet->ID,
-                'title' => get_the_title($outlet),
+                'title' => Outlets::locationName($outlet),
                 'url' => (string) get_post_meta($outlet->ID, '_kampachi_booking_url', true),
             ];
         }
         return $result;
     }
 
-    /** @return WP_Post[] */
-    private static function published_outlets(): array
+    /** @return list<array{title: string, url: string}> */
+    public static function location_children(): array
     {
-        return get_posts([
-            'post_type' => 'kc_outlet',
-            'post_status' => 'publish',
-            'numberposts' => -1,
-            'orderby' => 'menu_order title',
-            'order' => 'ASC',
-        ]);
+        $items = [];
+        foreach (Outlets::publishedLocations() as $outlet) {
+            $url = get_permalink($outlet);
+            if (is_string($url) && $url !== '') {
+                $items[] = ['title' => Outlets::locationName($outlet), 'url' => $url];
+            }
+        }
+
+        return $items;
     }
 
     public static function render(): void
     {
         $nav = self::menu_items();
         $booking = self::booking_items();
-        $outlets = self::published_outlets();
+        $outlets = Outlets::publishedLocations();
 
         echo '<section class="kc-header-section"><div class="kc-header-section-heading">';
         echo '<h2><span class="kc-section-number">02</span> Header Navigation</h2><p>Set an English menu title and its Japanese caption separately. Both labels appear in the header. Leave the Japanese field blank to show English only. Reorder links with the drag handle.</p></div>';
@@ -250,10 +249,9 @@ final class Kampachi_Header_Editor
         echo '<label>Outlet<select data-field="outlet_id" class="kc-header-outlet-select"><option value="0">Choose outlet</option>';
         foreach ($outlets as $outlet) {
             $default = (string) get_post_meta($outlet->ID, '_kampachi_booking_url', true);
-            echo '<option value="' . esc_attr((string) $outlet->ID) . '" data-default-url="' . esc_attr($default) . '" ' . selected(absint($item['outlet_id'] ?? 0), $outlet->ID, false) . '>' . esc_html(get_the_title($outlet)) . '</option>';
+            echo '<option value="' . esc_attr((string) $outlet->ID) . '" data-default-url="' . esc_attr($default) . '" ' . selected(absint($item['outlet_id'] ?? 0), $outlet->ID, false) . '>' . esc_html(Outlets::locationName($outlet)) . '</option>';
         }
         echo '</select></label>';
-        echo '<label>Dropdown title<input type="text" data-field="title" value="' . esc_attr((string) ($item['title'] ?? '')) . '" placeholder="Uses outlet name if blank"></label>';
         echo '<label>Booking URL (override)<input type="url" data-field="url" value="' . esc_attr((string) ($item['url'] ?? '')) . '" placeholder="Uses Outlet post booking URL if blank"></label>';
         echo '<button class="button-link-delete kc-header-remove" type="button">Remove</button></div>';
     }
@@ -326,12 +324,11 @@ final class Kampachi_Header_Editor
                 continue;
             }
             $id = absint($entry['outlet_id'] ?? 0);
-            if ($id === 0 || in_array($id, $seen, true)
-                || get_post_type($id) !== 'kc_outlet' || get_post_status($id) !== 'publish') {
+            $title = Outlets::locationName($id);
+            if ($title === '' || isset($seen[$title])) {
                 continue;
             }
-            $seen[] = $id;
-            $title = isset($entry['title']) && is_string($entry['title']) ? sanitize_text_field($entry['title']) : '';
+            $seen[$title] = true;
             $url = isset($entry['url']) && is_string($entry['url']) ? self::safe_url($entry['url']) : '';
             $output[] = ['outlet_id' => $id, 'title' => $title, 'url' => $url];
         }

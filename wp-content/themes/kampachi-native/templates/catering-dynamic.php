@@ -8,6 +8,7 @@
 declare(strict_types=1);
 
 use Kampachi\CMS\Catering;
+use Kampachi\CMS\Outlets;
 
 if (! defined('ABSPATH')) {
     exit;
@@ -143,7 +144,7 @@ foreach (Catering::hero_media_ids($heroOwnerId) as $mediaId) {
                                 $eventImages[] = ['url' => $thumbnail, 'alt' => $eventTitle];
                             }
                         }
-                        $outletIds = Catering::image_ids(get_post_meta($eventId, '_kampachi_event_outlet_ids', true));
+                        $outletIds = Catering::outlet_ids($eventId);
                         ?>
                         <article class="kc-catering-card">
                             <div class="kc-catering-card-image" data-kc-carousel>
@@ -171,12 +172,10 @@ foreach (Catering::hero_media_ids($heroOwnerId) as $mediaId) {
                                 <h2><?php echo esc_html($eventTitle); ?></h2>
                                 <?php if ($summary !== '') : ?><p class="kc-catering-card-description"><?php echo esc_html($summary); ?></p><?php endif; ?>
                                 <?php if ($outletIds !== []) : ?>
-                                    <div class="kc-catering-available-outlets" aria-label="Available outlets">
-                                        <span><?php echo esc_html(kampachi_native_label('available_at')); ?>:</span>
+                                    <div class="kc-catering-available-outlets" aria-label="<?php echo esc_attr(kampachi_native_label('locations')); ?>">
+                                        <span><?php echo esc_html(kampachi_native_label('locations')); ?>:</span>
                                         <?php foreach ($outletIds as $outletId) : ?>
-                                            <?php if (get_post_type($outletId) === 'kc_outlet' && get_post_status($outletId) === 'publish') : ?>
-                                                <a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(get_the_title($outletId)); ?></a>
-                                            <?php endif; ?>
+                                            <a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?></a>
                                         <?php endforeach; ?>
                                     </div>
                                 <?php endif; ?>

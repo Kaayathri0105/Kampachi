@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\Outlets;
 use Kampachi\CMS\SakeBottles;
 
 if (! defined('ABSPATH') || ! isset($args['bottle']) || ! is_array($args['bottle'])) {
@@ -55,12 +56,12 @@ $image = $bottle['image_id'] > 0 ? wp_get_attachment_image($bottle['image_id'], 
         <?php endif; ?>
         <?php if ($outlets !== []) : ?>
             <div class="kc-sake-bottle-availability">
-                <h4><?php echo esc_html(kampachi_native_label('available_at')); ?></h4>
+                <h4><?php echo esc_html(kampachi_native_label('locations')); ?></h4>
                 <ul>
                     <?php foreach ($outlets as $outletId) : ?>
                         <li>
                             <a href="<?php echo esc_url(get_permalink($outletId)); ?>">
-                                <?php echo esc_html(get_the_title($outletId)); ?>
+                                <?php echo esc_html(Outlets::locationName($outletId)); ?>
                             </a>
                         </li>
                     <?php endforeach; ?>

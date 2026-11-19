@@ -8,6 +8,7 @@
 declare(strict_types=1);
 
 use Kampachi\CMS\Catering;
+use Kampachi\CMS\Outlets;
 
 if (! class_exists(Catering::class)) {
     get_template_part('single');
@@ -69,13 +70,11 @@ while (have_posts()) {
                 <h1><?php the_title(); ?></h1>
                 <?php if ($summary !== '') : ?><p class="kc-catering-detail-summary"><?php echo esc_html($summary); ?></p><?php endif; ?>
                 <div class="kc-catering-detail-text"><?php the_content(); ?></div>
-                <?php $outletIds = Catering::image_ids(get_post_meta($postId, '_kampachi_event_outlet_ids', true)); ?>
+                <?php $outletIds = Catering::outlet_ids($postId); ?>
                 <?php if ($outletIds !== []) : ?>
-                    <div class="kc-catering-detail-outlets"><h2><?php echo esc_html(kampachi_native_label('available_at')); ?></h2>
+                    <div class="kc-catering-detail-outlets"><h2><?php echo esc_html(kampachi_native_label('locations')); ?></h2>
                         <?php foreach ($outletIds as $outletId) : ?>
-                            <?php if (get_post_type($outletId) === 'kc_outlet' && get_post_status($outletId) === 'publish') : ?>
-                                <a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(get_the_title($outletId)); ?> ↗</a>
-                            <?php endif; ?>
+                            <a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?> ↗</a>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Kampachi\CMS\Content;
+use Kampachi\CMS\Outlets;
 use Kampachi\CMS\Seo;
 
 if (! defined('ABSPATH')) {
@@ -333,7 +334,6 @@ final class Kampachi_Homepage
         $settings = self::options();
         $offers = get_posts(['post_type' => 'kc_offer', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC']);
         $sakes = get_posts(['post_type' => 'kc_sake', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC']);
-        $outlets = get_posts(['post_type' => 'kc_outlet', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC']);
         $heroSlides = is_array($settings['hero_slides'] ?? null) ? $settings['hero_slides'] : [];
         $dishes = is_array($settings['dishes'] ?? null) ? $settings['dishes'] : [];
         $selectedOffers = array_map('intval', (array) ($settings['offer_ids'] ?? []));
@@ -761,14 +761,11 @@ final class Kampachi_Homepage
         echo '<section class="kch-section kch-outlets">';
         self::heading($config, 'outlets');
         echo '<div class="kch-grid">';
-        foreach (get_posts(['post_type' => 'kc_outlet', 'post_status' => 'publish', 'posts_per_page' => -1, 'orderby' => ['menu_order' => 'ASC', 'title' => 'ASC']]) as $post) {
-            if (! $post instanceof WP_Post || $post->post_type !== 'kc_outlet' || $post->post_status !== 'publish') {
-                continue;
-            }
+        foreach (Outlets::publishedLocations() as $post) {
             $phone = (string) get_post_meta($post->ID, '_kampachi_phone', true);
             $email = (string) get_post_meta($post->ID, '_kampachi_email', true);
             $location = (string) get_post_meta($post->ID, '_kampachi_address', true);
-            echo '<article class="kch-card kch-outlet-card"><div class="kch-card-body"><h3><a href="' . esc_url(get_permalink($post)) . '">' . esc_html(get_the_title($post)) . '</a></h3>';
+            echo '<article class="kch-card kch-outlet-card"><div class="kch-card-body"><h3><a href="' . esc_url(get_permalink($post)) . '">' . esc_html(Outlets::locationName($post)) . '</a></h3>';
             if ($location !== '') {
                 echo '<p>' . esc_html($location) . '</p>';
             }

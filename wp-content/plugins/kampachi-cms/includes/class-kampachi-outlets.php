@@ -17,6 +17,13 @@ final class Outlets
 {
     public const POST_TYPE = 'kc_outlet';
 
+    private const LOCATION_ALIASES = [
+        'EQ Kuala Lumpur' => ['eq', 'eqkl', 'eqkualalumpur'],
+        'Equatorial Penang' => ['penang', 'epen', 'equatorialpenang', 'penangequatorial'],
+        'Plaza33 Petaling Jaya' => ['plaza33', 'plaza33pj', 'plaza33petalingjaya'],
+        'Pavilion Kuala Lumpur' => ['pavilion', 'pavilionkl', 'pavilionkualalumpur'],
+    ];
+
     private const HERO_KEY = '_kampachi_outlet_hero_ids';
     private const DISHES_KEY = '_kampachi_outlet_dishes';
     private const MENUS_KEY = '_kampachi_outlet_menus';
@@ -26,6 +33,181 @@ final class Outlets
         add_action('add_meta_boxes', [self::class, 'register_boxes']);
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_admin']);
         add_action('save_post_' . self::POST_TYPE, [self::class, 'save_post'], 20, 2);
+        add_filter('wp_nav_menu_objects', [self::class, 'filterLocationMenu']);
+    }
+
+    private static function locationNameFromText(string $text): string
+    {
+        $key = strtolower($text);
+        $key = preg_replace('/[^a-z0-9]+/', '', $key) ?? '';
+        if (str_starts_with($key, 'kampachi')) {
+            $key = substr($key, strlen('kampachi'));
+        }
+
+        foreach (self::LOCATION_ALIASES as $name => $aliases) {
+            if (in_array($key, $aliases, true)) {
+                return $name;
+            }
+        }
+
+        return '';
+    }
+
+    private static function publishedOutlet(int|WP_Post $location): ?WP_Post
+    {
+        if (is_int($location) && $location <= 0) {
+            return null;
+        }
+
+        $post = get_post($location);
+        return $post instanceof WP_Post && $post->post_type === self::POST_TYPE && $post->post_status === 'publish'
+            ? $post
+            : null;
+    }
+
+    private static function sourceLocation(WP_Post $post): ?WP_Post
+    {
+        $sourceId = (int) get_post_meta($post->ID, '_kc_translation_of', true);
+
+        return $sourceId > 0 ? self::publishedOutlet($sourceId) : $post;
+    }
+
+    public static function locationName(int|WP_Post $location): string
+    {
+        $post = self::publishedOutlet($location);
+        $source = $post !== null ? self::sourceLocation($post) : null;
+        if ($source === null) {
+            return '';
+        }
+
+        $name = self::locationNameFromText($source->post_name);
+
+        return $name !== '' ? $name : self::locationNameFromText($source->post_title);
+    }
+
+    /** @return list<WP_Post> */
+    public static function filterLocations(array $posts): array
+    {
+        $locations = [];
+        foreach ($posts as $post) {
+            if ($post instanceof WP_Post) {
+                $name = self::locationName($post);
+                if ($name !== '' && ! isset($locations[$name])) {
+                    $locations[$name] = $post;
+                }
+            }
+        }
+
+        return array_values($locations);
+    }
+
+    /** @return list<WP_Post> */
+    public static function publishedLocations(): array
+    {
+        return self::filterLocations(get_posts([
+            'post_type' => self::POST_TYPE,
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'orderby' => ['menu_order' => 'ASC', 'title' => 'ASC', 'ID' => 'ASC'],
+            'meta_query' => [['key' => '_kc_translation_of', 'compare' => 'NOT EXISTS']],
+        ]));
+    }
+
+    /** @return list<int> */
+    public static function locationIds(mixed $values): array
+    {
+        $posts = [];
+        foreach (is_array($values) ? $values : [] as $value) {
+            if (! is_int($value) && ! is_string($value)) {
+                continue;
+            }
+
+            $id = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            $post = $id !== false ? self::publishedOutlet($id) : null;
+            if ($post !== null) {
+                $posts[] = self::sourceLocation($post);
+            }
+        }
+
+        return array_map(static fn (WP_Post $post): int => $post->ID, self::filterLocations($posts));
+    }
+
+    /** @return list<int> */
+    public static function legacyLocationIds(string $value): array
+    {
+        if (trim($value) === '') {
+            return [];
+        }
+
+        $names = [];
+        $parts = preg_split('/[,;\/\r\n]+|\s+(?:and|&)\s+/iu', $value) ?: [];
+        foreach ($parts as $part) {
+            $name = self::locationNameFromText($part);
+            if ($name !== '') {
+                $names[] = $name;
+            }
+        }
+
+        if ($names === []) {
+            return [];
+        }
+
+        $locations = array_filter(
+            self::publishedLocations(),
+            static fn (WP_Post $post): bool => in_array(self::locationName($post), $names, true)
+        );
+
+        return array_values(array_map(static fn (WP_Post $post): int => $post->ID, $locations));
+    }
+
+    public static function isLocationMenu(string $title, string $url): bool
+    {
+        $path = wp_parse_url($url, PHP_URL_PATH);
+
+        return in_array(strtolower(trim($title)), ['outlets', 'locations', 'our locations'], true)
+            || (is_string($path) && in_array(basename(rtrim($path, '/')), ['outlets', 'locations'], true));
+    }
+
+    /** @param WP_Post[] $items @return WP_Post[] */
+    public static function filterLocationMenu(array $items): array
+    {
+        $parents = [];
+        foreach ($items as $item) {
+            if (self::isLocationMenu((string) $item->title, (string) $item->url)) {
+                $parents[$item->ID] = true;
+            }
+        }
+
+        $locations = [];
+        if ($parents !== []) {
+            foreach (self::publishedLocations() as $post) {
+                $locations[self::locationName($post)] = $post->ID;
+            }
+        }
+
+        $seen = [];
+        foreach ($items as $key => $item) {
+            $parent = (int) $item->menu_item_parent;
+            $isOutlet = $item->object === self::POST_TYPE;
+            if (! $isOutlet && ! isset($parents[$parent])) {
+                continue;
+            }
+
+            $name = $isOutlet ? self::locationName((int) $item->object_id) : self::locationNameFromText($item->title);
+            if ($name === '' || isset($seen[$parent][$name]) || (! $isOutlet && ! isset($locations[$name]))) {
+                unset($items[$key]);
+                continue;
+            }
+
+            $seen[$parent][$name] = true;
+            $items[$key] = clone $item;
+            $items[$key]->title = $name;
+            if (! $isOutlet) {
+                $items[$key]->url = get_permalink($locations[$name]);
+            }
+        }
+
+        return $items;
     }
 
     public static function register_boxes(): void
@@ -69,7 +251,7 @@ final class Outlets
     {
         wp_nonce_field('kampachi_save_outlet', 'kampachi_outlet_nonce');
         echo '<div class="kc-outlet-editor">';
-        echo '<p>Each published outlet has its own website page. Use the WordPress post title as the outlet name. Drag items to set their website order.</p>';
+        echo '<p>Each published outlet has its own website page. Location listings use the approved outlet names. Drag items to set their website order.</p>';
 
         self::heading('01 / HERO & INTRODUCTION', 'Section 1 — Hero & Introduction');
         echo '<p class="description">Upload unlimited images/videos (suggested banner size: 2560 × 1440). Videos should be compressed MP4.</p>';

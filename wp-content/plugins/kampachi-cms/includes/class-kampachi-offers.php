@@ -212,19 +212,18 @@ final class Offers
     private static function renderOutlets(int $postId): void
     {
         $selected = self::outletIds($postId);
-        $outlets = get_posts(['post_type' => 'kc_outlet', 'post_status' => 'publish', 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC', 'suppress_filters' => false]);
-        echo '<section class="kc-offers-subpanel"><h4>Available Outlets</h4><div class="kc-offers-outlets">';
+        $outlets = Outlets::publishedLocations();
+        echo '<section class="kc-offers-subpanel"><h4>Locations</h4><div class="kc-offers-outlets">';
         foreach ($outlets as $outlet) {
             if (! $outlet instanceof WP_Post) {
                 continue;
             }
-            echo '<label><input type="checkbox" name="kampachi_offer[outlet_ids][]" value="' . esc_attr((string) $outlet->ID) . '" ' . checked(in_array($outlet->ID, $selected, true), true, false) . '> ' . esc_html($outlet->post_title) . '</label>';
+            echo '<label><input type="checkbox" name="kampachi_offer[outlet_ids][]" value="' . esc_attr((string) $outlet->ID) . '" ' . checked(in_array($outlet->ID, $selected, true), true, false) . '> ' . esc_html(Outlets::locationName($outlet)) . '</label>';
         }
         if ($outlets === []) {
             echo '<p>Add and publish outlet posts under Outlets to select them here.</p>';
         }
         echo '</div>';
-        self::input('outlet_name', 'Additional available outlets (optional)', self::field($postId, 'outlet_name'));
         echo '</section>';
     }
 
@@ -278,10 +277,10 @@ final class Offers
         self::saveSchedule($postId, $raw);
         self::saveThumbnail($postId, $raw);
         update_post_meta($postId, self::INTRO, wp_slash(wp_kses_post(self::string($raw['introduction'] ?? ''))));
-        update_post_meta($postId, '_kampachi_outlet_name', sanitize_text_field(self::string($raw['outlet_name'] ?? '')));
         update_post_meta($postId, self::MENUS, self::cleanMenus($raw['menus'] ?? []));
         update_post_meta($postId, self::DETAILS, wp_slash(self::cleanDetails($raw['details'] ?? [])));
-        update_post_meta($postId, self::OUTLETS, self::cleanOutletIds($raw['outlet_ids'] ?? []));
+        update_post_meta($postId, self::OUTLETS, Outlets::locationIds($raw['outlet_ids'] ?? []));
+        update_post_meta($postId, '_kampachi_offer_locations_saved', true);
         $hero = self::string($_POST['kampachi_offer_hero_ids'] ?? '');
         update_post_meta($postId, self::HERO, self::cleanMediaIds(explode(',', wp_unslash($hero))));
     }
@@ -555,24 +554,17 @@ final class Offers
         return self::cleanDetails($rows);
     }
 
-    /** @return array<int, int> */
-    private static function cleanOutletIds(mixed $raw): array
-    {
-        $ids = [];
-        foreach (is_array($raw) ? $raw : [] as $value) {
-            $id = is_scalar($value) ? absint($value) : 0;
-            $post = $id > 0 ? get_post($id) : null;
-            if ($post instanceof WP_Post && $post->post_type === 'kc_outlet' && $post->post_status === 'publish') {
-                $ids[] = $post->ID;
-            }
-        }
-        return array_values(array_unique($ids));
-    }
-
-    /** @return array<int, int> */
+    /** @return list<int> */
     public static function outletIds(int $postId): array
     {
-        return self::cleanOutletIds(get_post_meta($postId, self::OUTLETS, true));
+        $selected = get_post_meta($postId, self::OUTLETS, true);
+        $selected = is_array($selected) ? $selected : [];
+
+        if (! get_post_meta($postId, '_kampachi_offer_locations_saved', true)) {
+            $selected = array_merge($selected, Outlets::legacyLocationIds(self::field($postId, 'outlet_name')));
+        }
+
+        return Outlets::locationIds($selected);
     }
 
     public static function dateRange(int $postId): string

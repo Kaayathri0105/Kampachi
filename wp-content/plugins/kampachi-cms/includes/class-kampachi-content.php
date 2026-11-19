@@ -24,7 +24,7 @@ final class Content
     private const LABELS = [
         'discover' => 'Discover',
         'more' => 'More',
-        'available_at' => 'Available at',
+        'locations' => 'Locations',
         'visit_us' => 'Visit Us',
         'menus' => 'Menus',
         'signature_dishes' => 'Signature Dishes',
