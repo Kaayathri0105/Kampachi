@@ -63,7 +63,8 @@ $total = $sakes->post_count;
 ?>
 <main class="kc-catering-page kc-sake-page" id="main-content">
     <?php if ($hero !== []) : ?>
-        <section class="kc-catering-hero" data-kc-hero aria-roledescription="carousel" aria-label="Sake hero images and videos">
+        <section class="kc-catering-hero" data-kc-home-hero data-kc-hero-swipe data-kc-hero-image-delay="6500"
+            aria-roledescription="carousel" aria-label="Sake hero images and videos">
             <div class="kc-catering-hero-track">
                 <?php foreach ($hero as $index => $media) : ?>
                     <div class="kc-catering-hero-slide kc-motion-<?php echo esc_attr((string) ($media['direction'] ?? 'zoom-in')); ?><?php echo $index === 0 ? ' is-active' : ''; ?>" data-kc-hero-slide <?php if ($index > 0) : ?>aria-hidden="true"<?php endif; ?>>
@@ -78,14 +79,7 @@ $total = $sakes->post_count;
                 <?php endforeach; ?>
             </div>
             <span class="kc-catering-hero-shade" aria-hidden="true"></span>
-            <div class="kc-catering-hero-controls" aria-label="Hero slideshow controls">
-                <?php if (count($hero) > 1) : ?>
-                    <button type="button" data-kc-hero-prev aria-label="Previous hero item">←</button>
-                    <span class="kc-catering-hero-count" data-kc-hero-count>01 / <?php echo esc_html(sprintf('%02d', count($hero))); ?></span>
-                    <button type="button" data-kc-hero-next aria-label="Next hero item">→</button>
-                <?php endif; ?>
-                <button type="button" data-kc-hero-toggle aria-label="Pause hero slideshow" aria-pressed="true">Pause</button>
-            </div>
+            <?php \Kampachi_Homepage::hero_controls(count($hero), in_array('video', array_column($hero, 'type'), true)); ?>
         </section>
     <?php endif; ?>
 

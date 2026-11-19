@@ -45,7 +45,9 @@ while (have_posts()) :
                     <a class="kc-catering-detail-back" href="<?php echo esc_url(home_url('/sake/')); ?>">← <?php echo esc_html(kampachi_native_label('back_sake')); ?></a>
                     <p class="kc-catering-card-subtitle"><?php echo esc_html($subtitle); ?></p>
                     <h1><?php echo esc_html(get_the_title()); ?></h1>
-                    <?php if ($description !== '') : ?><p class="kc-catering-detail-summary"><?php echo esc_html($description); ?></p><?php endif; ?>
+                    <?php if ($description !== '') : ?>
+                        <div class="kc-catering-detail-summary"><?php echo wp_kses_post(wpautop($description)); ?></div>
+                    <?php endif; ?>
                     <div class="kc-catering-detail-text kc-editor-area"><?php the_content(); ?></div>
                 </div>
                 <section class="kc-sake-bottle-collection" aria-label="Sake bottles">

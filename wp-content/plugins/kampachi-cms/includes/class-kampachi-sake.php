@@ -80,18 +80,20 @@ final class Sake
         }
 
         wp_enqueue_media();
+        Content::enqueueDescriptionEditor();
         wp_enqueue_script('jquery-ui-sortable');
+        $assets = dirname(__DIR__) . '/assets/';
         wp_enqueue_style(
             'kampachi-sake-editor',
             plugins_url('../assets/catering-admin.css', __FILE__),
             [],
-            '2.5.0'
+            (string) filemtime($assets . 'catering-admin.css')
         );
         wp_enqueue_script(
             'kampachi-sake-editor',
             plugins_url('../assets/catering-admin.js', __FILE__),
             ['jquery', 'jquery-ui-sortable'],
-            '2.5.0',
+            (string) filemtime($assets . 'catering-admin.js'),
             true
         );
 
@@ -102,14 +104,14 @@ final class Sake
                 ['kampachi-sake-editor'],
                 '3.2.0'
             );
-            wp_enqueue_script(
-                'kampachi-sake-bottles',
-                plugins_url('../assets/sake-admin.js', __FILE__),
-                ['jquery', 'jquery-ui-sortable', 'kampachi-sake-editor'],
-                '3.2.0',
-                true
-            );
         }
+        wp_enqueue_script(
+            'kampachi-sake-bottles',
+            plugins_url('../assets/sake-admin.js', __FILE__),
+            ['jquery', 'jquery-ui-sortable', 'kampachi-sake-editor', Content::DESCRIPTION_EDITOR],
+            (string) filemtime($assets . 'sake-admin.js'),
+            true
+        );
     }
 
     public static function dashboard(): void
@@ -186,7 +188,8 @@ final class Sake
             echo '<div class="kc-catering-field"><label for="kc_sake_' . esc_attr($key) . '">' . esc_html($label) . '</label>';
 
             if ($key === 'intro_description') {
-                echo '<textarea id="kc_sake_' . esc_attr($key) . '" name="kampachi_sake_landing[' . esc_attr($key) . ']" class="large-text" rows="4">' . esc_textarea($value) . '</textarea>';
+                echo '<textarea id="kc_sake_intro_description" name="kampachi_sake_landing[intro_description]" '
+                    . 'class="large-text" rows="5" data-kc-sake-rich>' . esc_textarea($value) . '</textarea>';
             } else {
                 echo '<input type="text" id="kc_sake_' . esc_attr($key) . '" name="kampachi_sake_landing[' . esc_attr($key) . ']" value="' . esc_attr($value) . '" class="regular-text">';
             }
@@ -201,7 +204,7 @@ final class Sake
     private static function render_hero_picker(WP_Post $page): void
     {
         $ids = self::hero_ids($page->ID);
-        echo '<div class="kc-catering-hero-editor" data-kc-hero-editor>';
+        echo '<div class="kc-catering-hero-editor" data-kc-hero-editor data-kc-preview-video>';
         echo '<h3>Hero banners &amp; videos</h3>';
         echo '<p class="description">Upload as many images and videos as needed. Images: ideally 2560 × 1440 WebP. Videos: compressed MP4. Drag to reorder.</p>';
         echo '<input type="hidden" name="kampachi_sake_hero_media" data-kc-hero-ids value="' . esc_attr(implode(',', $ids)) . '">';
@@ -209,18 +212,24 @@ final class Sake
 
         foreach ($ids as $id) {
             $image = wp_attachment_is_image($id);
-            $thumbnail = wp_get_attachment_image_url($id, 'medium');
+            $thumbnail = $image ? wp_get_attachment_image_url($id, 'medium') : false;
+            $videoUrl = $image ? false : wp_get_attachment_url($id);
             $mime = get_post_mime_type($id);
+            $title = get_the_title($id);
             echo '<div class="kc-catering-hero-item" data-kc-hero-item data-id="' . esc_attr((string) $id) . '">';
             echo '<span class="dashicons dashicons-move kc-catering-hero-handle" aria-hidden="true"></span>';
 
-            if (is_string($thumbnail) && $thumbnail !== '') {
+            if (is_string($videoUrl) && $videoUrl !== '') {
+                echo '<video class="kc-catering-hero-preview" src="' . esc_url($videoUrl)
+                    . '" controls muted playsinline preload="metadata" aria-label="'
+                    . esc_attr('Preview ' . $title) . '"></video>';
+            } elseif (is_string($thumbnail) && $thumbnail !== '') {
                 echo '<img class="kc-catering-hero-preview" src="' . esc_url($thumbnail) . '" alt="">';
             } else {
                 echo '<span class="kc-catering-hero-preview kc-catering-video-placeholder"><span class="dashicons dashicons-format-video" aria-hidden="true"></span></span>';
             }
 
-            echo '<div class="kc-catering-hero-info"><strong>' . esc_html(get_the_title($id)) . '</strong>';
+            echo '<div class="kc-catering-hero-info"><strong>' . esc_html($title) . '</strong>';
             echo '<small>' . esc_html($image ? 'Image banner' : 'Video: ' . (string) $mime) . '</small></div>';
             echo '<button type="button" class="button-link-delete" data-kc-hero-remove>Remove</button></div>';
         }
@@ -284,17 +293,19 @@ final class Sake
         ] as $key => [$label, $metaKey]) {
             $value = get_post_meta($post->ID, $metaKey, true);
             $value = is_string($value) || is_numeric($value) ? (string) $value : '';
-            echo '<p class="kc-sake-meta-field"><label for="kc_sake_post_' . esc_attr($key) . '"><strong>' . esc_html($label) . '</strong></label>';
+            echo '<div class="kc-sake-meta-field"><label for="kc_sake_post_' . esc_attr($key)
+                . '"><strong>' . esc_html($label) . '</strong></label>';
 
             if ($key === 'description') {
-                echo '<textarea class="large-text" rows="3" id="kc_sake_post_' . esc_attr($key) . '" name="kampachi_sake_post[' . esc_attr($key) . ']">' . esc_textarea($value) . '</textarea>';
+                echo '<textarea class="large-text" rows="5" id="kc_sake_post_description" '
+                    . 'name="kampachi_sake_post[description]" data-kc-sake-rich>' . esc_textarea($value) . '</textarea>';
             } else {
                 $inputType = $key === 'enquiry_url' ? 'url' : 'text';
                 $placeholder = $key === 'enquiry_label' ? 'Enquire Now' : '';
                 echo '<input class="widefat" type="' . esc_attr($inputType) . '" id="kc_sake_post_' . esc_attr($key) . '" name="kampachi_sake_post[' . esc_attr($key) . ']" value="' . esc_attr($value) . '" placeholder="' . esc_attr($placeholder) . '">';
             }
 
-            echo '</p>';
+            echo '</div>';
         }
 
         $photos = self::valid_image_ids(get_post_meta($post->ID, '_kampachi_sake_image_ids', true));
@@ -347,7 +358,7 @@ final class Sake
             : [];
 
         foreach (['intro_subtitle', 'intro_title', 'intro_description'] as $key) {
-            $value = $fields[$key] ?? '';
+            $value = $fields[$key] ?? null;
             if (! is_string($value)) {
                 continue;
             }
@@ -355,7 +366,7 @@ final class Sake
             update_post_meta(
                 $page->ID,
                 '_kampachi_' . $key,
-                $key === 'intro_description' ? sanitize_textarea_field($value) : sanitize_text_field($value)
+                wp_slash($key === 'intro_description' ? wp_kses_post($value) : sanitize_text_field($value))
             );
         }
 
@@ -393,7 +404,7 @@ final class Sake
             $metaKey = $key === 'subtitle' ? '_kampachi_subtitle' : '_kampachi_sake_' . $key;
             $value = $key === 'enquiry_url'
                 ? esc_url_raw($value)
-                : ($key === 'description' ? sanitize_textarea_field($value) : sanitize_text_field($value));
+                : ($key === 'description' ? wp_kses_post($value) : sanitize_text_field($value));
             update_post_meta($postId, $metaKey, wp_slash($value));
         }
 

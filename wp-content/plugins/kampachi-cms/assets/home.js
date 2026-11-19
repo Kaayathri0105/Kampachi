@@ -11,6 +11,7 @@
         const count = hero.querySelector('[data-kc-hero-count]');
         const previous = hero.querySelector('[data-kc-hero-prev]');
         const next = hero.querySelector('[data-kc-hero-next]');
+        const imageDelay = Number(hero.dataset.kcHeroImageDelay) || 7500;
         const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
         let index = 0;
         let timer;
@@ -28,7 +29,7 @@
             if (controls) controls.hidden = slides.length === 1 && (!sound || sound.hidden);
         }
 
-        function scheduleNext(delay = 7500) {
+        function scheduleNext(delay = imageDelay) {
             window.clearTimeout(timer);
             if (slides.length > 1 && !motion.matches && !document.hidden) {
                 timer = window.setTimeout(() => showSlide(index + 1), delay);
@@ -79,6 +80,19 @@
 
         if (previous) previous.addEventListener('click', () => showSlide(index - 1));
         if (next) next.addEventListener('click', () => showSlide(index + 1));
+        if (slides.length > 1 && hero.hasAttribute('data-kc-hero-swipe')) {
+            let swipeStart = null;
+            hero.addEventListener('touchstart', (event) => {
+                swipeStart = event.touches[0]?.clientX ?? null;
+            }, { passive: true });
+            hero.addEventListener('touchend', (event) => {
+                const end = event.changedTouches[0]?.clientX;
+                if (swipeStart !== null && end !== undefined && Math.abs(end - swipeStart) > 50) {
+                    showSlide(index + (end < swipeStart ? 1 : -1));
+                }
+                swipeStart = null;
+            }, { passive: true });
+        }
         if (sound) {
             sound.addEventListener('click', () => {
                 const activeIndex = index;

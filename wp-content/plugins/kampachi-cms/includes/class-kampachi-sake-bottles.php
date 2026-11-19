@@ -102,10 +102,10 @@ final class SakeBottles
         self::renderFields($bottle, $prefix, $htmlId);
 
         echo '</div><p class="description">Leave the price blank to hide the price on the website.</p>';
-        echo '<p><label for="' . esc_attr($htmlId . 'description') . '">Bottle description / tasting notes</label>';
-        echo '<textarea class="widefat" rows="4" id="' . esc_attr($htmlId . 'description')
+        echo '<div><label for="' . esc_attr($htmlId . 'description') . '">Bottle description / tasting notes</label>';
+        echo '<textarea class="widefat" rows="4" data-kc-sake-rich id="' . esc_attr($htmlId . 'description')
             . '" name="' . esc_attr($prefix . '[description]') . '">'
-            . esc_textarea($bottle['description']) . '</textarea></p>';
+            . esc_textarea($bottle['description']) . '</textarea></div>';
         echo '<div class="kc-sake-bottle-image-editor">';
         echo '<input type="hidden" name="' . esc_attr($prefix . '[image_id]')
             . '" value="' . esc_attr((string) $bottle['image_id']) . '" data-kc-bottle-image-id>';
@@ -291,7 +291,7 @@ final class SakeBottles
                 return new WP_Error('kc_sake_bottle', sprintf('Bottle %d has an invalid text field.', $number));
             }
 
-            $clean[$key] = $key === 'description' ? sanitize_textarea_field($value) : sanitize_text_field($value);
+            $clean[$key] = $key === 'description' ? wp_kses_post($value) : sanitize_text_field($value);
         }
 
         if (trim($clean['name']) === '') {

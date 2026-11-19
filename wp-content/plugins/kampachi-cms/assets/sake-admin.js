@@ -1,23 +1,24 @@
 (function ($) {
     'use strict';
 
+    const descriptionEditor = window.kampachiDescriptionEditor;
+    const richField = 'textarea[data-kc-sake-rich]';
+    let nextRow = Date.now();
+
+    function richFields($scope, action) {
+        $scope.find(richField).each(function () {
+            descriptionEditor[action](this);
+        });
+    }
+
     function normalize($editor) {
         const $rows = $editor.find('[data-kc-bottles-list] > [data-kc-bottle]');
 
         $rows.each(function (index) {
             const $row = $(this);
-            const prefix = 'kc-sake-bottle-' + index + '-';
-
-            $row.attr('aria-labelledby', prefix + 'heading');
             $row.find('[data-kc-bottle-number]').text(index + 1);
             $row.find('[name]').each(function () {
                 this.name = this.name.replace(/kampachi_sake_bottles\[[^\]]+\]/, 'kampachi_sake_bottles[' + index + ']');
-            });
-            $row.find('[id]').each(function () {
-                this.id = this.id.replace(/^kc-sake-bottle-[^-]+-/, prefix);
-            });
-            $row.find('label[for]').each(function () {
-                $(this).attr('for', $(this).attr('for').replace(/^kc-sake-bottle-[^-]+-/, prefix));
             });
             $row.find('[data-kc-bottle-up]').prop('disabled', index === 0);
             $row.find('[data-kc-bottle-down]').prop('disabled', index === $rows.length - 1);
@@ -46,9 +47,12 @@
             return;
         }
 
-        const $row = $(template.innerHTML.replaceAll('__INDEX__', 'new').replaceAll('__BOTTLE_ID__', bottleId()));
+        const $row = $(template.innerHTML
+            .replaceAll('__INDEX__', String(++nextRow))
+            .replaceAll('__BOTTLE_ID__', bottleId()));
         $editor.find('[data-kc-bottles-list]').append($row);
         normalize($editor);
+        richFields($row, 'initialize');
         $row.find('input[name$="[name]"]').trigger('focus');
         announce($editor, 'Bottle added. Update or publish the brewery to save.');
     });
@@ -58,6 +62,7 @@
         const $row = $(this).closest('[data-kc-bottle]');
         const $next = $row.next('[data-kc-bottle]');
         const $previous = $row.prev('[data-kc-bottle]');
+        richFields($row, 'remove');
         $row.remove();
         normalize($editor);
 
@@ -74,6 +79,7 @@
         const $button = $(this);
         const $row = $button.closest('[data-kc-bottle]');
         const $editor = $row.closest('[data-kc-bottles-editor]');
+        richFields($row, 'remove');
 
         if ($button.is('[data-kc-bottle-up]')) {
             $row.insertBefore($row.prev('[data-kc-bottle]'));
@@ -82,6 +88,7 @@
         }
 
         normalize($editor);
+        richFields($row, 'initialize');
         $row.find('input[name$="[name]"]').trigger('focus');
         announce($editor, 'Bottle order changed. Update or publish the brewery to save.');
     });
@@ -138,6 +145,11 @@
     });
 
     $(function () {
+        richFields($(document), 'initialize');
+        $(richField).closest('form').on('submit', function () {
+            richFields($(this), 'save');
+        });
+
         $('[data-kc-bottles-editor]').each(function () {
             const $editor = $(this);
 
@@ -145,6 +157,13 @@
                 items: '> [data-kc-bottle]',
                 handle: '.kc-sake-bottle-handle',
                 tolerance: 'pointer',
+                start: function (event, ui) {
+                    ui.placeholder.height(ui.item.outerHeight());
+                    richFields(ui.item, 'remove');
+                },
+                stop: function (event, ui) {
+                    richFields(ui.item, 'initialize');
+                },
                 update: function () {
                     normalize($editor);
                     announce($editor, 'Bottle order changed. Update or publish the brewery to save.');

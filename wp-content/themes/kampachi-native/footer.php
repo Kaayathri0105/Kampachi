@@ -21,6 +21,26 @@ if (! is_string($footerLogo) || $footerLogo === '') {
 $footerLogo = is_string($footerLogo) ? $footerLogo : '';
 $publicEmail = kampachi_setting('contact_email');
 $publicPhone = kampachi_setting('contact_phone');
+$footerCompany = kampachi_setting('footer_company', get_bloginfo('name'));
+$companyName = trim(preg_replace(
+    '/^(?:copyright\s*)?(?:©|\(c\))\s*\d{4}\s*|\s*(?:©|\(c\))\s*\d{4}\s*$/iu',
+    '',
+    $footerCompany
+) ?? $footerCompany);
+if ($companyName === '') {
+    $companyName = get_bloginfo('name');
+}
+
+$privacyUrl = get_privacy_policy_url();
+if ($privacyUrl === '') {
+    foreach (['privacy-policy', 'privacy-and-policy'] as $slug) {
+        $privacyPage = get_page_by_path($slug, OBJECT, 'page');
+        if ($privacyPage instanceof WP_Post && $privacyPage->post_status === 'publish') {
+            $privacyUrl = get_permalink($privacyPage);
+            break;
+        }
+    }
+}
 /*
  * Footer icons from Bootstrap Icons (https://icons.getbootstrap.com/).
  *
@@ -182,10 +202,9 @@ $footerBackgroundStyle = '--kampachi-footer-bg: url(' . wp_json_encode(
             <?php endif; ?>
         </div>
         <div class="footer-bottom">
-            <p class="copyright"><?php echo esc_html(kampachi_setting('footer_company', get_bloginfo('name'))); ?> © <?php echo esc_html(wp_date('Y')); ?></p>
-            <?php $privacyPage = get_page_by_path('privacy-policy', OBJECT, 'page'); ?>
-            <?php if ($privacyPage instanceof WP_Post && $privacyPage->post_status === 'publish') : ?>
-                <a class="footer-privacy" href="<?php echo esc_url(get_permalink($privacyPage)); ?>"><?php echo esc_html(get_the_title($privacyPage)); ?></a>
+            <p class="copyright">Copyright © <?php echo esc_html(wp_date('Y') . ' ' . $companyName); ?></p>
+            <?php if (is_string($privacyUrl) && $privacyUrl !== '') : ?>
+                <a class="footer-privacy" href="<?php echo esc_url($privacyUrl); ?>">Privacy &amp; Policy</a>
             <?php endif; ?>
         </div>
     </div>
