@@ -50,25 +50,10 @@ final class Homepage_Content
 
     public static function ordered_sections(array $settings): array
     {
-        $order = $settings['section_order'] ?? [];
-        $order = is_array($order) ? $order : [];
-        $sections = array_values(array_diff(self::SECTIONS, ['outlets']));
-        usort($sections, static function (string $a, string $b) use ($order): int {
-            $left = isset($order[$a]) ? (int) $order[$a] : array_search($a, self::SECTIONS, true) + 1;
-            $right = isset($order[$b]) ? (int) $order[$b] : array_search($b, self::SECTIONS, true) + 1;
-
-            return ($left <=> $right)
-                ?: (array_search($a, self::SECTIONS, true) <=> array_search($b, self::SECTIONS, true));
-        });
-
-        $sections = array_values(array_filter(
-            $sections,
+        return array_values(array_filter(
+            self::SECTIONS,
             static fn (string $section): bool => self::enabled($settings, $section)
         ));
-
-        $sections[] = 'outlets';
-
-        return $sections;
     }
 
     public static function content(array $settings, string $section, string $field, string $default = ''): string
@@ -153,6 +138,11 @@ final class Homepage_Content
         return max(0, min($maximum, absint($settings[$key])));
     }
 
+    public static function items_per_view(array $settings, string $section, int $default, int $count): int
+    {
+        return max(1, min($count, absint($settings[$section . '_per_view'] ?? $default)));
+    }
+
     /**
      * Return only published posts of the requested type in the editor's order.
      * Before the first homepage save, use the existing published content.
@@ -223,12 +213,7 @@ final class Homepage_Content
     /** @return array<int, array<string, string>> */
     public static function sake_slides(array $settings): array
     {
-        $limit = self::limit($settings, 'sake', 6, 24);
-        if ($limit === 0) {
-            return [];
-        }
-
-        $posts = self::posts($settings, 'sake_ids', 'kc_sake', $limit);
+        $posts = self::posts($settings + ['sake_ids' => []], 'sake_ids', 'kc_sake');
         $slides = [];
 
         foreach ($posts as $post) {

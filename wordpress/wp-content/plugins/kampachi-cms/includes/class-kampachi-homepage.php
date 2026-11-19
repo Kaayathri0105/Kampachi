@@ -46,6 +46,7 @@ final class Kampachi_Homepage
         }
 
         wp_enqueue_media();
+        wp_enqueue_editor();
         wp_enqueue_style(
             'kampachi-home-admin',
             plugins_url('../assets/admin.css', __FILE__),
@@ -167,47 +168,44 @@ final class Kampachi_Homepage
         return nl2br(esc_html(sanitize_textarea_field($input)), false);
     }
 
-    private static function text_editor(
-        string $name,
-        string $formatName,
-        string $label,
-        string $value,
-        mixed $format,
-        int $rows = 3
-    ): void {
-        $format = self::text_format($format);
-        $id = 'kc_' . sanitize_html_class(str_replace(['[', ']'], ['_', ''], $name));
-        $tags = ['p' => 'Paragraph'];
-        foreach (array_slice(self::TEXT_TAGS, 1) as $tag) {
-            $tags[$tag] = 'Heading ' . substr($tag, 1);
+    private static function description_markup(string $value, mixed $legacyFormat): string
+    {
+        $html = wp_kses_post($value);
+        if ($html === '') {
+            return '';
         }
 
-        echo '<div class="kc-field kc-home-text"><label class="kc-label" for="' . esc_attr($id) . '">'
-            . esc_html($label) . '</label>';
-        echo '<textarea class="widefat" id="' . esc_attr($id) . '" name="' . esc_attr($name)
-            . '" rows="' . esc_attr((string) $rows) . '">' . esc_textarea(self::plain_text($value)) . '</textarea>';
-        echo '<div class="kc-home-text-options">';
-        self::format_select($formatName . '[tag]', 'Text type', $tags, $format['tag']);
-        self::format_select(
-            $formatName . '[size]',
-            'Font size',
-            array_combine(self::TEXT_SIZES, array_map(static fn (int $size): string => $size . ' px', self::TEXT_SIZES)),
-            (string) ($format['size'] ?: '')
-        );
-        self::format_select($formatName . '[weight]', 'Weight', self::TEXT_WEIGHTS, $format['weight']);
-        self::format_select($formatName . '[align]', 'Alignment', self::TEXT_ALIGNMENTS, $format['align']);
-        echo '</div></div>';
+        $format = self::text_format($legacyFormat);
+        $styles = [];
+        if ($format['size'] > 0) {
+            $styles[] = 'font-size:' . $format['size'] . 'px!important';
+        }
+        if ($format['weight'] !== '') {
+            $styles[] = 'font-weight:' . $format['weight'];
+        }
+        if ($format['align'] !== '') {
+            $styles[] = 'text-align:' . $format['align'];
+        }
+
+        if ($format['tag'] === '' && $styles === []) {
+            return $html;
+        }
+
+        $tag = $format['tag'] ?: 'div';
+        $content = $format['tag'] === '' ? $html : nl2br(esc_html(self::plain_text($html)), false);
+        $style = $styles === [] ? '' : ' style="' . esc_attr(implode(';', $styles)) . '"';
+
+        return '<' . $tag . $style . '>' . $content . '</' . $tag . '>';
     }
 
-    private static function format_select(string $name, string $label, array $options, string $selected): void
+    private static function text_editor(string $name, string $label, string $value, int $rows, bool $rich): void
     {
-        echo '<label>' . esc_html($label) . '<select name="' . esc_attr($name) . '">'
-            . '<option value="">Default</option>';
-        foreach ($options as $value => $caption) {
-            echo '<option value="' . esc_attr((string) $value) . '"'
-                . selected($selected, (string) $value, false) . '>' . esc_html($caption) . '</option>';
-        }
-        echo '</select></label>';
+        $id = 'kc_' . sanitize_html_class(str_replace(['[', ']'], ['_', ''], $name));
+        $class = $rich ? 'widefat kc-home-description-editor' : 'widefat';
+        echo '<div class="kc-field kc-home-text"><label class="kc-label" for="' . esc_attr($id) . '">'
+            . esc_html($label) . '</label>';
+        echo '<textarea class="' . esc_attr($class) . '" id="' . esc_attr($id) . '" name="' . esc_attr($name)
+            . '" rows="' . esc_attr((string) $rows) . '">' . esc_textarea($value) . '</textarea></div>';
     }
 
     private static function section_value(array $settings, string $key): string
@@ -228,14 +226,11 @@ final class Kampachi_Homepage
 
     private static function section_text(array $settings, string $key, string $label, int $rows = 3): void
     {
-        self::text_editor(
-            'home[' . $key . ']',
-            'home[format][' . $key . ']',
-            $label,
-            self::section_value($settings, $key),
-            $settings['format'][$key] ?? [],
-            $rows
-        );
+        $rich = str_ends_with($key, '_description');
+        $value = self::section_value($settings, $key);
+        $value = $rich ? self::description_markup($value, $settings['format'][$key] ?? []) : self::plain_text($value);
+
+        self::text_editor('home[' . $key . ']', $label, $value, $rows, $rich);
     }
 
     private static function media_field(string $name, int $id, string $label, string $note): void
@@ -254,13 +249,11 @@ final class Kampachi_Homepage
 
     private static function repeat_text(string $prefix, array $data, string $key, string $label): void
     {
-        self::text_editor(
-            $prefix . '[' . $key . ']',
-            $prefix . '[format][' . $key . ']',
-            $label,
-            (string) ($data[$key] ?? ''),
-            $data['format'][$key] ?? []
-        );
+        $rich = $key === 'description';
+        $value = (string) ($data[$key] ?? '');
+        $value = $rich ? self::description_markup($value, $data['format'][$key] ?? []) : self::plain_text($value);
+
+        self::text_editor($prefix . '[' . $key . ']', $label, $value, 3, $rich);
     }
 
     public static function hero_mode(array $settings): string
@@ -353,24 +346,13 @@ final class Kampachi_Homepage
         wp_nonce_field('kampachi_homepage_save', 'kampachi_home_nonce');
         self::seo_fields();
 
-        echo '<section id="kc-section-layout" class="kc-panel"><h2><span class="kc-section-number">00</span> Homepage layout <small>Visibility and order</small></h2>';
-        echo '<p>Enable or disable each section and choose the order below the banner. The banner stays at the top when enabled. All published outlets always appear in the final section.</p>';
+        echo '<section id="kc-section-layout" class="kc-panel"><h2><span class="kc-section-number">00</span> Homepage layout</h2>';
+        echo '<p>Enable or disable each section. The banner stays at the top when enabled, and published outlets appear in the final section.</p>';
         echo '<div class="kc-layout-grid">';
         $visibility = is_array($settings['section_visibility'] ?? null) ? $settings['section_visibility'] : [];
-        $order = is_array($settings['section_order'] ?? null) ? $settings['section_order'] : [];
         foreach (['hero' => 'Homepage Banner', 'intro' => 'Introduction', 'offers' => 'Offers & Events', 'dishes' => 'Signature Dishes', 'sake' => 'Artisanal Sake'] as $section => $label) {
             $enabled = ! array_key_exists($section, $visibility) || (bool) $visibility[$section];
             echo '<div class="kc-layout-item"><label><input type="checkbox" name="home[section_visibility][' . esc_attr($section) . ']" value="1" ' . checked($enabled, true, false) . '> ' . esc_html($label) . '</label>';
-            if ($section !== 'hero') {
-                $position = isset($order[$section]) ? absint($order[$section]) : (int) array_search($section, ['intro', 'offers', 'dishes', 'sake', 'outlets'], true) + 1;
-                echo '<label>Order <select name="home[section_order][' . esc_attr($section) . ']">';
-                for ($index = 1; $index <= 4; $index++) {
-                    echo '<option value="' . $index . '" ' . selected($position, $index, false) . '>' . $index . '</option>';
-                }
-                echo '</select></label>';
-            } else {
-                echo '<span class="description">Fixed top position</span>';
-            }
             echo '</div>';
         }
         echo '</div></section>';
@@ -405,18 +387,11 @@ final class Kampachi_Homepage
         self::section_text($settings, 'intro_description', 'Description', 6);
         echo '</section>';
 
-        echo '<section id="kc-section-promotions" class="kc-panel"><h2><span class="kc-section-number">03</span> Offers &amp; Events <small>From Offers &amp; Events · maximum 3 cards</small></h2>';
+        echo '<section id="kc-section-promotions" class="kc-panel"><h2><span class="kc-section-number">03</span> Offers &amp; Events <small>From Offers &amp; Events</small></h2>';
         self::section_text($settings, 'offers_title', 'Title');
         self::section_text($settings, 'offers_description', 'Description', 5);
-        echo '<div class="kc-choices kc-offer-choices">';
-        foreach ($offers as $post) {
-            echo '<label><input type="checkbox" name="home[offer_ids][]" value="' . esc_attr((string) $post->ID) . '" ' . checked(in_array($post->ID, $selectedOffers, true), true, false) . '> ' . esc_html($post->post_title) . '</label>';
-        }
-        if ($offers === []) {
-            echo '<p>No published promotions yet. Add them in Promotions.</p>';
-        }
-        echo '</div><p class="description kc-offer-count">Selected: ' . count($selectedOffers) . ' / 3</p>';
-        self::limit_field('offers', $settings, 3, 3);
+        self::post_picker($offers, $selectedOffers, 'offer_ids', 'Choose an offer');
+        self::items_per_view_field('offers', $settings, absint($settings['offers_limit'] ?? 3), count($offers));
         echo '</section>';
 
         echo '<section id="kc-section-dishes" class="kc-panel"><h2><span class="kc-section-number">04</span> Signature dishes <small>Unlimited items</small></h2>';
@@ -433,15 +408,8 @@ final class Kampachi_Homepage
         echo '<section id="kc-section-sake" class="kc-panel"><h2><span class="kc-section-number">05</span> Artisanal Sake <small>From Sake Collection</small></h2>';
         self::section_text($settings, 'sake_title', 'Title');
         self::section_text($settings, 'sake_description', 'Description', 5);
-        echo '<div class="kc-choices">';
-        foreach ($sakes as $post) {
-            echo '<label><input type="checkbox" name="home[sake_ids][]" value="' . esc_attr((string) $post->ID) . '" ' . checked(in_array($post->ID, $selectedSakes, true), true, false) . '> ' . esc_html($post->post_title) . '</label>';
-        }
-        if ($sakes === []) {
-            echo '<p>No published sake yet. Add items in Sake Collection.</p>';
-        }
-        echo '</div>';
-        self::limit_field('sake', $settings, 6, 24);
+        self::post_picker($sakes, $selectedSakes, 'sake_ids', 'Choose a sake');
+        self::items_per_view_field('sake', $settings, 1, count($sakes));
         echo '</section>';
 
         echo '<section id="kc-section-outlets" class="kc-panel"><h2><span class="kc-section-number">06</span> Restaurants <small>From Outlets</small></h2>';
@@ -478,6 +446,59 @@ final class Kampachi_Homepage
         echo '</div>';
     }
 
+    /**
+     * @param list<WP_Post> $posts
+     * @param list<int> $selectedIds
+     */
+    private static function post_picker(array $posts, array $selectedIds, string $field, string $label): void
+    {
+        $available = [];
+        foreach ($posts as $post) {
+            $available[$post->ID] = $post->post_title;
+        }
+        $selected = array_intersect_key(array_flip($selectedIds), $available);
+        $id = 'kc_home_' . $field;
+
+        echo '<div class="kc-field kc-home-post-picker">';
+        echo '<label class="kc-label" for="' . esc_attr($id) . '">' . esc_html($label) . '</label>';
+        echo '<div class="kc-home-post-input">';
+        echo '<select id="' . esc_attr($id) . '" class="kc-home-post-select"'
+            . disabled(count($selected) === count($available), true, false) . '>';
+        echo '<option value="">Select an item</option>';
+        foreach ($available as $postId => $title) {
+            $attributes = isset($selected[$postId]) ? ' disabled hidden' : '';
+            echo '<option value="' . esc_attr((string) $postId) . '"' . $attributes . '>'
+                . esc_html($title) . '</option>';
+        }
+        echo '</select><button type="button" class="button kc-home-post-add" disabled>Add</button></div>';
+        echo '<input type="hidden" class="kc-home-post-ids" name="home[' . esc_attr($field) . ']" value="'
+            . esc_attr(implode(',', array_keys($selected))) . '">';
+        echo '<ul class="kc-home-selected-posts" aria-label="Selected items">';
+        foreach (array_keys($selected) as $postId) {
+            $title = $available[$postId];
+            echo '<li data-post-id="' . esc_attr((string) $postId) . '"><span>' . esc_html($title) . '</span> ';
+            echo '<button type="button" class="button-link-delete kc-home-post-remove" aria-label="'
+                . esc_attr(sprintf('Remove %s', $title)) . '">Remove</button></li>';
+        }
+        echo '</ul><p class="description kc-home-post-empty"' . ($selected === [] ? '' : ' hidden') . '>';
+        echo $available === [] ? 'No published items available.' : 'No items selected.';
+        echo '</p></div>';
+    }
+
+    private static function items_per_view_field(string $section, array $settings, int $default, int $count): void
+    {
+        $field = $section . '_per_view';
+        $limit = max(1, min(max(1, $count), absint($settings[$field] ?? $default)));
+        $id = 'kc_home_' . $field;
+        echo '<div class="kc-field kc-limit-field">';
+        echo '<label class="kc-label" for="' . esc_attr($id) . '">Items per view</label>';
+        echo '<select id="' . esc_attr($id) . '" name="home[' . esc_attr($field) . ']">';
+        for ($number = 1; $number <= max(1, $count); $number++) {
+            echo '<option value="' . $number . '"' . selected($limit, $number, false) . '>' . $number . '</option>';
+        }
+        echo '</select></div>';
+    }
+
     private static function limit_field(string $section, array $settings, int $default, int $maximum): void
     {
         $limit = isset($settings[$section . '_limit']) ? absint($settings[$section . '_limit']) : $default;
@@ -504,8 +525,11 @@ final class Kampachi_Homepage
         return is_string($value) ? wp_kses_post($value) : '';
     }
 
-    private static function selected_posts(mixed $input, string $postType, int $limit = -1): array
+    private static function selected_posts(mixed $input, string $postType): array
     {
+        if (is_string($input)) {
+            $input = explode(',', $input);
+        }
         $ids = array_values(array_unique(array_filter(array_map('absint', is_array($input) ? $input : []))));
         $valid = [];
 
@@ -514,9 +538,6 @@ final class Kampachi_Homepage
                 continue;
             }
             $valid[] = $id;
-            if ($limit > 0 && count($valid) >= $limit) {
-                break;
-            }
         }
 
         return $valid;
@@ -536,9 +557,15 @@ final class Kampachi_Homepage
             $clean[$subtitle] = self::sanitize_rich($previous[$subtitle] ?? '');
             foreach (['title', 'description'] as $field) {
                 $key = $section . '_' . $field;
+                $submitted = $raw[$key] ?? null;
+                if ($field === 'description' && is_string($submitted)) {
+                    $clean[$key] = wp_kses_post($submitted);
+                    continue;
+                }
+
                 $existing = self::section_value($previous, $key);
-                $clean[$key] = self::save_text($raw[$key] ?? self::plain_text($existing), $existing);
-                $clean['format'][$key] = self::text_format($raw['format'][$key] ?? $previous['format'][$key] ?? []);
+                $clean[$key] = self::save_text($submitted ?? self::plain_text($existing), $existing);
+                $clean['format'][$key] = self::text_format($previous['format'][$key] ?? []);
             }
         }
         $video = absint($raw['hero_video_id'] ?? 0);
@@ -560,7 +587,7 @@ final class Kampachi_Homepage
                 'direction' => in_array($direction, $validDirections, true) ? $direction : 'zoom-in',
                 'title' => self::save_text($slide['title'] ?? '', $previous['hero_slides'][$index]['title'] ?? ''),
                 'text' => self::sanitize_rich($previous['hero_slides'][$index]['text'] ?? ''),
-                'format' => ['title' => self::text_format($slide['format']['title'] ?? [])],
+                'format' => ['title' => self::text_format($previous['hero_slides'][$index]['format']['title'] ?? [])],
             ];
         }
         $clean['dishes'] = [];
@@ -572,36 +599,38 @@ final class Kampachi_Homepage
             if (! $id || ! wp_attachment_is_image($id)) {
                 continue;
             }
+            $oldDish = $previous['dishes'][$index] ?? [];
+            $description = $dish['description'] ?? null;
             $clean['dishes'][] = [
                 'image_id' => $id,
-                'title' => self::save_text($dish['title'] ?? '', $previous['dishes'][$index]['title'] ?? ''),
-                'description' => self::save_text(
-                    $dish['description'] ?? '',
-                    $previous['dishes'][$index]['description'] ?? ''
-                ),
+                'title' => self::save_text($dish['title'] ?? '', $oldDish['title'] ?? ''),
+                'description' => is_string($description)
+                    ? wp_kses_post($description)
+                    : self::sanitize_rich($oldDish['description'] ?? ''),
                 'format' => [
-                    'title' => self::text_format($dish['format']['title'] ?? []),
-                    'description' => self::text_format($dish['format']['description'] ?? []),
+                    'title' => self::text_format($oldDish['format']['title'] ?? []),
+                    'description' => is_string($description)
+                        ? []
+                        : self::text_format($oldDish['format']['description'] ?? []),
                 ],
             ];
         }
         $sections = ['hero', 'intro', 'offers', 'dishes', 'sake', 'outlets'];
         $rawVisibility = is_array($raw['section_visibility'] ?? null) ? $raw['section_visibility'] : [];
-        $rawOrder = is_array($raw['section_order'] ?? null) ? $raw['section_order'] : [];
         $clean['section_visibility'] = [];
-        $clean['section_order'] = [];
-        foreach ($sections as $index => $section) {
+        foreach ($sections as $section) {
             $clean['section_visibility'][$section] = isset($rawVisibility[$section]) && $rawVisibility[$section] === '1';
-            if ($section !== 'hero') {
-                $clean['section_order'][$section] = max(1, min(5, absint($rawOrder[$section] ?? $index)));
-            }
         }
-        foreach (['offers' => [3, 3], 'dishes' => [0, 100], 'sake' => [6, 24], 'outlets' => [6, 24]] as $section => [$default, $maximum]) {
+        foreach (['dishes' => [0, 100], 'outlets' => [6, 24]] as $section => [$default, $maximum]) {
             $rawLimit = $raw[$section . '_limit'] ?? $default;
             $clean[$section . '_limit'] = max($section === 'dishes' ? 0 : 1, min($maximum, absint($rawLimit)));
         }
-        $clean['offer_ids'] = self::selected_posts($raw['offer_ids'] ?? [], 'kc_offer', 3);
-        $clean['sake_ids'] = self::selected_posts($raw['sake_ids'] ?? [], 'kc_sake');
+        foreach (['offers' => absint($previous['offers_limit'] ?? 3), 'sake' => 1] as $section => $default) {
+            $key = $section . '_per_view';
+            $clean[$key] = max(1, absint($raw[$key] ?? $previous[$key] ?? $default));
+        }
+        $clean['offer_ids'] = self::selected_posts($raw['offer_ids'] ?? $previous['offer_ids'] ?? [], 'kc_offer');
+        $clean['sake_ids'] = self::selected_posts($raw['sake_ids'] ?? $previous['sake_ids'] ?? [], 'kc_sake');
         $clean['outlet_ids'] = self::selected_posts($raw['outlet_ids'] ?? [], 'kc_outlet');
         update_option(self::OPTION, $clean, false);
         Seo::saveHomepage($raw['seo'] ?? null);
@@ -694,13 +723,7 @@ final class Kampachi_Homepage
         echo '<section class="kch-section kch-intro">';
         self::heading($config, 'intro');
         echo '</section>';
-        echo '<section class="kch-section kch-promotions">';
-        self::heading($config, 'offers');
-        echo '<div class="kch-grid">';
-        foreach (array_slice((array) ($config['offer_ids'] ?? []), 0, 3) as $id) {
-            self::post_card(absint($id), 'offer');
-        }
-        echo '</div></section>';
+        self::render_post_carousel($config, 'offers', 'offer_ids', 'offer', 'Offers and events', 3);
         echo '<section class="kch-section kch-dishes">';
         self::heading($config, 'dishes');
         echo '<div class="kch-grid">';
@@ -719,13 +742,7 @@ final class Kampachi_Homepage
                 ) . '</div></article>';
         }
         echo '</div></section>';
-        echo '<section class="kch-section kch-sake">';
-        self::heading($config, 'sake');
-        echo '<div class="kch-grid">';
-        foreach ((array) ($config['sake_ids'] ?? []) as $id) {
-            self::post_card(absint($id), 'sake');
-        }
-        echo '</div></section>';
+        self::render_post_carousel($config, 'sake', 'sake_ids', 'sake', 'Artisanal sake', 1);
         echo '<section class="kch-section kch-outlets">';
         self::heading($config, 'outlets');
         echo '<div class="kch-grid">';
@@ -750,6 +767,36 @@ final class Kampachi_Homepage
         }
         echo '</div></section></main>';
         return true;
+    }
+
+    private static function render_post_carousel(
+        array $config,
+        string $section,
+        string $key,
+        string $kind,
+        string $label,
+        int $default
+    ): void {
+        if (! ($config['section_visibility'][$section] ?? true)) {
+            return;
+        }
+
+        $ids = self::selected_posts($config[$key] ?? [], 'kc_' . $kind);
+        if ($ids === []) {
+            return;
+        }
+
+        $perView = max(1, min(count($ids), absint($config[$section . '_per_view'] ?? $default)));
+        echo '<section class="kch-section kch-' . esc_attr($section) . '">';
+        self::heading($config, $section);
+        echo '<div data-kc-content-carousel data-kc-carousel-per-view="' . esc_attr((string) $perView)
+            . '" role="region" aria-roledescription="carousel" aria-label="' . esc_attr($label) . '">';
+        echo '<div class="kch-grid kc-home-post-track" data-kc-carousel-track style="--kc-carousel-columns:'
+            . esc_attr((string) min($perView, 3)) . '">';
+        foreach ($ids as $id) {
+            self::post_card($id, $kind);
+        }
+        echo '</div></div></section>';
     }
 
     private static function post_card(int $postId, string $kind): void

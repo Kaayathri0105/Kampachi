@@ -121,3 +121,72 @@
     line-height: 1 !important;
     white-space: nowrap;
 }
+
+.kc-home-post-track[data-kc-carousel-track] {
+    display: grid;
+    grid-template-columns: repeat(var(--kc-carousel-columns, 1), minmax(0, 1fr));
+    gap: clamp(18px, 2.2vw, 25px);
+}
+
+.kc-home-post-track > [hidden],
+.kc-home-post-controls[hidden] {
+    display: none !important;
+}
+
+.kc-home-post-controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.kc-home-post-controls button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid #765d48;
+    border-radius: 50%;
+    background: transparent;
+    color: #241416;
+    font-size: 21px !important;
+    line-height: 1 !important;
+    cursor: pointer;
+}
+
+.kc-home-post-controls button:focus-visible {
+    outline: 2px solid #765d48;
+    outline-offset: 3px;
+}
+
+.home-sake-carousel-shell .kc-home-post-track[data-kc-carousel-multiple] > .home-sake-layout {
+    display: flex;
+    flex-direction: column;
+}
+
+.kc-home-post-track[data-kc-carousel-multiple] .home-sake-carousel {
+    order: -1;
+}
+
+.kc-home-post-track[data-kc-carousel-multiple] .home-sake-copy {
+    flex: 1;
+    justify-content: flex-start;
+    padding: clamp(22px, 3vw, 36px);
+}
+
+.kc-home-post-track[data-kc-carousel-multiple] .home-sake-copy h3 {
+    font-size: clamp(22px, 2.4vw, 34px) !important;
+}
+
+@media (max-width: 900px) {
+    .kc-home-post-track[data-kc-carousel-track] {
+        grid-template-columns: repeat(min(2, var(--kc-carousel-columns, 1)), minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 620px) {
+    .kc-home-post-track[data-kc-carousel-track] {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

@@ -122,3 +122,77 @@
         startActive();
     });
 })();
+
+(function () {
+    'use strict';
+
+    const mobile = window.matchMedia('(max-width: 620px)');
+    const tablet = window.matchMedia('(max-width: 900px)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    document.querySelectorAll('[data-kc-content-carousel]').forEach(carousel => {
+        const track = carousel.querySelector('[data-kc-carousel-track]');
+        if (!track) return;
+
+        const items = [...track.children];
+        const total = items.length;
+        if (total < 2) return;
+
+        const requested = Math.max(1, Number.parseInt(carousel.dataset.kcCarouselPerView, 10) || 1);
+        const autoplay = Number.parseInt(carousel.dataset.kcCarouselAutoplay, 10);
+        const label = carousel.getAttribute('aria-label');
+        let start = 0;
+        let visible = 0;
+
+        const controls = document.createElement('div');
+        controls.className = 'kc-home-post-controls';
+        controls.setAttribute('role', 'group');
+        controls.setAttribute('aria-label', label + ' navigation');
+
+        function arrow(direction, caption, glyph) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.setAttribute('aria-label', caption);
+            if (track.id) button.setAttribute('aria-controls', track.id);
+            button.textContent = glyph;
+            button.addEventListener('click', () => {
+                start = (start + direction + total) % total;
+                renderView();
+            });
+            return button;
+        }
+
+        controls.append(arrow(-1, 'Previous item', '←'), arrow(1, 'Next item', '→'));
+        track.before(controls);
+
+        function renderView() {
+            visible = Math.min(total, requested, mobile.matches ? 1 : tablet.matches ? 2 : total);
+            if (visible === total) start = 0;
+
+            const nextItems = [];
+            items.forEach((item, index) => {
+                const offset = (index - start + total) % total;
+                item.hidden = offset >= visible;
+                if (!item.hidden) nextItems[offset] = item;
+            });
+            track.append(...nextItems);
+            track.style.setProperty('--kc-carousel-columns', Math.min(visible, 3));
+            track.toggleAttribute('data-kc-carousel-multiple', visible > 1);
+            controls.hidden = visible === total;
+        }
+
+        renderView();
+        mobile.addEventListener('change', renderView);
+        tablet.addEventListener('change', renderView);
+
+        if (autoplay > 0) {
+            window.setInterval(() => {
+                if (visible >= total || reducedMotion.matches || document.hidden
+                    || carousel.matches(':hover, :focus-within')) return;
+
+                start = (start + 1) % total;
+                renderView();
+            }, autoplay);
+        }
+    });
+})();
