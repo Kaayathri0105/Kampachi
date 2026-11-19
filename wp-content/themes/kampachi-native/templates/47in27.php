@@ -83,41 +83,26 @@ $prefectures = new WP_Query([
 <?php endif; ?>
 <main class="kappou-main krsb-main campaign-page kc47-page" id="home">
     <div class="paper-surface paper-world">
-        <?php if ($heroSlides !== [] || (is_string($videoUrl) && $videoUrl !== '')) : ?>
-        <section class="visual-hero visual-hero--47in27 kc47-hero" aria-label="47in27 hero banner">
-            <?php if ($heroSlides !== []) : ?>
-                <?php foreach ($heroSlides as $index => $slide) : ?>
-                    <?php
-                    if (! is_array($slide)) {
-                        continue;
-                    }
-                    $imageId = absint($slide['image_id'] ?? 0);
-                    if (! wp_attachment_is_image($imageId)) {
-                        continue;
-                    }
-                    $direction = sanitize_html_class((string) ($slide['direction'] ?? 'zoom-in'));
-                    ?>
-                    <div class="kc47-hero-slide <?php echo $index === 0 ? 'is-active' : ''; ?> kc47-motion-<?php echo esc_attr($direction); ?>">
-                        <?php echo wp_get_attachment_image($imageId, 'full', false, [
-                            'class' => 'kc47-hero-photo',
-                            'loading' => $index === 0 ? 'eager' : 'lazy',
-                            'fetchpriority' => $index === 0 ? 'high' : 'auto',
-                        ]); ?>
-                        <?php if (! empty($slide['title']) || ! empty($slide['text'])) : ?>
-                            <div class="kc47-hero-overlay">
-                                <?php if (! empty($slide['title'])) : ?><h2><?php echo esc_html((string) $slide['title']); ?></h2><?php endif; ?>
-                                <?php if (! empty($slide['text'])) : ?><p><?php echo esc_html((string) $slide['text']); ?></p><?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
-            <?php elseif (is_string($videoUrl) && $videoUrl !== '') : ?>
-                <video class="kc47-hero-video" autoplay muted loop playsinline preload="metadata" aria-label="47in27 hero video">
-                    <source src="<?php echo esc_url($videoUrl); ?>" type="<?php echo esc_attr((string) get_post_mime_type($videoId)); ?>">
-                </video>
-            <?php endif; ?>
-        </section>
-        <?php endif; ?>
+        <?php
+        $slides = [];
+        foreach ($heroSlides as $slide) {
+            $imageId = absint($slide['image_id'] ?? 0);
+            $url = wp_get_attachment_image_url($imageId, 'full');
+            if (is_string($url) && $url !== '') {
+                $slides[] = [
+                    'url' => $url,
+                    'alt' => (string) get_post_meta($imageId, '_wp_attachment_image_alt', true),
+                    'direction' => $slide['direction'] ?? 'zoom-in',
+                    'title' => $slide['title'] ?? '',
+                    'text' => $slide['text'] ?? '',
+                ];
+            }
+        }
+        if ($slides === [] && is_string($videoUrl) && $videoUrl !== '') {
+            $slides[] = ['url' => $videoUrl, 'type' => 'video', 'mime' => get_post_mime_type($videoId)];
+        }
+        kampachi_native_render_hero($slides, '', '47in27 hero banner');
+        ?>
 
         <section class="kappou-intro kc47-intro" aria-labelledby="kc47-page-title">
             <div class="kappou-intro-content">

@@ -18,6 +18,12 @@ while (have_posts()) :
     the_post();
     $id = get_the_ID();
     $images = Sake::gallery($id, 'full');
+    foreach ($images as &$image) {
+        $image['direction'] = class_exists(\Kampachi\CMS\HeroMotion::class)
+            ? \Kampachi\CMS\HeroMotion::direction($id, absint($image['id'] ?? 0))
+            : 'zoom-in';
+    }
+    unset($image);
     $bottles = SakeBottles::all($id);
     $subtitle = kampachi_native_meta($id, 'subtitle');
     $description = Sake::field($id, 'description');
@@ -25,20 +31,7 @@ while (have_posts()) :
     $ctaUrl = Sake::field($id, 'enquiry_url') ?: home_url('/contact-us/');
     ?>
     <main class="kc-catering-page kc-sake-page kc-sake-detail<?php echo $images === [] ? ' kc-sake-detail--without-gallery' : ''; ?>" id="main-content">
-        <?php if ($images !== []) : ?>
-            <section class="kc-catering-detail-gallery" data-kc-carousel aria-label="Sake image gallery">
-                <?php foreach ($images as $index => $image) : ?>
-                    <img class="kc-catering-detail-photo kc-motion-<?php echo esc_attr(class_exists(\Kampachi\CMS\HeroMotion::class) ? \Kampachi\CMS\HeroMotion::direction($id, absint($image['id'] ?? 0)) : 'zoom-in'); ?><?php echo $index === 0 ? ' is-active' : ''; ?>" data-kc-image src="<?php echo esc_url($image['url']); ?>" alt="<?php echo esc_attr($image['alt'] ?: get_the_title()); ?>" <?php if ($index > 0) : ?>loading="lazy" aria-hidden="true"<?php endif; ?>>
-                <?php endforeach; ?>
-                <?php if (count($images) > 1) : ?>
-                    <div class="kc-catering-detail-controls">
-                        <button type="button" data-kc-prev aria-label="Previous Sake photo">←</button>
-                        <span data-kc-count>01 / <?php echo esc_html(sprintf('%02d', count($images))); ?></span>
-                        <button type="button" data-kc-next aria-label="Next Sake photo">→</button>
-                    </div>
-                <?php endif; ?>
-            </section>
-        <?php endif; ?>
+        <?php kampachi_native_render_hero($images, '', get_the_title() . ' hero'); ?>
         <section class="kc-catering-detail-content">
             <div class="kc-catering-container">
                 <div class="kc-sake-brand-intro">

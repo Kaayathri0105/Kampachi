@@ -36,34 +36,7 @@ while (have_posts()) :
     $hasOutlets = $outlets !== [];
     ?>
     <main class="kc-offer-page<?php echo $hero === [] ? ' kc-offer-page--no-hero' : ''; ?>" id="main-content">
-        <?php if ($hero !== []) : ?>
-            <section class="kc-offer-hero" data-offer-carousel tabindex="0" role="region"
-                aria-roledescription="carousel" aria-label="<?php echo esc_attr(get_the_title() . ' banners'); ?>"
-                style="height:100vh!important;height:100svh!important;height:100dvh!important;min-height:0!important;max-height:none!important">
-                <?php foreach ($hero as $index => $media) : ?>
-                    <div class="kc-offer-slide<?php echo $index === 0 ? ' is-active' : ''; ?> kc-motion-<?php echo esc_attr($media['direction']); ?>" data-offer-slide role="group" aria-roledescription="slide" aria-label="<?php echo esc_attr((string) ($index + 1) . ' of ' . count($hero)); ?>"<?php echo $index > 0 ? ' hidden' : ''; ?>>
-                        <?php if ($media['type'] === 'video') : ?>
-                            <video controls muted playsinline preload="<?php echo $index === 0 ? 'metadata' : 'none'; ?>" aria-label="<?php echo esc_attr(get_the_title() . ' banner video'); ?>"<?php echo count($hero) === 1 ? ' loop' : ''; ?>>
-                                <source src="<?php echo esc_url($media['url']); ?>" type="<?php echo esc_attr($media['mime']); ?>">
-                            </video>
-                        <?php else : ?>
-                            <img src="<?php echo esc_url($media['url']); ?>" alt="<?php echo esc_attr($media['alt']); ?>" loading="<?php echo $index === 0 ? 'eager' : 'lazy'; ?>" decoding="async"<?php echo $index === 0 ? ' fetchpriority="high"' : ''; ?>>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
-                <div class="kc-offer-hero-caption">
-                    <p><?php echo esc_html(get_the_title()); ?></p>
-                </div>
-                <?php if (count($hero) > 1) : ?>
-                    <div class="kc-offer-hero-controls">
-                        <button type="button" data-offer-previous aria-label="Previous banner">←</button>
-                        <span data-offer-counter aria-live="off">1 / <?php echo esc_html((string) count($hero)); ?></span>
-                        <button type="button" data-offer-next aria-label="Next banner">→</button>
-                        <button type="button" data-offer-pause aria-pressed="false" aria-label="Pause banners">Pause</button>
-                    </div>
-                <?php endif; ?>
-            </section>
-        <?php endif; ?>
+        <?php kampachi_native_render_hero($hero, '', get_the_title() . ' hero'); ?>
 
         <div class="kc-offer-inner">
             <nav class="kc-offer-breadcrumb" aria-label="Breadcrumb"><a href="<?php echo esc_url(home_url('/promotion/')); ?>"><?php echo esc_html(kampachi_native_label('offers')); ?></a><span aria-hidden="true">/</span><span aria-current="page"><?php echo esc_html(get_the_title()); ?></span></nav>
