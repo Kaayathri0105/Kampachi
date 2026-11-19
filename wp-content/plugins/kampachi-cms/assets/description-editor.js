@@ -3,17 +3,19 @@
 
     function initialize(textarea) {
         const editor = window.wp?.editor;
-        if (!textarea.id || textarea.dataset.editorReady || !editor?.getDefaultSettings?.()) {
+        const defaults = editor?.getDefaultSettings?.();
+        if (!textarea.id || textarea.dataset.editorReady || !defaults) {
             return;
         }
 
+        const richTextEnabled = window.tinymce && Object.keys(defaults.tinymce ?? {}).length > 0;
         editor.initialize(textarea.id, {
-            tinymce: {
+            tinymce: richTextEnabled ? {
                 wpautop: true,
                 toolbar1: 'formatselect,bold,italic,bullist,numlist,outdent,indent,blockquote,'
                     + 'alignleft,aligncenter,alignright,link,unlink,undo,redo',
                 toolbar2: 'strikethrough,hr,forecolor,pastetext,removeformat,charmap'
-            },
+            } : false,
             quicktags: true
         });
         textarea.dataset.editorReady = 'true';
