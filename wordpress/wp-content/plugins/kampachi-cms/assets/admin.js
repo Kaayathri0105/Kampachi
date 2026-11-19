@@ -2,25 +2,12 @@
     'use strict';
 
     const form = $('#kc-home-form');
+    const descriptionEditor = window.kampachiDescriptionEditor;
     let rowCount = Date.now();
 
     function initializeDescriptions(scope) {
-        const editor = window.wp?.editor;
-        if (!editor?.getDefaultSettings?.()) return;
-
         scope.find('.kc-home-description-editor').each(function () {
-            if (this.dataset.editorReady) return;
-
-            editor.initialize(this.id, {
-                tinymce: {
-                    wpautop: true,
-                    toolbar1: 'formatselect,bold,italic,bullist,numlist,outdent,indent,blockquote,'
-                        + 'alignleft,aligncenter,alignright,link,unlink,undo,redo',
-                    toolbar2: 'strikethrough,hr,forecolor,pastetext,removeformat,charmap'
-                },
-                quicktags: true
-            });
-            this.dataset.editorReady = 'true';
+            descriptionEditor.initialize(this);
         });
     }
 
@@ -28,8 +15,7 @@
 
     form.on('submit', function () {
         form.find('.kc-home-description-editor').each(function () {
-            const editor = window.tinymce?.get(this.id);
-            if (editor && !editor.isHidden()) editor.save();
+            descriptionEditor.save(this);
         });
     });
 
@@ -46,7 +32,7 @@
     form.on('click', '.kc-remove', function () {
         const row = $(this).closest('.kc-repeat');
         row.find('.kc-home-description-editor').each(function () {
-            if (this.dataset.editorReady) window.wp?.editor?.remove(this.id);
+            descriptionEditor.remove(this);
         });
         row.remove();
     });

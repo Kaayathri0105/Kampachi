@@ -15,6 +15,8 @@ if (! defined('ABSPATH')) {
  */
 final class Content
 {
+    public const DESCRIPTION_EDITOR = 'kampachi-description-editor';
+
     public const POST_TYPES = [
         'kc_offer', 'kc_sake', 'kc_outlet', 'kc_event', 'kc_job', 'kc_prefecture', Press::POST_TYPE,
     ];
@@ -62,6 +64,19 @@ final class Content
         add_action('add_meta_boxes', [self::class, 'registerBoxes'], 99);
         add_action('admin_menu', [self::class, 'registerMenu'], 99);
         add_action('admin_post_kampachi_save_website_text', [self::class, 'saveLabels']);
+    }
+
+    public static function enqueueDescriptionEditor(): void
+    {
+        wp_enqueue_editor();
+        $asset = 'description-editor.js';
+        wp_enqueue_script(
+            self::DESCRIPTION_EDITOR,
+            plugins_url('../assets/' . $asset, __FILE__),
+            ['editor', 'quicktags'],
+            (string) filemtime(dirname(__DIR__) . '/assets/' . $asset),
+            true
+        );
     }
 
     public static function label(string $key): string

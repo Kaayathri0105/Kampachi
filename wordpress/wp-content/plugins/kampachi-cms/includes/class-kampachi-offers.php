@@ -50,9 +50,15 @@ final class Offers
         }
 
         wp_enqueue_media();
-        wp_enqueue_editor();
+        Content::enqueueDescriptionEditor();
         wp_enqueue_style('kampachi-offers-admin', plugins_url('../assets/offers-admin.css', __FILE__), [], (string) filemtime(dirname(__DIR__) . '/assets/offers-admin.css'));
-        wp_enqueue_script('kampachi-offers-admin', plugins_url('../assets/offers-admin.js', __FILE__), ['jquery', 'jquery-ui-sortable', 'editor', 'quicktags'], (string) filemtime(dirname(__DIR__) . '/assets/offers-admin.js'), true);
+        wp_enqueue_script(
+            'kampachi-offers-admin',
+            plugins_url('../assets/offers-admin.js', __FILE__),
+            ['jquery', 'jquery-ui-sortable', Content::DESCRIPTION_EDITOR],
+            (string) filemtime(dirname(__DIR__) . '/assets/offers-admin.js'),
+            true
+        );
     }
 
     public static function enqueueFrontend(): void
@@ -77,26 +83,27 @@ final class Offers
     {
         wp_nonce_field('kampachi_offer_save', 'kampachi_offer_nonce');
         echo '<div class="kc-offers-editor" data-offer-editor>';
-        self::renderThumbnail($post->ID);
         self::renderHero($post->ID);
-        echo '<section class="kc-offers-panel"><h3>02 / Introduction &amp; Excerpt</h3>';
-        echo '<label for="kc-offer-introduction"><strong>Introduction</strong></label>';
-        wp_editor(self::introduction($post->ID), 'kc-offer-introduction', [
-            'textarea_name' => 'kampachi_offer[introduction]',
-            'textarea_rows' => 7,
-            'media_buttons' => false,
-            'teeny' => true,
-        ]);
-        echo '<p><label for="kc-offer-excerpt"><strong>Short Description (Excerpt)</strong></label></p>';
-        echo '<textarea class="widefat" id="kc-offer-excerpt" name="excerpt" rows="4">' . esc_textarea($post->post_excerpt) . '</textarea>';
-        echo '<p class="description">The excerpt appears on offer cards and the homepage. '
-            . 'The introduction appears on the individual offer page.</p></section>';
-        echo '<section class="kc-offers-panel" data-offer-details-panel><h3>03 / Offer Details</h3>';
+
+        echo '<section class="kc-offers-panel"><h3>Short Description</h3>';
+        echo '<label class="screen-reader-text" for="kc-offer-excerpt">Short Description (Excerpt)</label>';
+        echo '<textarea class="widefat" id="kc-offer-excerpt" name="excerpt" rows="4" '
+            . 'aria-describedby="kc-offer-excerpt-help">' . esc_textarea($post->post_excerpt) . '</textarea>';
+        echo '<p class="description" id="kc-offer-excerpt-help">Appears on offer cards and the homepage.</p></section>';
+
+        echo '<section class="kc-offers-panel"><h3>Introduction</h3>';
+        self::renderDescription('kc-offer-introduction', 'kampachi_offer[introduction]', self::introduction($post->ID), 7);
+        echo '</section>';
+
         self::renderSchedule($post->ID);
-        self::renderMenus($post->ID);
-        self::renderOutlets($post->ID);
+        echo '<section class="kc-offers-panel" data-offer-details-panel><h3>Offer Details</h3>';
         self::renderDetails($post->ID);
-        echo '<input type="hidden" name="kampachi_offer[complete]" value="1"></section></div>';
+        self::renderOutlets($post->ID);
+        self::renderMenus($post->ID);
+        echo '</section>';
+
+        self::renderThumbnail($post->ID);
+        echo '<input type="hidden" name="kampachi_offer[complete]" value="1"></div>';
     }
 
     private static function input(string $key, string $label, string $value, string $type = 'text'): void
@@ -107,18 +114,18 @@ final class Offers
 
     private static function renderSchedule(int $postId): void
     {
-        echo '<section class="kc-offers-subpanel"><h4>Date &amp; Time</h4><div class="kc-offers-columns">';
+        echo '<section class="kc-offers-panel"><h3>Offer Expiry</h3><div class="kc-offers-columns">';
         self::input('date_start', 'Start date', self::field($postId, 'date_start'), 'date');
         self::input('time_start', 'Start time (optional)', self::field($postId, 'time_start'), 'time');
-        self::input('date_end', 'End date', self::field($postId, 'date_end'), 'date');
-        self::input('time_end', 'End time (optional)', self::field($postId, 'time_end'), 'time');
+        self::input('date_end', 'Expiry date', self::field($postId, 'date_end'), 'date');
+        self::input('time_end', 'Expiry time (optional)', self::field($postId, 'time_end'), 'time');
         echo '</div></section>';
     }
 
     private static function renderHero(int $postId): void
     {
         $ids = self::heroIds($postId);
-        echo '<section class="kc-offers-panel"><h3>01 / Banner Images & Videos</h3>';
+        echo '<section class="kc-offers-panel"><h3>Hero</h3>';
         echo '<p>Add images and videos for the full-screen banner on the individual offer page. '
             . 'Drag or use the arrow buttons to change their order.</p>';
         echo '<input type="hidden" name="kampachi_offer_hero_ids" value="' . esc_attr(implode(',', $ids)) . '">';
@@ -242,12 +249,17 @@ final class Offers
         echo '<div class="kc-offers-repeat" data-offer-detail><span class="dashicons '
             . 'dashicons-move" aria-hidden="true"></span><div class="kc-offers-repeat-body">';
         echo '<label><strong>Section title</strong><input class="widefat" name="' . esc_attr($prefix . '[title]') . '" value="' . esc_attr($detail['title']) . '"></label>';
-        $editorId = 'kc-offer-detail-body-' . $index;
-        echo '<label for="' . esc_attr($editorId) . '"><strong>Description</strong></label>';
-        echo '<textarea id="' . esc_attr($editorId) . '" class="widefat kc-offers-rich" rows="6" name="'
-            . esc_attr($prefix . '[description]') . '">' . esc_textarea($detail['description']) . '</textarea></div>';
+        self::renderDescription('kc-offer-detail-body-' . $index, $prefix . '[description]', $detail['description']);
+        echo '</div>';
         self::rowActions();
         echo '</div>';
+    }
+
+    private static function renderDescription(string $id, string $name, string $html, int $rows = 6): void
+    {
+        echo '<label for="' . esc_attr($id) . '"><strong>Description</strong></label>';
+        echo '<textarea id="' . esc_attr($id) . '" class="widefat kc-offers-rich" rows="' . esc_attr((string) $rows)
+            . '" name="' . esc_attr($name) . '">' . esc_textarea($html) . '</textarea>';
     }
 
     public static function save(int $postId, WP_Post $post): void
@@ -265,10 +277,10 @@ final class Offers
 
         self::saveSchedule($postId, $raw);
         self::saveThumbnail($postId, $raw);
-        update_post_meta($postId, self::INTRO, wp_kses_post(self::string($raw['introduction'] ?? '')));
+        update_post_meta($postId, self::INTRO, wp_slash(wp_kses_post(self::string($raw['introduction'] ?? ''))));
         update_post_meta($postId, '_kampachi_outlet_name', sanitize_text_field(self::string($raw['outlet_name'] ?? '')));
         update_post_meta($postId, self::MENUS, self::cleanMenus($raw['menus'] ?? []));
-        update_post_meta($postId, self::DETAILS, self::cleanDetails($raw['details'] ?? []));
+        update_post_meta($postId, self::DETAILS, wp_slash(self::cleanDetails($raw['details'] ?? [])));
         update_post_meta($postId, self::OUTLETS, self::cleanOutletIds($raw['outlet_ids'] ?? []));
         $hero = self::string($_POST['kampachi_offer_hero_ids'] ?? '');
         update_post_meta($postId, self::HERO, self::cleanMediaIds(explode(',', wp_unslash($hero))));

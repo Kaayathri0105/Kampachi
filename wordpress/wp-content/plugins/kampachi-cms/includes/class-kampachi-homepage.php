@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\Content;
 use Kampachi\CMS\Seo;
 
 if (! defined('ABSPATH')) {
@@ -48,7 +49,7 @@ final class Kampachi_Homepage
         }
 
         wp_enqueue_media();
-        wp_enqueue_editor();
+        Content::enqueueDescriptionEditor();
         wp_enqueue_style(
             'kampachi-home-admin',
             plugins_url('../assets/admin.css', __FILE__),
@@ -58,7 +59,7 @@ final class Kampachi_Homepage
         wp_enqueue_script(
             'kampachi-home-admin',
             plugins_url('../assets/admin.js', __FILE__),
-            ['jquery'],
+            ['jquery', Content::DESCRIPTION_EDITOR],
             (string) filemtime(dirname(__DIR__) . '/assets/admin.js'),
             true
         );
