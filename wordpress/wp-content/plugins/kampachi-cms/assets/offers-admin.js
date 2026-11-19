@@ -179,5 +179,6 @@
         renumber();
         syncHero();
     });
-    prepareEditors($root);
+    // WordPress prints the editor defaults after the enqueued footer scripts.
+    $(function () { prepareEditors($root); });
 })(jQuery);
