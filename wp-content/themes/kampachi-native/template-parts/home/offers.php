@@ -50,7 +50,7 @@ $perView = Homepage_Content::items_per_view(
                         <?php endif; ?>
                         <h3><?php echo esc_html($offer->post_title); ?></h3>
                         <p><?php echo esc_html(wp_strip_all_tags($description)); ?></p>
-                        <a class="experience-card-link" href="<?php echo esc_url(get_permalink($offer)); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?> <span aria-hidden="true">↗</span></a>
+                        <a class="kc-discover" href="<?php echo esc_url(get_permalink($offer)); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?></a>
                     </article>
                 <?php endforeach; ?>
             </div>

@@ -1,0 +1,44 @@
+.kc-discover {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
+    inline-size: fit-content;
+    min-block-size: 44px;
+    padding-block: 0 5px;
+    border-block-end: 1px solid currentColor;
+    color: inherit;
+    font-family: var(--kampachi-font-family);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.25;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.kc-discover::after {
+    content: "";
+    flex: 0 0 12px;
+    block-size: 12px;
+    background: currentColor;
+    clip-path: polygon(27% 0, 100% 0, 100% 73%, 88% 73%, 88% 21%, 9% 100%, 0 91%, 79% 12%, 27% 12%);
+}
+
+.kc-discover--card {
+    margin-block-start: auto;
+}
+
+.experience-card > .kc-discover {
+    margin-block-start: 14px;
+}
+
+a.kc-discover:hover,
+a:hover .kc-discover {
+    opacity: 0.72;
+}
+
+a.kc-discover:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+}
