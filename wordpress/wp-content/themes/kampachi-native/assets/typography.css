@@ -9,7 +9,11 @@
     --kampachi-font-h3: clamp(17px, 1.7vw, 22px);
     --kampachi-font-h4: 18px;
 }
-
+:where(:not(#wpadminbar, #wpadminbar *)),
+:where(:not(#wpadminbar, #wpadminbar *))::before,
+:where(:not(#wpadminbar, #wpadminbar *))::after {
+    font-family: var(--kampachi-font-family) !important;
+}
 *,
 *::before,
 *::after {
