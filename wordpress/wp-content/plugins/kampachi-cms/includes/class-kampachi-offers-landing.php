@@ -43,10 +43,9 @@ final class OffersLanding extends CollectionLanding
         echo '<option value="manual"' . selected($source, 'manual', false) . '>Choose images from the Media Library</option>';
         echo '<option value="posts"' . selected($source, 'posts', false) . '>Use hero images from selected offers</option>';
         echo '</select></div>';
-        Kampachi_Homepage::render_hero_fields($settings, self::HERO_FORM, $source === 'posts');
+        Kampachi_Homepage::render_hero_fields($settings, self::HERO_FORM, $source === 'posts', showMode: false);
         echo '<div data-kc-hero-source-panel="posts"' . ($source === 'posts' ? '' : ' hidden') . '>';
-        echo '<p class="description">Choose an image slideshow hero type to show these offers. '
-            . 'Each offer uses its saved hero image order and links through its title.</p>';
+        echo '<p class="description">Each offer uses its saved hero image order and links through its title.</p>';
         Kampachi_Homepage::post_picker(
             self::posts($page->ID, true),
             self::offerIds($settings['offer_ids'] ?? []),
@@ -70,7 +69,7 @@ final class OffersLanding extends CollectionLanding
         $raw = wp_unslash($raw);
         $videoId = isset($raw['hero_video_id']) && is_scalar($raw['hero_video_id']) ? absint($raw['hero_video_id']) : 0;
         $settings = [
-            'hero_mode' => Kampachi_Homepage::hero_mode($raw),
+            'hero_mode' => 'mixed',
             'hero_video_id' => self::videoSlide($videoId) !== [] ? $videoId : 0,
             'hero_slides' => self::imageRows($raw['hero_slides'] ?? []),
             'image_source' => ($raw['image_source'] ?? '') === 'posts' ? 'posts' : 'manual',
@@ -78,7 +77,7 @@ final class OffersLanding extends CollectionLanding
         ];
 
         if ($settings === [
-            'hero_mode' => 'video',
+            'hero_mode' => 'mixed',
             'hero_video_id' => 0,
             'hero_slides' => [],
             'image_source' => 'manual',
