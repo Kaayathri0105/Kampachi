@@ -114,7 +114,11 @@ final class Kampachi_Landings
             'intro_description' => ['Introduction text', 'textarea'],
         ];
 
-        if (in_array($post->post_name, ['catering-events', 'sake'], true)) {
+        if ($post->post_name === 'promotion') {
+            echo '<p>Manage the hero in <a href="'
+                . esc_url(admin_url('edit.php?post_type=kc_offer&page=kampachi-landing-promotion'))
+                . '">Offers &amp; Events → Landing Page</a>.</p>';
+        } elseif (in_array($post->post_name, ['catering-events', 'sake'], true)) {
             echo '<p>This page uses its own module editor for hero images and videos. Edit hero media in the Sake or Catering landing page dashboard.</p>';
         } else {
             echo '<p>Choose images for this landing page below. Saved images take priority over a previously selected video. Clear both to hide the hero. Each image can have its own Ken Burns direction.</p>';
@@ -137,7 +141,7 @@ final class Kampachi_Landings
             }
         }
 
-        if (in_array($post->post_name, ['catering-events', 'sake'], true)) {
+        if (in_array($post->post_name, ['promotion', 'catering-events', 'sake'], true)) {
             return;
         }
 

@@ -31,7 +31,8 @@
 
         function scheduleNext(delay = imageDelay) {
             window.clearTimeout(timer);
-            if (slides.length > 1 && !motion.matches && !document.hidden) {
+            if (slides.length > 1 && !motion.matches && !document.hidden
+                && !slides[index].querySelector('[data-kc-hero-link]:focus')) {
                 timer = window.setTimeout(() => showSlide(index + 1), delay);
             }
         }
@@ -73,6 +74,7 @@
                 const active = slideIndex === index;
                 slide.classList.toggle('is-active', active);
                 slide.setAttribute('aria-hidden', String(!active));
+                slide.toggleAttribute('inert', !active);
             });
             updateControls();
             startActive();
@@ -80,6 +82,10 @@
 
         if (previous) previous.addEventListener('click', () => showSlide(index - 1));
         if (next) next.addEventListener('click', () => showSlide(index + 1));
+        hero.querySelectorAll('[data-kc-hero-link]').forEach(link => {
+            link.addEventListener('focus', () => window.clearTimeout(timer));
+            link.addEventListener('blur', () => scheduleNext());
+        });
         if (slides.length > 1 && hero.hasAttribute('data-kc-hero-swipe')) {
             let swipeStart = null;
             hero.addEventListener('touchstart', (event) => {
