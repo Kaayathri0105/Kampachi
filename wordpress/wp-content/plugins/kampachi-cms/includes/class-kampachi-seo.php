@@ -201,8 +201,9 @@ final class Seo
     public static function filterTitle(string $title): string
     {
         $custom = '';
-        if (is_singular(self::POST_TYPES)) {
-            $custom = self::meta(get_queried_object_id(), self::TITLE_KEY);
+        $postId = self::requestPostId();
+        if ($postId > 0) {
+            $custom = self::meta($postId, self::TITLE_KEY);
         } elseif (is_front_page()) {
             $custom = self::homepageOptions()['title'];
         }
@@ -231,8 +232,9 @@ final class Seo
 
     private static function requestDescription(): string
     {
-        if (is_singular(self::POST_TYPES)) {
-            return self::description(get_queried_object_id());
+        $postId = self::requestPostId();
+        if ($postId > 0) {
+            return self::description($postId);
         }
         if (! is_front_page()) {
             return '';
@@ -248,6 +250,17 @@ final class Seo
         $description = is_string($intro) ? self::excerpt($intro) : '';
 
         return $description !== '' ? $description : get_bloginfo('description');
+    }
+
+    private static function requestPostId(): int
+    {
+        if (is_singular(self::POST_TYPES)) {
+            return get_queried_object_id();
+        }
+
+        return is_post_type_archive('kc_offer') && class_exists(OffersLanding::class)
+            ? OffersLanding::queriedPageId()
+            : 0;
     }
 
     public static function description(int $postId): string
