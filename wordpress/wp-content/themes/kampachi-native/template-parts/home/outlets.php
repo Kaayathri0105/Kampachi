@@ -3,9 +3,10 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\Outlets;
 use Kampachi\Native\Homepage_Content;
 
-$outlets = Homepage_Content::posts([], 'outlet_ids', 'kc_outlet');
+$outlets = class_exists(Outlets::class) ? Outlets::publishedLocations() : [];
 $hasCarousel = count($outlets) > 3;
 
 if ($outlets === []) {
@@ -44,18 +45,19 @@ if ($outlets === []) {
                     <?php
                     $imageUrl = Homepage_Content::image($outlet->ID, 'outlet');
                     $excerpt = get_the_excerpt($outlet);
+                    $name = Outlets::locationName($outlet);
                     ?>
                     <article class="outlet-card">
                         <div class="outlet-card__media">
                             <?php if ($imageUrl !== '') : ?>
-                                <img class="outlet-card__image" src="<?php echo esc_url($imageUrl); ?>" alt="<?php echo esc_attr($outlet->post_title); ?>" loading="lazy" decoding="async">
+                                <img class="outlet-card__image" src="<?php echo esc_url($imageUrl); ?>" alt="<?php echo esc_attr($name); ?>" loading="lazy" decoding="async">
                             <?php endif; ?>
                             <span class="outlet-card__number" aria-hidden="true"><?php echo esc_html(sprintf('%02d', $index + 1)); ?></span>
                         </div>
                         <div class="outlet-card__content">
-                            <h3><?php echo esc_html($outlet->post_title); ?></h3>
+                            <h3><?php echo esc_html($name); ?></h3>
                             <?php if ($excerpt !== '') : ?><p class="outlet-card__description"><?php echo esc_html($excerpt); ?></p><?php endif; ?>
-                            <a class="kc-discover kc-discover--card" href="<?php echo esc_url(get_permalink($outlet)); ?>" aria-label="<?php echo esc_attr('Discover Kampachi at ' . $outlet->post_title); ?>">
+                            <a class="kc-discover kc-discover--card" href="<?php echo esc_url(get_permalink($outlet)); ?>" aria-label="<?php echo esc_attr('Discover Kampachi at ' . $name); ?>">
                                 <?php echo esc_html(kampachi_native_label('discover')); ?>
                             </a>
                         </div>

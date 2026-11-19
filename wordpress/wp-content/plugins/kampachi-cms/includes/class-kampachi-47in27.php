@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\Outlets;
+
 if (! defined('ABSPATH')) {
     exit;
 }
@@ -151,9 +153,9 @@ final class Kampachi_47in27
         }
 
         $config = self::options();
-        $outlets = get_posts(['post_type' => 'kc_outlet', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC']);
+        $outlets = Outlets::publishedLocations();
         $prefectures = get_posts(['post_type' => 'kc_prefecture', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC']);
-        $selectedOutlets = array_map('absint', (array) $config['campaign_outlets']);
+        $selectedOutlets = Outlets::locationIds($config['campaign_outlets']);
 
         echo '<div class="wrap kc47-admin kc-home-admin kc-shared-admin"><h1>47in27 Landing Page</h1><p>Manage the hero, introduction, live prefecture campaign and published prefecture collection.</p>';
         if (isset($_GET['updated']) && $_GET['updated'] === '1') {
@@ -188,9 +190,9 @@ final class Kampachi_47in27
         }
         self::field('campaign_start', 'Start date', (string) $config['campaign_start'], 'date');
         self::field('campaign_end', 'End date', (string) $config['campaign_end'], 'date');
-        echo '<div class="kc47-field"><strong>Participating outlets</strong><div class="kc47-outlets">';
+        echo '<div class="kc47-field"><strong>Locations</strong><div class="kc47-outlets">';
         foreach ($outlets as $post) {
-            echo '<label><input type="checkbox" name="campaign[campaign_outlets][]" value="' . esc_attr((string) $post->ID) . '" ' . checked(in_array($post->ID, $selectedOutlets, true), true, false) . '> ' . esc_html($post->post_title) . '</label>';
+            echo '<label><input type="checkbox" name="campaign[campaign_outlets][]" value="' . esc_attr((string) $post->ID) . '" ' . checked(in_array($post->ID, $selectedOutlets, true), true, false) . '> ' . esc_html(Outlets::locationName($post)) . '</label>';
         }
         if ($outlets === []) {
             echo '<p>No published outlets. Create outlets using the Outlets menu first.</p>';
@@ -228,15 +230,6 @@ final class Kampachi_47in27
         return $parsed instanceof DateTimeImmutable && $parsed->format('Y-m-d') === $value ? $value : '';
     }
 
-    private static function selected_outlets(mixed $input): array
-    {
-        $ids = array_unique(array_map('absint', is_array($input) ? $input : []));
-
-        return array_values(array_filter($ids, static fn (int $id): bool =>
-            get_post_type($id) === 'kc_outlet' && get_post_status($id) === 'publish'
-        ));
-    }
-
     public static function save(): void
     {
         if (! current_user_can('edit_pages')) {
@@ -269,7 +262,7 @@ final class Kampachi_47in27
         $clean['hero_video_id'] = str_starts_with((string) get_post_mime_type($videoId), 'video/') ? $videoId : 0;
         $postId = absint($raw['campaign_post_id'] ?? 0);
         $clean['campaign_post_id'] = get_post_type($postId) === 'kc_prefecture' && get_post_status($postId) === 'publish' ? $postId : 0;
-        $clean['campaign_outlets'] = self::selected_outlets($raw['campaign_outlets'] ?? []);
+        $clean['campaign_outlets'] = Outlets::locationIds($raw['campaign_outlets'] ?? []);
         $clean['hero_slides'] = [];
         $directions = ['none', 'zoom-in', 'zoom-out', 'left', 'right', 'up', 'down'];
         if (isset($raw['hero_slides']) && is_array($raw['hero_slides'])) {

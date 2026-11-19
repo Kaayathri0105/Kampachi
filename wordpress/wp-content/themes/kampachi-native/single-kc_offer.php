@@ -9,6 +9,7 @@
 declare(strict_types=1);
 
 use Kampachi\CMS\Offers;
+use Kampachi\CMS\Outlets;
 
 if (! defined('ABSPATH')) {
     exit;
@@ -32,8 +33,7 @@ while (have_posts()) :
     $menus = Offers::menus($offerId);
     $details = Offers::details($offerId);
     $outlets = Offers::outletIds($offerId);
-    $outletNames = Offers::field($offerId, 'outlet_name');
-    $hasOutlets = $outlets !== [] || $outletNames !== '';
+    $hasOutlets = $outlets !== [];
     ?>
     <main class="kc-offer-page<?php echo $hero === [] ? ' kc-offer-page--no-hero' : ''; ?>" id="main-content">
         <?php if ($hero !== []) : ?>
@@ -104,15 +104,12 @@ while (have_posts()) :
                         <?php endforeach; ?>
                         <?php if ($hasOutlets) : ?>
                             <section class="kc-offer-detail-section kc-offer-outlets" aria-labelledby="kc-offer-outlets-title">
-                                <h3 id="kc-offer-outlets-title"><?php echo esc_html(kampachi_native_label('available_at')); ?></h3>
+                                <h3 id="kc-offer-outlets-title"><?php echo esc_html(kampachi_native_label('locations')); ?></h3>
                                 <div class="kc-offer-rich-text">
                                     <ul class="kc-offer-outlet-list" role="list">
                                         <?php foreach ($outlets as $outletId) : ?>
-                                            <li><span class="kc-offer-list-dash" aria-hidden="true">–</span><a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(get_the_title($outletId)); ?><span aria-hidden="true">↗</span></a></li>
+                                            <li><span class="kc-offer-list-dash" aria-hidden="true">–</span><a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?><span aria-hidden="true">↗</span></a></li>
                                         <?php endforeach; ?>
-                                        <?php if ($outletNames !== '') : ?>
-                                            <li><span class="kc-offer-list-dash" aria-hidden="true">–</span><?php echo esc_html($outletNames); ?></li>
-                                        <?php endif; ?>
                                     </ul>
                                 </div>
                             </section>

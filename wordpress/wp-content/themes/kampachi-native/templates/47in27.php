@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\Outlets;
+
 if (! defined('ABSPATH')) {
     exit;
 }
@@ -24,6 +26,7 @@ $campaignDescription = (string) $settings['campaign_description'];
 $campaignStart = (string) $settings['campaign_start'];
 $campaignEnd = (string) $settings['campaign_end'];
 $campaignImageId = absint($settings['campaign_image_id']);
+$campaignLocations = Outlets::locationIds($settings['campaign_outlets']);
 
 if ($currentPost instanceof WP_Post) {
     $startMeta = (string) get_post_meta($currentPost->ID, '_kampachi_date_start', true);
@@ -144,13 +147,10 @@ $prefectures = new WP_Query([
                             <h2 id="kc47-campaign-heading"><?php echo wp_kses_post($campaignTitle); ?></h2>
                             <?php if ($campaignDates !== '') : ?><p class="kc47-dates"><strong><?php echo esc_html($campaignDates); ?></strong></p><?php endif; ?>
                             <?php if ($campaignDescription !== '') : ?><div class="kc47-description"><?php echo wp_kses_post($campaignDescription); ?></div><?php endif; ?>
-                            <?php if ((array) $settings['campaign_outlets'] !== []) : ?>
-                                <div class="kc47-participating"><strong><?php echo esc_html(kampachi_native_label('available_at')); ?></strong><ul>
-                                    <?php foreach ((array) $settings['campaign_outlets'] as $outletId) : ?>
-                                        <?php $outlet = get_post(absint($outletId)); ?>
-                                        <?php if ($outlet instanceof WP_Post && $outlet->post_type === 'kc_outlet' && $outlet->post_status === 'publish') : ?>
-                                            <li><a href="<?php echo esc_url(get_permalink($outlet)); ?>"><?php echo esc_html(get_the_title($outlet)); ?></a></li>
-                                        <?php endif; ?>
+                            <?php if ($campaignLocations !== []) : ?>
+                                <div class="kc47-participating"><strong><?php echo esc_html(kampachi_native_label('locations')); ?></strong><ul>
+                                    <?php foreach ($campaignLocations as $outletId) : ?>
+                                        <li><a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?></a></li>
                                     <?php endforeach; ?>
                                 </ul></div>
                             <?php endif; ?>

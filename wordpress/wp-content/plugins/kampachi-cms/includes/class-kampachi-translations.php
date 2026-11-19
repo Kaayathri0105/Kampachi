@@ -32,6 +32,7 @@ final class Kampachi_Translations
         '_kampachi_event_outlet_ids',
         '_kampachi_offer_hero_ids',
         '_kampachi_offer_outlet_ids',
+        '_kampachi_offer_locations_saved',
     ];
 
     public static function boot(): void

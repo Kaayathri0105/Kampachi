@@ -519,23 +519,16 @@ final class Catering
         self::media_picker('kampachi_catering_event_images', $ids);
         HeroMotion::editor($post->ID, 'kampachi_catering_event_images');
 
-        $selected = get_post_meta($post->ID, '_kampachi_event_outlet_ids', true);
-        $selected = is_array($selected) ? array_map('absint', $selected) : [];
-        $outlets = get_posts([
-            'post_type' => 'kc_outlet',
-            'post_status' => ['publish', 'draft', 'private', 'pending'],
-            'posts_per_page' => -1,
-            'orderby' => 'title',
-            'order' => 'ASC',
-        ]);
-        echo '<h3>Available Outlets</h3><p>Select all applicable outlets. This list is retrieved from <strong>Outlets</strong> posts.</p>';
+        $selected = self::outlet_ids($post->ID);
+        $outlets = Outlets::publishedLocations();
+        echo '<h3>Locations</h3><p>Select the locations for this event.</p>';
         echo '<div class="kc-catering-outlets">';
         if ($outlets === []) {
             echo '<p>No outlet posts available. Create outlets under the Outlets module first.</p>';
         }
         foreach ($outlets as $outlet) {
             if ($outlet instanceof WP_Post) {
-                echo '<label><input type="checkbox" name="kampachi_catering_outlets[]" value="' . esc_attr((string) $outlet->ID) . '" ' . checked(in_array($outlet->ID, $selected, true), true, false) . '> ' . esc_html($outlet->post_title) . '</label>';
+                echo '<label><input type="checkbox" name="kampachi_catering_outlets[]" value="' . esc_attr((string) $outlet->ID) . '" ' . checked(in_array($outlet->ID, $selected, true), true, false) . '> ' . esc_html(Outlets::locationName($outlet)) . '</label>';
             }
         }
         echo '</div></div>';
@@ -622,14 +615,7 @@ final class Catering
 
         $raw = isset($_POST['kampachi_catering_outlets']) && is_array($_POST['kampachi_catering_outlets'])
             ? wp_unslash($_POST['kampachi_catering_outlets']) : [];
-        $ids = [];
-        foreach ($raw as $id) {
-            $id = absint($id);
-            if ($id && get_post_type($id) === 'kc_outlet') {
-                $ids[$id] = $id;
-            }
-        }
-        update_post_meta($postId, '_kampachi_event_outlet_ids', array_values($ids));
+        update_post_meta($postId, '_kampachi_event_outlet_ids', Outlets::locationIds($raw));
     }
 
     public static function save_landing(int $postId, WP_Post $post): void
@@ -709,6 +695,12 @@ final class Catering
             return [];
         }
         return array_values(array_filter(array_map('absint', $value)));
+    }
+
+    /** @return list<int> */
+    public static function outlet_ids(int $postId): array
+    {
+        return Outlets::locationIds(get_post_meta($postId, '_kampachi_event_outlet_ids', true));
     }
 
     public static function event_field(int $postId, string $key): string

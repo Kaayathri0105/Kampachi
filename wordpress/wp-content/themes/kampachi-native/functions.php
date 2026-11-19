@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\Outlets;
+
 if (! defined('ABSPATH')) {
     exit;
 }
@@ -461,6 +463,14 @@ function kampachi_native_render_intro(string $title, string $subtitle = '', stri
 
 function kampachi_native_render_post_card(int $postId): void
 {
+    $title = get_the_title($postId);
+    if (class_exists(Outlets::class) && get_post_type($postId) === Outlets::POST_TYPE) {
+        $title = Outlets::locationName($postId);
+        if ($title === '') {
+            return;
+        }
+    }
+
     $image = kampachi_native_post_image($postId);
     $category = get_the_terms($postId, 'kc_offer_category');
     $label = is_array($category) && isset($category[0]) ? $category[0]->name : '';
@@ -474,7 +484,7 @@ function kampachi_native_render_post_card(int $postId): void
     echo '<a class="kc-module-card-image" href="' . esc_url(get_permalink($postId)) . '">';
 
     if ($image !== '') {
-        echo '<img src="' . esc_url($image) . '" alt="' . esc_attr(get_the_title($postId)) . '" loading="lazy">';
+        echo '<img src="' . esc_url($image) . '" alt="' . esc_attr($title) . '" loading="lazy">';
     } else {
         echo '<span class="kc-card-placeholder" aria-hidden="true"></span>';
     }
@@ -484,7 +494,7 @@ function kampachi_native_render_post_card(int $postId): void
     $subtitle = kampachi_native_meta($postId, 'subtitle');
 
 
-    echo '<h2><a href="' . esc_url(get_permalink($postId)) . '">' . esc_html(get_the_title($postId)) . '</a></h2>';
+    echo '<h2><a href="' . esc_url(get_permalink($postId)) . '">' . esc_html($title) . '</a></h2>';
     $excerpt = get_the_excerpt($postId);
 
     if ($excerpt !== '') {

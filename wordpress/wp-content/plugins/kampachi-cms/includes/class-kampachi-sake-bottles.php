@@ -27,7 +27,7 @@ final class SakeBottles
     {
         add_meta_box(
             'kampachi_sake_bottles',
-            'Bottles — Drink Types, Prices & Available Outlets',
+            'Bottles — Drink Types, Prices & Locations',
             [self::class, 'renderBox'],
             Sake::POST_TYPE,
             'normal',
@@ -38,18 +38,12 @@ final class SakeBottles
     public static function renderBox(WP_Post $post): void
     {
         $bottles = self::all($post->ID, includeHidden: true);
-        $outlets = get_posts([
-            'post_type' => 'kc_outlet',
-            'post_status' => 'publish',
-            'posts_per_page' => -1,
-            'orderby' => 'title',
-            'order' => 'ASC',
-        ]);
+        $outlets = Outlets::publishedLocations();
 
         wp_nonce_field('kampachi_save_sake_bottles_' . $post->ID, 'kampachi_sake_bottles_nonce');
         echo '<div class="kc-sake-bottles-editor" data-kc-bottles-editor>';
         echo '<p>One post = one brewery / brand. Add all its bottles below. '
-            . 'Each bottle has its own drink type, description, price and available outlets.</p>';
+            . 'Each bottle has its own drink type, description, price and locations.</p>';
         echo '<p class="description">Tick Visible to show a bottle on the website. '
             . 'Drag bottles to reorder, or use Move up / Move down. '
             . 'Changes are saved when you Update or Publish this brewery.</p>';
@@ -113,7 +107,7 @@ final class SakeBottles
         echo '<img alt="" data-kc-bottle-image-preview' . $imageAttributes . '>';
         echo '<button type="button" class="button" data-kc-bottle-image-pick>Choose Bottle Image</button> ';
         echo '<button type="button" class="button" data-kc-bottle-image-clear>Remove Image</button></div>';
-        echo '<fieldset class="kc-sake-bottle-outlets"><legend>Available outlets for this bottle</legend>';
+        echo '<fieldset class="kc-sake-bottle-outlets"><legend>Locations for this bottle</legend>';
 
         if ($outlets === []) {
             echo '<p class="description">Publish an Outlet post to make it selectable here.</p>';
@@ -127,7 +121,7 @@ final class SakeBottles
             $selected = in_array($outlet->ID, $bottle['outlet_ids'], true);
             echo '<label><input type="checkbox" name="' . esc_attr($prefix . '[outlet_ids][]')
                 . '" value="' . esc_attr((string) $outlet->ID) . '" ' . checked($selected, true, false)
-                . '> ' . esc_html($outlet->post_title) . '</label>';
+                . '> ' . esc_html(Outlets::locationName($outlet)) . '</label>';
         }
 
         echo '<p class="description">Select every outlet carrying this bottle. '
@@ -408,21 +402,7 @@ final class SakeBottles
     /** @return array<int, int> */
     public static function outletIds(mixed $values): array
     {
-        if (! is_array($values)) {
-            return [];
-        }
-
-        $ids = [];
-
-        foreach ($values as $value) {
-            $id = self::positiveId($value);
-
-            if ($id > 0 && get_post_type($id) === 'kc_outlet' && get_post_status($id) === 'publish') {
-                $ids[$id] = $id;
-            }
-        }
-
-        return array_values($ids);
+        return Outlets::locationIds($values);
     }
 
     /**

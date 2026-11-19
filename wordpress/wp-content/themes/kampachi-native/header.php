@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\Outlets;
+
 if (! defined('ABSPATH')) {
     exit;
 }
@@ -44,14 +46,14 @@ if (! defined('ABSPATH')) {
             $configuredBookings = array_key_exists('header_booking_items', $headerSettings)
                 && is_array($headerSettings['header_booking_items']);
             $bookingLinks = [];
-            if ($configuredBookings) {
+            if ($configuredBookings && class_exists(Outlets::class)) {
                 foreach ($headerSettings['header_booking_items'] as $bookingEntry) {
                     if (! is_array($bookingEntry)) {
                         continue;
                     }
                     $outletId = absint($bookingEntry['outlet_id'] ?? 0);
-                    if ($outletId === 0 || get_post_type($outletId) !== 'kc_outlet'
-                        || get_post_status($outletId) !== 'publish') {
+                    $bookingTitle = Outlets::locationName($outletId);
+                    if ($bookingTitle === '' || isset($bookingLinks[$bookingTitle])) {
                         continue;
                     }
                     $bookingUrl = isset($bookingEntry['url']) && is_string($bookingEntry['url'])
@@ -63,25 +65,16 @@ if (! defined('ABSPATH')) {
                         || ! is_string(wp_parse_url($bookingUrl, PHP_URL_HOST))) {
                         continue;
                     }
-                    $bookingTitle = isset($bookingEntry['title']) && is_string($bookingEntry['title'])
-                        ? trim($bookingEntry['title']) : '';
-                    $bookingLinks[] = [
-                        'title' => $bookingTitle !== '' ? $bookingTitle : get_the_title($outletId),
+                    $bookingLinks[$bookingTitle] = [
+                        'title' => $bookingTitle,
                         'url' => $bookingUrl,
                     ];
                 }
-            } else {
-                $legacyOutlets = get_posts([
-                    'post_type' => 'kc_outlet',
-                    'post_status' => 'publish',
-                    'numberposts' => -1,
-                    'orderby' => 'menu_order title',
-                    'order' => 'ASC',
-                ]);
-                foreach ($legacyOutlets as $legacyOutlet) {
+            } elseif (class_exists(Outlets::class)) {
+                foreach (Outlets::publishedLocations() as $legacyOutlet) {
                     $legacyUrl = kampachi_native_meta($legacyOutlet->ID, 'booking_url');
                     $bookingLinks[] = [
-                        'title' => get_the_title($legacyOutlet),
+                        'title' => Outlets::locationName($legacyOutlet),
                         'url' => $legacyUrl !== '' ? $legacyUrl : get_permalink($legacyOutlet),
                     ];
                 }
@@ -146,6 +139,12 @@ if (! defined('ABSPATH')) {
                     if ($navTitle === '') {
                         continue;
                     }
+
+                    if ($navChildren !== [] && class_exists('Kampachi_Header_Editor')
+                        && Outlets::isLocationMenu($navTitle, $navUrl)) {
+                        $navChildren = Kampachi_Header_Editor::location_children();
+                    }
+
                     $hasChildren = $navChildren !== [];
                     ?>
                     <li class="nav-item<?php echo $hasChildren ? ' nav-item--dropdown' : ''; ?>">
