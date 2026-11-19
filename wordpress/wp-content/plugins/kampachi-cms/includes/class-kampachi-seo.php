@@ -19,6 +19,10 @@ final class Seo
 
     private const DESCRIPTION_KEY = '_kampachi_seo_description';
 
+    private const HOMEPAGE_OPTION = 'kampachi_homepage_seo';
+
+    private const FIELDS = ['title' => self::TITLE_KEY, 'description' => self::DESCRIPTION_KEY];
+
     private const POST_TYPES = [
         'page', 'post', 'kc_offer', 'kc_sake', 'kc_outlet',
         'kc_event', 'kc_job', 'kc_prefecture',
@@ -29,7 +33,7 @@ final class Seo
         add_action('add_meta_boxes', [self::class, 'registerBoxes']);
         add_action('save_post', [self::class, 'savePost'], 30, 2);
         add_action('wp_head', [self::class, 'renderDescription'], 5);
-        add_filter('pre_get_document_title', [self::class, 'filterTitle'], 99);
+        add_filter('pre_get_document_title', [self::class, 'filterDocumentTitle'], 99);
 
         foreach (['wpseo_title', 'rank_math/frontend/title', 'aioseo_title'] as $filter) {
             add_filter($filter, [self::class, 'filterTitle'], 99);
@@ -98,54 +102,152 @@ final class Seo
             return;
         }
 
-        foreach (['title' => self::TITLE_KEY, 'description' => self::DESCRIPTION_KEY] as $field => $key) {
-            if (! isset($fields[$field]) || ! is_string($fields[$field])) {
-                continue;
-            }
+        self::saveFields($postId, self::sanitizeFields(wp_unslash($fields)));
+    }
 
-            $value = wp_unslash($fields[$field]);
-            $value = $field === 'title' ? sanitize_text_field($value) : sanitize_textarea_field($value);
-            update_post_meta($postId, $key, wp_slash($value));
+    /**
+     * A static homepage shares the same SEO values as its Pages editor.
+     *
+     * @return array{title: string, description: string}|null
+     */
+    public static function homepageFields(): ?array
+    {
+        $postId = self::homepagePostId();
+        if ($postId === 0) {
+            return self::homepageOptions();
         }
+        if (! current_user_can('edit_post', $postId)) {
+            return null;
+        }
+
+        return [
+            'title' => self::meta($postId, self::TITLE_KEY),
+            'description' => self::meta($postId, self::DESCRIPTION_KEY),
+        ];
+    }
+
+    /** The Homepage editor checks its own nonce before calling this method. */
+    public static function saveHomepage(mixed $input): void
+    {
+        if (! is_array($input) || ! current_user_can('edit_pages')) {
+            return;
+        }
+
+        $fields = self::sanitizeFields($input);
+        if ($fields === []) {
+            return;
+        }
+
+        $postId = self::homepagePostId();
+        if ($postId === 0) {
+            update_option(self::HOMEPAGE_OPTION, array_replace(self::homepageOptions(), $fields), false);
+        } elseif (current_user_can('edit_post', $postId)) {
+            self::saveFields($postId, $fields);
+        }
+    }
+
+    private static function homepagePostId(): int
+    {
+        if (get_option('show_on_front') !== 'page') {
+            return 0;
+        }
+
+        $postId = absint(get_option('page_on_front'));
+
+        return $postId > 0 && get_post_type($postId) === 'page' ? $postId : 0;
+    }
+
+    /** @return array{title: string, description: string} */
+    private static function homepageOptions(): array
+    {
+        $fields = get_option(self::HOMEPAGE_OPTION, []);
+        $fields = is_array($fields) ? $fields : [];
+
+        return [
+            'title' => is_string($fields['title'] ?? null) ? trim($fields['title']) : '',
+            'description' => is_string($fields['description'] ?? null) ? trim($fields['description']) : '',
+        ];
+    }
+
+    /** @return array<string, string> */
+    private static function sanitizeFields(array $fields): array
+    {
+        $clean = [];
+        foreach (self::FIELDS as $field => $key) {
+            $value = $fields[$field] ?? null;
+            if (is_string($value)) {
+                $clean[$field] = $key === self::TITLE_KEY ? sanitize_text_field($value) : sanitize_textarea_field($value);
+            }
+        }
+
+        return $clean;
+    }
+
+    /** @param array<string, string> $fields */
+    private static function saveFields(int $postId, array $fields): void
+    {
+        foreach ($fields as $field => $value) {
+            update_post_meta($postId, self::FIELDS[$field], wp_slash($value));
+        }
+    }
+
+    public static function filterDocumentTitle(string $title): string
+    {
+        $custom = self::filterTitle('');
+
+        return $custom !== '' ? esc_html($custom) : $title;
     }
 
     public static function filterTitle(string $title): string
     {
-        if (! is_singular(self::POST_TYPES)) {
-            return $title;
+        $custom = '';
+        if (is_singular(self::POST_TYPES)) {
+            $custom = self::meta(get_queried_object_id(), self::TITLE_KEY);
+        } elseif (is_front_page()) {
+            $custom = self::homepageOptions()['title'];
         }
-
-        $custom = self::meta(get_queried_object_id(), self::TITLE_KEY);
 
         return $custom !== '' ? $custom : $title;
     }
 
     public static function filterDescription(string $description): string
     {
-        if (! is_singular(self::POST_TYPES)) {
-            return $description;
-        }
-
-        $custom = self::description(get_queried_object_id());
+        $custom = self::requestDescription();
 
         return $custom !== '' ? $custom : $description;
     }
 
     public static function renderDescription(): void
     {
-        if (
-            ! is_singular(self::POST_TYPES)
-            || defined('WPSEO_VERSION')
-            || defined('RANK_MATH_VERSION')
-            || function_exists('aioseo')
-        ) {
+        if (defined('WPSEO_VERSION') || defined('RANK_MATH_VERSION') || function_exists('aioseo')) {
             return;
         }
 
-        $description = self::description(get_queried_object_id());
+        $description = self::requestDescription();
         if ($description !== '') {
             echo '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
         }
+    }
+
+    private static function requestDescription(): string
+    {
+        if (is_singular(self::POST_TYPES)) {
+            return self::description(get_queried_object_id());
+        }
+        if (! is_front_page()) {
+            return '';
+        }
+
+        $custom = self::homepageOptions()['description'];
+        if ($custom !== '') {
+            return $custom;
+        }
+
+        $settings = get_option('kampachi_homepage_sections', []);
+        $intro = is_array($settings) ? ($settings['intro_description'] ?? '') : '';
+        $description = is_string($intro) ? self::excerpt($intro) : '';
+
+        return $description !== '' ? $description : get_bloginfo('description');
     }
 
     public static function description(int $postId): string
@@ -156,11 +258,12 @@ final class Seo
         }
 
         $post = get_post($postId);
-        if (! $post instanceof WP_Post) {
-            return '';
-        }
 
-        $text = self::sourceDescription($post);
+        return $post instanceof WP_Post ? self::excerpt(self::sourceDescription($post)) : '';
+    }
+
+    private static function excerpt(string $text): string
+    {
         $text = trim(preg_replace('/\s+/u', ' ', wp_strip_all_tags(strip_shortcodes($text))) ?? '');
 
         return wp_html_excerpt($text, 160, '…');

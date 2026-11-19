@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\Seo;
+
 if (! defined('ABSPATH')) {
     exit;
 }
@@ -298,6 +300,26 @@ final class Kampachi_Homepage
         echo '</div>';
     }
 
+    private static function seo_fields(): void
+    {
+        $fields = Seo::homepageFields();
+        if ($fields === null) {
+            return;
+        }
+
+        echo '<section id="kc-section-seo" class="kc-panel"><h2>Homepage SEO</h2>';
+        echo '<div class="kc-field">';
+        echo '<label class="kc-label" for="kc_home_meta_title">Meta title</label>';
+        echo '<input class="widefat" id="kc_home_meta_title" name="home[seo][title]" type="text" value="'
+            . esc_attr($fields['title']) . '">';
+        echo '</div><div class="kc-field">';
+        echo '<label class="kc-label" for="kc_home_meta_description">Meta description</label>';
+        echo '<textarea class="widefat" id="kc_home_meta_description" name="home[seo][description]" rows="3">'
+            . esc_textarea($fields['description']) . '</textarea>';
+        echo '</div><p class="description">These fields set the homepage title and description in the HTML head. '
+            . 'Leave them blank to use the default SEO values.</p></section>';
+    }
+
     public static function editor(): void
     {
         if (! current_user_can('edit_pages')) {
@@ -321,6 +343,7 @@ final class Kampachi_Homepage
         echo '<form id="kc-home-form" action="' . esc_url(admin_url('admin-post.php')) . '" method="post">';
         echo '<input type="hidden" name="action" value="kampachi_homepage_save">';
         wp_nonce_field('kampachi_homepage_save', 'kampachi_home_nonce');
+        self::seo_fields();
 
         echo '<section id="kc-section-layout" class="kc-panel"><h2><span class="kc-section-number">00</span> Homepage layout <small>Visibility and order</small></h2>';
         echo '<p>Enable or disable each section and choose the order below the banner. The banner stays at the top when enabled. All published outlets always appear in the final section.</p>';
@@ -573,6 +596,7 @@ final class Kampachi_Homepage
         $clean['sake_ids'] = self::selected_posts($raw['sake_ids'] ?? [], 'kc_sake');
         $clean['outlet_ids'] = self::selected_posts($raw['outlet_ids'] ?? [], 'kc_outlet');
         update_option(self::OPTION, $clean, false);
+        Seo::saveHomepage($raw['seo'] ?? null);
         wp_safe_redirect(admin_url('admin.php?page=kampachi-homepage-module&updated=1'));
         exit;
     }
