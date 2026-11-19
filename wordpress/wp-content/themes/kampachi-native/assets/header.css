@@ -1,0 +1,239 @@
+:root {
+    --kampachi-header-paper: rgba(253, 252, 248, 0.9);
+    --kampachi-header-black: #050505;
+    --kampachi-header-ink: #f4f0eb;
+}
+
+.site-header {
+    position: fixed !important;
+    inset: 0 0 auto !important;
+    z-index: 50 !important;
+    background: #000000 !important;
+    border-bottom: 1px solid transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.site-header::before {
+    display: none !important;
+}
+
+.site-header .brand-logo {
+    filter: brightness(0) invert(1) !important;
+    transition: filter 220ms ease;
+}
+
+.site-header .reservation-link {
+    border-color: rgba(255, 255, 255, 0.72) !important;
+    background: transparent !important;
+    color: #fff !important;
+    transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease;
+}
+
+.site-header .menu-lines,
+.site-header .menu-lines::before,
+.site-header .menu-lines::after {
+    background: var(--kampachi-header-ink) !important;
+}
+
+.site-header.is-scrolled {
+    border-bottom-color: transparent;
+    background: #000000 !important;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.site-header.is-scrolled .brand-logo {
+    filter: brightness(0) invert(1) !important;
+}
+
+.site-header.is-scrolled .reservation-link {
+    border-color: rgba(255, 255, 255, 0.72) !important;
+    background: transparent !important;
+    color: #fff !important;
+}
+
+.site-header.is-scrolled .menu-lines,
+.site-header.is-scrolled .menu-lines::before,
+.site-header.is-scrolled .menu-lines::after {
+    background: #fff !important;
+}
+
+@media (min-width: 1200px) {
+    .header-inner {
+        width: min(1450px, calc(100% - 64px)) !important;
+        justify-content: space-between !important;
+    }
+
+    .site-header .brand {
+        position: relative !important;
+        left: auto !important;
+        z-index: 42;
+        flex: 0 0 118px;
+        width: 118px;
+        transform: none !important;
+    }
+
+    .site-header .brand-logo {
+        width: 118px !important;
+        max-height: 58px !important;
+        object-position: left center;
+    }
+
+    .header-actions {
+        position: relative;
+        z-index: 42;
+        gap: 0 !important;
+        margin-left: auto;
+    }
+
+    .language-wrap,
+    .menu-button {
+        display: none !important;
+    }
+
+    .site-header .reservation-link {
+        min-width: 160px !important;
+        min-height: 48px !important;
+        padding: 0 18px !important;
+        border-radius: 4px;
+        font-size: 13px !important;
+        font-weight: 400 !important;
+        letter-spacing: 0.12em !important;
+    }
+
+    .menu-overlay {
+        position: fixed !important;
+        z-index: 51 !important;
+        top: 0 !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: 50% !important;
+        display: flex !important;
+        width: min(1450px, calc(100% - 64px)) !important;
+        height: var(--header-height) !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: visible !important;
+        padding: 0 172px 0 140px !important;
+        background: transparent !important;
+        opacity: 1 !important;
+        pointer-events: none !important;
+        visibility: visible !important;
+        transform: translateX(-50%) !important;
+        transition: none !important;
+    }
+
+    .primary-nav {
+        width: 100%;
+    }
+
+    .nav-list {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: clamp(8px, 0.85vw, 14px) !important;
+        white-space: nowrap;
+    }
+
+    .nav-item {
+        position: relative;
+        text-align: left !important;
+    }
+
+    .nav-item-row {
+        justify-content: flex-start !important;
+        gap: 3px !important;
+    }
+
+    .menu-overlay .nav-link {
+        display: inline-flex;
+        align-items: center;
+        color: #f4f0eb !important;
+        font-size: 12px !important;
+        font-weight: 400 !important;
+        letter-spacing: 0.1em !important;
+        line-height: 1.25 !important;
+        text-decoration: none;
+        text-transform: uppercase;
+        white-space: nowrap;
+        pointer-events: auto !important;
+        transition: color 180ms ease;
+    }
+
+    .menu-overlay .nav-link:hover {
+        color: #6e2525 !important;
+        letter-spacing: 0.1em !important;
+    }
+
+    .nav-dropdown-toggle {
+        width: 20px !important;
+        height: 26px !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        color: #f4f0eb !important;
+        cursor: pointer;
+        pointer-events: auto !important;
+    }
+
+    .nav-dropdown-chevron {
+        width: 6px !important;
+        height: 6px !important;
+        border-color: currentColor !important;
+    }
+
+    .nav-sublist {
+        position: absolute;
+        top: calc(100% + 16px);
+        left: 0;
+        z-index: 60;
+        min-width: 205px;
+        gap: 10px !important;
+        margin: 0 !important;
+        padding: 13px 16px !important;
+        border: 1px solid rgba(25, 21, 20, 0.12) !important;
+        background: #fdfcf8 !important;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+        text-align: left;
+        pointer-events: auto;
+    }
+
+    .nav-sublist[hidden] {
+        display: none !important;
+    }
+
+    .menu-overlay .nav-sublink {
+        color: #302925 !important;
+        font-size: 12px !important;
+        font-weight: 400 !important;
+        letter-spacing: 0.05em !important;
+        line-height: 1.4 !important;
+        text-decoration: none;
+        pointer-events: auto !important;
+    }
+
+    .menu-overlay .nav-sublink:hover {
+        color: #7b2629 !important;
+        letter-spacing: 0.05em !important;
+    }
+
+    .menu-overlay.is-scrolled .nav-link,
+    .menu-overlay.is-scrolled .nav-dropdown-toggle {
+        color: #f4f0eb !important;
+    }
+
+    .menu-overlay.is-scrolled .nav-link:hover,
+    .menu-overlay.is-scrolled .nav-sublink:hover {
+        color: #d6b58f !important;
+    }
+
+    .menu-overlay.is-scrolled .nav-sublist {
+        border-color: rgba(255, 255, 255, 0.16) !important;
+        background: #111 !important;
+    }
+
+    .menu-overlay.is-scrolled .nav-sublink {
+        color: #f4f0eb !important;
+    }
+}

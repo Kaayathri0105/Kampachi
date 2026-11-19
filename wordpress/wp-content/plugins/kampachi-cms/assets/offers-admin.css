@@ -1,0 +1,28 @@
+.kc-offers-editor { color: #302a25; }
+.kc-offers-panel { margin: 0 0 24px; padding: 22px; border: 1px solid #dfd5ca; background: #fffdf9; }
+.kc-offers-panel h3 { margin: 0 0 18px; font-size: 15px; }
+.kc-offers-subpanel { margin: 22px 0 0; padding-top: 22px; border-top: 1px solid #dfd5ca; }
+.kc-offers-subpanel h4 { margin: 0 0 15px; font-size: 14px; }
+.kc-offers-panel label { display: block; }
+.kc-offers-panel input.widefat, .kc-offers-panel textarea.widefat { margin-top: 7px; }
+.kc-offers-thumbnail-preview { display: block; width: 240px; max-width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid #dfd5ca; }
+.kc-offers-thumbnail-preview[hidden] { display: none; }
+.kc-offers-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.kc-offers-media { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px; margin-bottom: 10px; background: #f5ebe0; border: 1px solid #d9cbbc; }
+.kc-offers-media img { width: 90px; height: 58px; object-fit: cover; }
+.kc-offers-media strong { flex: 1; overflow-wrap: anywhere; }
+.kc-offers-repeat { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px; padding: 18px; border: 1px solid #d9cbbc; background: #fff; }
+.kc-offers-repeat-body { flex: 1; min-width: 0; }
+.kc-offers-repeat-body > label { margin-bottom: 15px; }
+.kc-offers-row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.kc-offers-editor .dashicons-move { cursor: move; flex: 0 0 20px; color: #94704e; }
+.kc-offers-outlets { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+.kc-offers-outlets label { padding: 9px 12px; border: 1px solid #dfd5ca; background: #f5ebe0; }
+.kc-offers-editor .ui-sortable-placeholder { visibility: visible !important; min-height: 80px; border: 1px dashed #94704e; background: #f5ebe0; }
+@media (max-width: 780px) {
+    .kc-offers-columns { grid-template-columns: 1fr; gap: 0; }
+    .kc-offers-panel { padding: 15px; }
+    .kc-offers-repeat { flex-wrap: wrap; }
+    .kc-offers-repeat-body { flex-basis: calc(100% - 35px); }
+    .kc-offers-row-actions { width: 100%; justify-content: flex-end; }
+}

@@ -1,0 +1,81 @@
+/* CMS-driven Catering & Private Events: retains the native Kampachi design shell. */
+.kc-catering-page{--catering-paper:#f4e9de;--catering-ink:#292320;--catering-red:#8d3036;background:var(--catering-paper);color:var(--catering-ink);font-family:"Noto Serif JP","Yu Mincho",Georgia,serif;min-height:70vh}
+.kc-catering-page *{box-sizing:border-box}
+.kc-catering-container{width:min(1300px,calc(100% - 52px));margin:0 auto}
+.kc-catering-intro{padding:clamp(125px,14vw,205px) 20px clamp(65px,9vw,120px);text-align:center}
+.kc-catering-intro-inner{max-width:940px}
+.kc-catering-eyebrow{margin:0 0 8px;font-size:12px;letter-spacing:.12em;color:#7b353a}
+.kc-catering-intro h1,.kc-catering-values-heading h2{font-family:"Cormorant Garamond","Noto Serif JP",Georgia,serif;font-size:clamp(31px,3.5vw,48px);font-weight:400;line-height:1.17;letter-spacing:.015em;color:#26211e;margin:8px 0 20px}
+.kc-catering-copy{margin:0 auto;max-width:790px;color:#4a413c;font-size:clamp(15px,1.5vw,18px);line-height:1.9}
+.kc-catering-copy p{margin:0 0 10px}
+.kc-catering-events{padding:0 0 clamp(65px,8vw,112px)}
+.kc-catering-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:stretch}
+.kc-catering-card{display:flex;min-width:0;flex-direction:column;background:#fbf8f4;box-shadow:0 10px 34px rgba(51,35,25,.055)}
+.kc-catering-card-image{position:relative;aspect-ratio:1.75;overflow:hidden;background:#312620;isolation:isolate}
+.kc-catering-card-photo,.kc-catering-showcase-photo,.kc-catering-detail-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;visibility:hidden;transition:opacity .6s ease,visibility .6s ease}
+.kc-catering-card-photo.is-active,.kc-catering-showcase-photo.is-active,.kc-catering-detail-photo.is-active{opacity:1;visibility:visible}
+.kc-catering-photo-empty{display:grid;place-items:center;color:#e4d8cb;letter-spacing:.2em;width:100%;height:100%}
+.kc-catering-card-image:after{content:"";position:absolute;inset:40% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.34));pointer-events:none;z-index:1}
+.kc-catering-card-badge{position:absolute;top:15px;left:15px;z-index:2;padding:9px 12px;background:rgba(37,28,24,.77);color:#fff;text-transform:uppercase;letter-spacing:.09em;font-size:10px}
+.kc-catering-card-counter{position:absolute;bottom:16px;right:18px;z-index:2;font-size:17px;letter-spacing:.13em;color:#fff;text-shadow:0 1px 7px #0006}
+.kc-catering-photo-controls{position:absolute;bottom:13px;left:13px;z-index:3;display:flex;gap:8px}
+.kc-catering-photo-controls button,.kc-catering-showcase-controls button,.kc-catering-detail-controls button{display:grid;place-items:center;width:30px;height:30px;border:1px solid #fff9;border-radius:50%;background:#15110eb5;color:#fff;cursor:pointer;font:19px/1 Arial,sans-serif}
+.kc-catering-card-body{display:flex;flex:1;flex-direction:column;align-items:flex-start;padding:26px 24px 25px}
+.kc-catering-card-subtitle{margin:0 0 5px;font-size:11px;letter-spacing:.17em;color:var(--catering-red);text-transform:uppercase}
+.kc-catering-card h2{font-family:"Cormorant Garamond","Noto Serif JP",Georgia,serif;font-weight:400;line-height:1.17;font-size:clamp(22px,2.3vw,30px);margin:0 0 15px}
+.kc-catering-card-description{font-size:15px;line-height:1.8;color:#60554d;margin:0 0 24px}
+.kc-catering-available-outlets{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;margin-top:auto;padding:0 0 19px;font:11px/1.7 Arial,sans-serif}
+.kc-catering-available-outlets span{font-weight:600;color:#55483d}
+.kc-catering-available-outlets a{color:#77463c;text-decoration:underline;text-underline-offset:3px}
+.kc-catering-discover{display:inline-flex;gap:13px;align-items:center;min-height:40px;padding:0 0 13px;margin-top:auto;border-bottom:1px solid #55463d;color:#28221e;text-decoration:none;letter-spacing:.19em;text-transform:uppercase;font-size:11px;transition:color .2s,border-color .2s}
+.kc-catering-discover:hover{color:var(--catering-red);border-color:var(--catering-red)}
+.kc-catering-discover span{font-size:19px;line-height:1}
+.kc-catering-empty{padding:35px;color:#65574e;text-align:center}
+.kc-catering-values{padding:clamp(15px,2vw,30px) 0 clamp(95px,12vw,180px)}
+.kc-catering-values-heading{text-align:center;margin:0 auto 31px;max-width:850px}
+.kc-catering-values-heading .kc-catering-eyebrow{letter-spacing:.18em;text-transform:uppercase}
+.kc-catering-values-heading h2{text-transform:uppercase;font-size:clamp(29px,3vw,42px);margin:0}
+.kc-catering-values-copy{font-size:15px;line-height:1.8;color:#65574e;max-width:800px;margin:15px auto}
+.kc-catering-showcase{position:relative;aspect-ratio:2.05/1;min-height:250px;overflow:hidden;background:#201913;isolation:isolate}
+.kc-catering-showcase-controls{position:absolute;bottom:18px;right:18px;z-index:3;display:flex;align-items:center;gap:12px;color:#fff}
+.kc-catering-showcase-controls button,.kc-catering-detail-controls button{width:39px;height:39px;font-size:18px}
+.kc-catering-dots{display:flex;align-items:center;gap:7px}
+.kc-catering-dots button{height:11px;width:11px;padding:0;border:1px solid #fff;background:transparent;border-radius:50%}
+.kc-catering-dots button[aria-pressed="true"]{width:26px;border-radius:9px;background:#fff}
+.kc-catering-showcase-count{font-size:11px;letter-spacing:.13em;min-width:53px;text-align:center}
+.kc-catering-values-list{display:grid;gap:12px;margin:23px 0 0;padding-left:24px;color:#37302a;font-size:15px;line-height:1.85}
+.kc-catering-values-list li{padding-left:1px}
+.kc-catering-values-list li::marker{color:var(--catering-red)}
+.kc-catering-values-list strong{font-weight:700;color:#27221e}
+.kc-catering-detail-gallery{position:relative;width:100%;height:65svh;min-height:380px;background:#2c211a;overflow:hidden}
+.kc-catering-detail-controls{position:absolute;z-index:2;right:28px;bottom:26px;display:flex;gap:15px;align-items:center;color:#fff}
+.kc-catering-detail-content{padding:75px 0 130px}
+.kc-catering-detail-content .kc-catering-container{max-width:850px}
+.kc-catering-detail-back{display:inline-block;margin:0 0 50px;color:#795a48;font-size:13px;text-decoration:none}
+.kc-catering-detail-content h1{font-size:clamp(31px,4vw,50px);font-weight:400;margin:8px 0 30px}
+.kc-catering-detail-summary{font-size:18px;line-height:1.8;color:#55463d}
+.kc-catering-detail-text{font-size:16px;line-height:1.95;color:#51453d;margin:30px 0}
+.kc-catering-detail-text img{max-width:100%;height:auto}
+.kc-catering-detail-outlets{border-top:1px solid #c9bbaf;padding:25px 0 20px;margin:30px 0}
+.kc-catering-detail-outlets h2{font-weight:400;font-size:24px;margin:0 0 14px}
+.kc-catering-detail-outlets a{display:inline-block;margin:0 12px 10px 0;color:#7b4d3b;text-decoration:underline;text-underline-offset:4px}
+.kc-catering-detail-cta{display:inline-block;padding:16px 24px;background:#29221e;color:#fff;text-decoration:none;text-transform:uppercase;letter-spacing:.13em;font-size:12px}
+.kc-catering-detail-cta:hover{background:#783b38;color:#fff}
+@media(max-width:1000px){.kc-catering-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.kc-catering-intro{padding-top:150px}}
+@media(max-width:650px){.kc-catering-container{width:calc(100% - 36px)}.kc-catering-intro{padding:125px 12px 70px}.kc-catering-grid{grid-template-columns:1fr}.kc-catering-card-image{aspect-ratio:1.5}.kc-catering-card-body{padding:24px 21px}.kc-catering-showcase{aspect-ratio:1.25;min-height:270px}.kc-catering-showcase-controls{right:9px;bottom:10px;gap:8px}.kc-catering-showcase-controls button{width:33px;height:33px}.kc-catering-dots{gap:5px}.kc-catering-values-list{font-size:14px}.kc-catering-detail-gallery{height:48svh;min-height:300px}.kc-catering-detail-content{padding:55px 0 100px}}
+@media(prefers-reduced-motion:reduce){.kc-catering-card-photo,.kc-catering-showcase-photo,.kc-catering-detail-photo{transition:none}}
+
+/* Section 1: CMS-managed mixed-media hero banner and video carousel. */
+.kc-catering-hero{position:relative;width:100%;height:70svh;min-height:400px;max-height:860px;background:#211813;overflow:hidden;isolation:isolate}
+.kc-catering-hero-track,.kc-catering-hero-slide,.kc-catering-hero-slide img,.kc-catering-hero-slide video{position:absolute;inset:0;width:100%;height:100%}
+.kc-catering-hero-slide{visibility:hidden;opacity:0;transition:opacity .8s ease,visibility .8s ease}
+.kc-catering-hero-slide.is-active{visibility:visible;opacity:1}
+.kc-catering-hero-slide img,.kc-catering-hero-slide video{object-fit:cover;display:block}
+.kc-catering-hero-shade{position:absolute;inset:55% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.38));pointer-events:none;z-index:1}
+.kc-catering-hero-controls{position:absolute;z-index:2;right:clamp(17px,4vw,65px);bottom:26px;display:flex;align-items:center;gap:12px;color:#fff}
+.kc-catering-hero-controls button{display:inline-flex;align-items:center;justify-content:center;min-width:39px;min-height:39px;padding:0 11px;border:1px solid rgba(255,255,255,.7);border-radius:24px;background:rgba(18,14,12,.48);color:#fff;font:12px/1 Arial,sans-serif;cursor:pointer;transition:background .2s ease}
+.kc-catering-hero-controls button:hover,.kc-catering-hero-controls button:focus-visible{background:rgba(18,14,12,.9)}
+.kc-catering-hero-count{min-width:52px;text-align:center;font:12px/1.4 Arial,sans-serif;letter-spacing:.12em}
+.kc-catering-intro--with-hero{padding-top:clamp(55px,7vw,95px)}
+@media(max-width:650px){.kc-catering-hero{height:52svh;min-height:280px}.kc-catering-hero-controls{right:15px;bottom:15px;gap:7px}.kc-catering-hero-controls button{min-width:34px;min-height:34px;padding:0 9px}.kc-catering-intro--with-hero{padding-top:55px}}
+@media(prefers-reduced-motion:reduce){.kc-catering-hero-slide{transition:none}}

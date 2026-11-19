@@ -1,0 +1,269 @@
+/* KRSB header reference / Cormorant Garamond typography / uploaded brush footer. */
+:root {
+    --header-height: 96px !important;
+    --kampachi-krsb-type: "Cormorant Garamond", Georgia, serif;
+}
+
+.site-header,
+.site-header.is-scrolled {
+    height: var(--header-height) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6) !important;
+    background-color: #000 !important;
+    box-shadow: none !important;
+}
+
+.site-header .header-inner {
+    width: calc(100% - clamp(40px, 5vw, 96px)) !important;
+    max-width: 1850px !important;
+}
+
+.site-header .brand {
+    flex: 0 0 94px !important;
+    width: 94px !important;
+}
+
+.site-header .brand-logo {
+    display: block !important;
+    width: 94px !important;
+    max-height: 68px !important;
+    object-fit: contain !important;
+    object-position: left center !important;
+    filter: brightness(0) invert(1) !important;
+}
+
+.menu-overlay .nav-link {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    font-family: var(--kampachi-krsb-type) !important;
+    font-weight: 400 !important;
+    font-size: 14px !important;
+    line-height: 1.05 !important;
+    letter-spacing: 0.005em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+}
+
+.menu-overlay .nav-label-jp {
+    display: block !important;
+    min-height: 12px !important;
+    font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif !important;
+    font-size: 9px !important;
+    font-weight: 400 !important;
+    line-height: 12px !important;
+    letter-spacing: 0.01em !important;
+    text-transform: none !important;
+    white-space: nowrap !important;
+    opacity: 0.9;
+}
+
+.menu-overlay .nav-label-en {
+    display: block !important;
+    font-family: var(--kampachi-krsb-type) !important;
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0.005em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+}
+
+.menu-overlay .nav-link:hover,
+.menu-overlay .nav-link:focus-visible {
+    color: #e0c9aa !important;
+}
+
+.site-header .reservation-link,
+.site-header.is-scrolled .reservation-link {
+    min-width: 0 !important;
+    min-height: 44px !important;
+    padding: 0 0 0 10px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-family: var(--kampachi-krsb-type) !important;
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0.005em !important;
+    text-transform: uppercase !important;
+}
+
+.site-header .reservation-link:hover,
+.site-header .reservation-link:focus-visible {
+    color: #e0c9aa !important;
+}
+
+.site-header .reservation-menu {
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    background-color: #090909 !important;
+}
+
+.site-header .reservation-option {
+    color: #fff !important;
+    font-family: var(--kampachi-krsb-type) !important;
+    font-size: 16px !important;
+}
+
+.site-header .reservation-option:hover,
+.site-header .reservation-option:focus-visible {
+    background-color: #292322 !important;
+}
+
+.menu-overlay .nav-sublist,
+.menu-overlay .sub-menu,
+.menu-overlay.is-scrolled .nav-sublist {
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    background: #090909 !important;
+}
+
+.menu-overlay .nav-sublink,
+.menu-overlay .sub-menu a,
+.menu-overlay.is-scrolled .nav-sublink {
+    color: #f5f0ea !important;
+    font-family: var(--kampachi-krsb-type) !important;
+    font-size: 16px !important;
+}
+
+.menu-overlay .nav-sublink:hover,
+.menu-overlay .sub-menu a:hover {
+    color: #e0c9aa !important;
+}
+
+.site-footer,
+.site-footer.paper-surface {
+    background-color: #050505 !important;
+    background-image: url("images/footer-brush-texture.png") !important;
+    background-position: center center !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+}
+
+/* Maintain text contrast over the supplied near-black brush texture. */
+.site-footer .footer-links a,
+.site-footer .footer-address address,
+.site-footer .footer-contact > a,
+.site-footer .footer-privacy,
+.site-footer .footer-cta a {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+@media (min-width: 1200px) {
+    .menu-overlay {
+        width: calc(100% - clamp(40px, 5vw, 96px)) !important;
+        max-width: 1850px !important;
+        height: var(--header-height) !important;
+        padding: 0 138px 0 110px !important;
+        box-sizing: border-box !important;
+    }
+
+    .menu-overlay .nav-list {
+        gap: clamp(15px, 1.6vw, 30px) !important;
+        justify-content: center !important;
+    }
+
+    .site-header .header-actions {
+        z-index: 65 !important;
+    }
+
+    .menu-overlay .nav-dropdown-toggle {
+        align-self: flex-end;
+        margin-bottom: 1px;
+    }
+}
+
+@media (max-width: 1199px) {
+    :root {
+        --header-height: 82px !important;
+    }
+
+    .site-header .brand,
+    .site-header .brand-logo {
+        width: 85px !important;
+        max-width: 85px !important;
+        flex-basis: 85px !important;
+    }
+
+    .site-header .header-inner {
+        width: calc(100% - 44px) !important;
+    }
+
+    .site-header .reservation-link {
+        min-height: 40px !important;
+        font-size: 14px !important;
+    }
+
+    .menu-overlay {
+        background-color: #050505 !important;
+    }
+
+    .menu-overlay .nav-list {
+        align-items: flex-start !important;
+        gap: 24px !important;
+    }
+
+    .menu-overlay .nav-link {
+        gap: 2px !important;
+        font-size: 19px !important;
+    }
+
+    .menu-overlay .nav-label-jp {
+        font-size: 10px !important;
+    }
+
+    .menu-overlay .nav-label-en {
+        font-size: 20px !important;
+    }
+}
+
+@media (max-width: 600px) {
+    :root {
+        --header-height: 76px !important;
+    }
+
+    .site-header .header-inner {
+        width: calc(100% - 36px) !important;
+    }
+
+    .site-header .header-actions {
+        gap: 14px !important;
+    }
+
+    .site-header .reservation-link {
+        font-size: 12px !important;
+    }
+
+    .site-footer,
+    .site-footer.paper-surface {
+        background-position: 62% center !important;
+    }
+}
+
+/* Shared footer image has precedence over legacy homepage/promotions/47in27 styles. */
+body .site-footer.site-footer--brush,
+body .site-footer.site-footer--brush.paper-surface {
+    position: relative !important;
+    isolation: isolate;
+    background-color: #050505 !important;
+    background-image: var(--kampachi-footer-bg, url("images/footer-brush-texture.png")) !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+}
+
+body .site-footer.site-footer--brush::before,
+body .site-footer.site-footer--brush::after {
+    display: none !important;
+    background: none !important;
+    content: none !important;
+}
+
+@media (max-width: 600px) {
+    body .site-footer.site-footer--brush {
+        background-position: 62% center !important;
+    }
+}

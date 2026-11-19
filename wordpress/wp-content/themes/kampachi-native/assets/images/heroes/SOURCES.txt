@@ -1,0 +1,21 @@
+Hero photo sources
+
+The hero photos are downloadable Pexels images included locally for clear, reliable display.
+Pexels license: https://www.pexels.com/license/ (free use; attribution is not required).
+
+
+
+promotion-hotpot-dining.jpg: Pexels photo ID 19775602 — diners sharing Japanese hotpot in Toyohashi, Aichi — https://images.pexels.com/photos/19775602/pexels-photo-19775602.jpeg
+promotion-japanese-dishes.jpg: Pexels photo ID 17568015 — Japanese dishes including gyoza and sashimi — https://images.pexels.com/photos/17568015/pexels-photo-17568015.jpeg
+sake-bottles-and-cup.jpg: Pexels photo ID 15602697 — sake bottles and a ceramic cup — https://images.pexels.com/photos/15602697/pexels-photo-15602697.jpeg
+sake-food-pairing.jpg: Pexels photo ID 31406825 — sake with Japanese wagyu — https://images.pexels.com/photos/31406825/pexels-photo-31406825.jpeg
+47in27-osaka-castle.jpg: Pexels photo ID 4058521 — Osaka Castle in Osaka Prefecture, with spring blossoms — https://images.pexels.com/photos/4058521/pexels-photo-4058521.jpeg
+47in27-amanohashidate.jpg: Pexels photo ID 31962843 — Amanohashidate sandbar in Miyazu, Kyoto Prefecture — https://images.pexels.com/photos/31962843/pexels-photo-31962843.jpeg
+catering-sushi-chef.jpg: Pexels photo ID 27581083 — chef preparing Japanese sushi — https://images.pexels.com/photos/27581083/pexels-photo-27581083.jpeg
+catering-japanese-private-dining.jpg: Pexels photo ID 35833833 — intimate Japanese private dining room with a tabletop grill — https://images.pexels.com/photos/35833833/pexels-photo-35833833.jpeg
+eq-izakaya-bar.jpg: Pexels photo ID 28988072 — Japanese izakaya dining counter — https://images.pexels.com/photos/28988072/pexels-photo-28988072.jpeg
+eq-japanese-food-stall.jpg: Pexels photo ID 7107238 — Japanese street-food stalls and dining — https://images.pexels.com/photos/7107238/pexels-photo-7107238.jpeg
+pavilion-tokyo-dining.jpg: Pexels photo ID 31087603 — diners in a Tokyo restaurant with Japanese pop-culture artwork — https://images.pexels.com/photos/31087603/pexels-photo-31087603.jpeg
+pavilion-japanese-dining.jpg: Pexels photo ID 15998893 — Japanese restaurant counter and dining room — https://images.pexels.com/photos/15998893/pexels-photo-15998893.jpeg
+plaza33-japanese-dining.jpg: Pexels photo ID 18495860 — guests dining at a Japanese restaurant — https://images.pexels.com/photos/18495860/pexels-photo-18495860.jpeg
+plaza33-sushi-dining.jpg: Pexels photo ID 8951326 — sushi dining in a Japanese restaurant — https://images.pexels.com/photos/8951326/pexels-photo-8951326.jpeg

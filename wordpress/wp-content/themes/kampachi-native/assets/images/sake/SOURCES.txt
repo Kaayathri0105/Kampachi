@@ -1,0 +1,34 @@
+Bottle image references used by the Kampachi sake cards (checked 30 September 2026).
+
+IWA 5 Assemblage — IWA Sake USA product page:
+https://www.iwa-sake.us/products/iwa-5-assemblage-2-2020
+
+Izumibashi Megumi Blue Label — Izumibashi online shop:
+https://shop.izumibashi.com/cdn/shop/products/136190254_o1_900x.jpg?v=1658642527
+
+Asahigiku Daichi — Sumiyoshi Shuhan product page:
+https://field-to-table.jp/products/asahigiku-daichi-tj?variant=42964920271089
+
+Taketsuru Junmai Nigori — Sumidaya online store:
+https://shop.sumidaya.co.jp/products/720ml-1800ml-taketsuru-nigori
+
+Hiokizakura Kimoto Junmai Goriki — Sumiyoshi Shuhan product page:
+https://field-to-table.jp/products/hiokizakura-kimotogoriki-jm?variant=42964930035953
+
+Fusozuru Junmai Ginjo Sakanishiki — Sakenomy product page:
+https://www.sakenomy.jp/sake/TST0000028777/
+
+The four added brand and label references follow Kampachi's sake pairing brochure:
+https://www.kampachi.com.my/akaushi2021/TheAkaushiExperience-e-Brochure.pdf
+That older brochure URL did not resolve when checked. The page notes that the current selection varies by outlet.
+
+Taketsuru bottle range, product details, prices, and bottle images — Taketsuru Shuzou official English catalogue:
+https://www.taketsuru-shuzou.co.jp/products?lang=en
+Prices are shown in Japanese yen as listed by the brewery.
+
+Hiokizakura bottle range, product details, and prices — Koji Sake collection and product pages:
+https://www.koji-sake.com/collections/hiokizakura
+Prices are shown in Hong Kong dollars as listed by Koji Sake. A collection item whose product page returned 404 was not included.
+
+MYR conversion for display: Bank Negara Malaysia middle rates dated 30 September 2026 — 100 JPY = RM2.6005; 100 HKD = RM51.9927. Displayed MYR equivalents are rounded to the nearest ringgit.
+Rate source: https://www.bnm.gov.my/latest-rates

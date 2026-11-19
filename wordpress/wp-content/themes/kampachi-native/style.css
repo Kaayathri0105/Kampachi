@@ -1,0 +1,10 @@
+/*
+Theme Name: Kampachi Native
+Theme URI: https://kampachi.com.my/
+Author: Kampachi
+Description: Standalone WordPress PHP theme based on Kampachi HTML, with native dynamic content.
+Version: 2.7.1
+Requires PHP: 8.1
+Text Domain: kampachi-native
+*/
+:root{--kampachi-bg:#100304;--kampachi-text:#f4f0eb}body{margin:0;background:var(--kampachi-bg);color:var(--kampachi-text)}.kampachi-native-wrap{max-width:1150px;margin:auto;padding:130px 24px 90px}.kampachi-native-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:26px}.kampachi-native-card{background:#211719;border:1px solid #665b56;padding:0 0 24px}.kampachi-native-card img{width:100%;aspect-ratio:16/9;object-fit:cover}.kampachi-native-card h2,.kampachi-native-card p{margin:16px 20px}.kampachi-native-card a{color:inherit}.kampachi-native-cover{width:100%;max-height:70svh;object-fit:cover}.kampachi-native-content{max-width:850px;margin:35px auto;line-height:1.8}.kampachi-native-cta{display:inline-block;padding:13px 22px;border:1px solid currentColor}.kampachi-native-pagination{margin-top:35px}.kampachi-native-pagination a{color:inherit;margin-right:10px}.kampachi-native-banner{margin-bottom:32px}
