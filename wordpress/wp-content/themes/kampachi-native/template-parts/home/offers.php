@@ -34,7 +34,7 @@ $perView = Homepage_Content::items_per_view(
             'div',
             ['class' => 'experiences-subtitle home-cms-description']
         ); ?>
-        <div data-kc-content-carousel data-kc-carousel-slide
+        <div class="kc-home-side-carousel" data-kc-content-carousel data-kc-carousel-slide
             data-kc-carousel-per-view="<?php echo esc_attr((string) $perView); ?>"
             role="region" aria-roledescription="carousel" aria-label="Offers and events">
             <div class="experience-grid kc-home-post-track" id="home-offers-track" data-kc-carousel-track
