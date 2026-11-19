@@ -743,7 +743,7 @@ $kampachiSakeSlides = [];
         line-height: 1.5;
       }
 
-      .flavours-copy h1 {
+      .flavours-copy #flavours-title {
         max-width: 900px;
         margin: 0 auto 24px;
         color: #ffffff;
@@ -1012,7 +1012,7 @@ $kampachiSakeSlides = [];
           gap: 28px;
         }
 
-        .flavours-copy h1 {
+        .flavours-copy #flavours-title {
           margin-bottom: 19px;
           font-size: clamp(29px, 8vw, 36px);
         }
@@ -1334,7 +1334,7 @@ $kampachiSakeSlides = [];
         letter-spacing: 0.12em;
       }
 
-      .signature-dish-row h3 {
+      .signature-dish-row .signature-dish-title {
         margin: 0 0 8px;
         font-size: clamp(21px, 2vw, 27px);
         font-weight: 400;
@@ -1390,7 +1390,7 @@ $kampachiSakeSlides = [];
         text-transform: uppercase;
       }
 
-      .home-sake-heading h2 {
+      .home-sake-heading #home-sake-section-title {
         margin: 0;
         font-size: clamp(29px, 2.1vw, 38px);
         font-weight: 400;
@@ -1804,27 +1804,6 @@ $kampachiSakeSlides = [];
     <script>
     (() => {
         'use strict';
-      const heroVideo = document.querySelector(".hero-video");
-      if (heroVideo) {
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          heroVideo.pause();
-          heroVideo.removeAttribute("autoplay");
-        } else {
-          heroVideo.play().catch(() => {});
-        }
-      }
-
-      const heroSlides = Array.from(document.querySelectorAll(".hero-cms-slide"));
-      if (heroSlides.length > 1 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        let activeHeroSlide = 0;
-        window.setInterval(() => {
-          if (document.hidden) return;
-          heroSlides[activeHeroSlide].classList.remove("is-active");
-          activeHeroSlide = (activeHeroSlide + 1) % heroSlides.length;
-          heroSlides[activeHeroSlide].classList.add("is-active");
-        }, 7500);
-      }
-
       const signatureDishImage = document.getElementById(
         "signature-dish-image",
       );

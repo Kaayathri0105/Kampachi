@@ -14,8 +14,20 @@ $sakeSlideCount = count($kampachiSakeSlides);
 ?>
 <section class="home-sake-section" id="sake" aria-labelledby="home-sake-section-title">
     <div class="content-container home-sake-heading">
-        <h2 id="home-sake-section-title"><?php echo esc_html(wp_strip_all_tags(Homepage_Content::content($kampachiHome, 'sake', 'title'))); ?></h2>
-        <div class="home-section-description home-cms-description"><?php echo Homepage_Content::description($kampachiHome, 'sake'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+        <?php echo Homepage_Content::section_text(
+            $kampachiHome,
+            'sake',
+            'title',
+            'h2',
+            ['id' => 'home-sake-section-title']
+        ); ?>
+        <?php echo Homepage_Content::section_text(
+            $kampachiHome,
+            'sake',
+            'description',
+            'div',
+            ['class' => 'home-section-description home-cms-description']
+        ); ?>
     </div>
     <div class="home-sake-carousel-shell" role="region" aria-roledescription="carousel" aria-label="Artisanal sake slides">
         <?php if ($sakeSlideCount > 1) : ?>

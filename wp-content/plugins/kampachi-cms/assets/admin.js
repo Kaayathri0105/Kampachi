@@ -4,37 +4,6 @@
     const form = $('#kc-home-form');
     let rowCount = Date.now();
 
-    function prepareEditors(scope) {
-        scope.find('textarea.kc-rich').each(function () {
-            const element = $(this);
-            const id = 'kc_rich_' + (++rowCount);
-            element.attr('id', id);
-            if (window.wp && wp.editor && wp.editor.initialize) {
-                wp.editor.initialize(id, {
-                    tinymce: { wpautop: true, toolbar1: 'bold,italic,link,unlink,bullist,numlist,undo,redo', toolbar2: '' },
-                    quicktags: true,
-                    mediaButtons: false
-                });
-            }
-        });
-    }
-
-    function syncEditors(scope) {
-        if (!window.tinymce) return;
-        scope.find('textarea.kc-rich').each(function () {
-            const editor = tinymce.get(this.id);
-            if (editor) editor.save();
-        });
-    }
-
-    function destroyEditors(scope) {
-        syncEditors(scope);
-        if (!window.wp || !wp.editor || !wp.editor.remove) return;
-        scope.find('textarea.kc-rich').each(function () {
-            if (this.id) wp.editor.remove(this.id);
-        });
-    }
-
     form.on('click', '.kc-add', function () {
         const type = $(this).data('target');
         const template = $('#tmpl-kc-' + type).html();
@@ -42,12 +11,10 @@
         const unique = ++rowCount;
         const row = $(template.replace(/987654/g, String(unique)));
         $('#kc-' + type + '-list').append(row);
-        prepareEditors(row);
     });
 
     form.on('click', '.kc-remove', function () {
         const row = $(this).closest('.kc-repeat');
-        destroyEditors(row);
         row.remove();
     });
 
@@ -69,19 +36,36 @@
         field.find('.kc-image-preview').empty();
     });
 
+    function updateVideoPreview(id, filename, url) {
+        const preview = form.find('.kc-home-video-preview')[0];
+        form.find('.kc-video-id').val(id);
+        form.find('.kc-video-name').text(filename);
+        preview.pause();
+        if (url) {
+            preview.src = url;
+        } else {
+            preview.removeAttribute('src');
+        }
+        preview.hidden = !url;
+        preview.load();
+    }
+
     form.on('click', '.kc-pick-video', function () {
-        const picker = wp.media({ title: 'Choose hero video', button: { text: 'Use video' }, library: { type: 'video' }, multiple: false });
+        const picker = wp.media({
+            title: 'Choose hero video',
+            button: { text: 'Use video' },
+            library: { type: 'video' },
+            multiple: false
+        });
         picker.on('select', function () {
             const attachment = picker.state().get('selection').first().toJSON();
-            $('.kc-video-id').val(attachment.id);
-            $('.kc-video-name').text(attachment.filename);
+            updateVideoPreview(attachment.id, attachment.filename, attachment.url);
         });
         picker.open();
     });
 
     form.on('click', '.kc-clear-video', function () {
-        $('.kc-video-id').val('');
-        $('.kc-video-name').text('No video selected');
+        updateVideoPreview('', 'No video selected', '');
     });
 
     form.on('change', '.kc-offer-choices input', function () {
@@ -92,10 +76,4 @@
         }
         $('.kc-offer-count').text('Selected: ' + $('.kc-offer-choices input:checked').length + ' / 3');
     });
-
-    form.on('submit', function () {
-        if (window.tinymce) tinymce.triggerSave();
-    });
-
-    $('.kc-repeat-list .kc-repeat').each(function () { prepareEditors($(this)); });
 })(jQuery);

@@ -86,6 +86,63 @@ final class Homepage_Content
         return wp_kses_post(self::content($settings, $section, 'description', $default));
     }
 
+    /**
+     * @param array<string, string> $attributes
+     * @return array{0: string, 1: string}
+     */
+    public static function text_presentation(mixed $format, string $defaultTag, array $attributes = []): array
+    {
+        if (is_callable([\Kampachi_Homepage::class, 'text_presentation'])) {
+            return \Kampachi_Homepage::text_presentation($format, $defaultTag, $attributes);
+        }
+
+        $markup = '';
+        foreach ($attributes as $name => $value) {
+            $markup .= ' ' . esc_attr($name) . '="' . esc_attr($value) . '"';
+        }
+
+        return [$defaultTag, $markup];
+    }
+
+    /** @param array<string, string> $attributes */
+    public static function text_element(
+        string $value,
+        mixed $format,
+        string $defaultTag,
+        array $attributes = [],
+        bool $plain = false
+    ): string {
+        [$tag, $attrs] = self::text_presentation($format, $defaultTag, $attributes);
+        if ($plain || $tag !== $defaultTag) {
+            $text = is_callable([\Kampachi_Homepage::class, 'plain_text'])
+                ? \Kampachi_Homepage::plain_text($value)
+                : wp_strip_all_tags($value);
+            $html = nl2br(esc_html($text), false);
+        } else {
+            $html = wp_kses_post($value);
+        }
+
+        return '<' . $tag . $attrs . '>' . $html . '</' . $tag . '>';
+    }
+
+    /** @param array<string, string> $attributes */
+    public static function section_text(
+        array $settings,
+        string $section,
+        string $field,
+        string $tag,
+        array $attributes,
+        string $default = ''
+    ): string {
+        return self::text_element(
+            self::content($settings, $section, $field, $default),
+            $settings['format'][$section . '_' . $field] ?? [],
+            $tag,
+            $attributes,
+            $field === 'title'
+        );
+    }
+
     public static function limit(array $settings, string $section, int $fallback, int $maximum): int
     {
         $key = $section . '_limit';
