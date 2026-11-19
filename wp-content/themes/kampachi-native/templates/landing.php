@@ -8,6 +8,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\OutletsLanding;
+
 if (! defined('ABSPATH')) {
     exit;
 }
@@ -38,24 +40,24 @@ $collectionType = [
     <?php endif; ?>
     <?php if ($collectionType !== '') : ?>
         <?php
-        $entries = new WP_Query([
-            'post_type' => $collectionType,
-            'post_status' => 'publish',
-            'posts_per_page' => -1,
-            'orderby' => ['menu_order' => 'ASC', 'date' => 'DESC'],
-            'no_found_rows' => true,
-        ]);
+        $entries = $collectionType === 'kc_outlet' && class_exists(OutletsLanding::class)
+            ? OutletsLanding::posts($postId)
+            : (new WP_Query([
+                'post_type' => $collectionType,
+                'post_status' => 'publish',
+                'posts_per_page' => -1,
+                'orderby' => ['menu_order' => 'ASC', 'date' => 'DESC'],
+                'no_found_rows' => true,
+            ]))->posts;
         ?>
-        <?php if ($entries->have_posts()) : ?>
+        <?php if ($entries !== []) : ?>
             <section class="kc-section" id="collection">
                 <div class="kc-section-inner kc-module-grid">
-                    <?php while ($entries->have_posts()) : ?>
-                        <?php $entries->the_post(); ?>
-                        <?php kampachi_native_render_post_card(get_the_ID()); ?>
-                    <?php endwhile; ?>
+                    <?php foreach ($entries as $entry) : ?>
+                        <?php kampachi_native_render_post_card($entry->ID); ?>
+                    <?php endforeach; ?>
                 </div>
             </section>
         <?php endif; ?>
-        <?php wp_reset_postdata(); ?>
     <?php endif; ?>
 </main>

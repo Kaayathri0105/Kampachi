@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Kampachi\CMS\HeroMotion;
 use Kampachi\CMS\OffersLanding;
+use Kampachi\CMS\OutletsLanding;
 
 if (! defined('ABSPATH')) {
     exit;
@@ -35,33 +36,21 @@ final class Kampachi_Landings
 
     public static function register_menus(): void
     {
-        foreach (['kc_offer' => 'promotion', 'kc_outlet' => 'outlets'] as $type => $slug) {
-            $callback = $slug === 'promotion'
-                ? [OffersLanding::class, 'render']
-                : static function () use ($slug): void {
-                    $page = get_page_by_path($slug);
-                    echo '<div class="wrap kc-home-admin kc-shared-admin kc-module-admin"><h1>'
-                        . esc_html(self::PAGES[$slug]) . ' Landing Page</h1><section class="kc-module-panel">';
-                    echo '<h2>Landing Page Content</h2>';
-                    if ($page instanceof WP_Post) {
-                        echo '<p><a class="button button-primary" href="'
-                            . esc_url(get_edit_post_link($page->ID, 'raw')) . '">Edit landing page &amp; hero</a></p>';
-                        echo '<p><a class="button" href="' . esc_url(get_permalink($page)) . '">View landing page</a></p>';
-                    } else {
-                        echo '<p>Create the page with slug <code>' . esc_html($slug) . '</code>.</p>';
-                    }
-                    echo '</section></div>';
-                };
+        $landings = [
+            'kc_offer' => ['promotion', 'Offers Landing', OffersLanding::class],
+            'kc_outlet' => ['outlets', 'Outlets Landing', OutletsLanding::class],
+        ];
+        foreach ($landings as $type => [$slug, $title, $editor]) {
             $hook = add_submenu_page(
                 'edit.php?post_type=' . $type,
-                $slug === 'promotion' ? 'Offers Landing' : 'Landing Page',
+                $title,
                 'Landing Page',
                 'edit_pages',
                 'kampachi-landing-' . $slug,
-                $callback
+                [$editor, 'render']
             );
-            if ($slug === 'promotion' && $hook !== false) {
-                add_action('load-' . $hook, [OffersLanding::class, 'load']);
+            if ($hook !== false) {
+                add_action('load-' . $hook, [$editor, 'load']);
             }
         }
     }
@@ -132,8 +121,8 @@ final class Kampachi_Landings
             $value = is_string($value) ? $value : '';
             echo '<p><label for="kc_' . esc_attr($key) . '"><strong>' . esc_html($label) . '</strong></label></p>';
 
-            if ($type === 'textarea' && $post->post_name === 'promotion') {
-                wp_editor($value, 'kc_promotion_page_intro', [
+            if ($type === 'textarea' && self::has_rich_intro($post)) {
+                wp_editor($value, 'kc_landing_page_intro', [
                     'textarea_name' => 'kampachi_landing[intro_description]',
                     'textarea_rows' => 6,
                 ]);
@@ -212,7 +201,7 @@ final class Kampachi_Landings
                 continue;
             }
 
-            $value = $post->post_name === 'promotion' && $field === 'intro_description'
+            $value = $field === 'intro_description' && self::has_rich_intro($post)
                 ? wp_kses_post($input)
                 : sanitize_textarea_field($input);
             update_post_meta($postId, '_kampachi_' . $field, wp_slash($value));
@@ -238,5 +227,10 @@ final class Kampachi_Landings
             $images = array_values(array_unique(array_filter(array_map('absint', $ids), 'wp_attachment_is_image')));
             update_post_meta($postId, '_kampachi_hero_image_ids', array_slice($images, 0, 20));
         }
+    }
+
+    private static function has_rich_intro(WP_Post $post): bool
+    {
+        return in_array($post->post_name, ['promotion', 'outlets'], true);
     }
 }
