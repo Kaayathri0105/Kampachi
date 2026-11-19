@@ -106,9 +106,7 @@ body:not(.home){background:var(--kc-paper)!important;color:var(--kc-ink)}
 
 .kc-offers-landing-hero a.kc-offer-hero-title {
     padding: 6px;
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: .18em;
+    text-decoration: none;
     pointer-events: auto;
 }
 
