@@ -21,17 +21,22 @@ $count = count($slides);
                     <source src="<?php echo esc_url($slide['url']); ?>" type="<?php echo esc_attr($slide['mime']); ?>">
                 </video>
             <?php else : ?>
+                <?php
+                $link = $slide['link'] ?? '';
+                $title = $slide['title'] ?? '';
+                ?>
+                <?php if ($link !== '') : ?>
+                    <a class="kc-offer-hero-image-link" href="<?php echo esc_url($link); ?>"
+                        aria-label="<?php echo esc_attr($title !== '' ? $title : __('View offer', 'kampachi-native')); ?>"
+                        data-kc-hero-link>
+                <?php endif; ?>
                 <img src="<?php echo esc_url($slide['url']); ?>" alt="<?php echo esc_attr($slide['alt'] ?? ''); ?>"
                     <?php echo $index === 0 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'; ?>>
-                <?php if (($slide['title'] ?? '') !== '') : ?>
+                <?php if ($link !== '') : ?>
+                    </a>
+                <?php elseif ($title !== '') : ?>
                     <div class="kc-offer-hero-copy">
-                        <?php if (! empty($slide['link'])) : ?>
-                            <a class="kc-offer-hero-title" href="<?php echo esc_url($slide['link']); ?>" data-kc-hero-link>
-                                <?php echo esc_html($slide['title']); ?>
-                            </a>
-                        <?php else : ?>
-                            <span class="kc-offer-hero-title"><?php echo esc_html($slide['title']); ?></span>
-                        <?php endif; ?>
+                        <span class="kc-offer-hero-title"><?php echo esc_html($title); ?></span>
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
