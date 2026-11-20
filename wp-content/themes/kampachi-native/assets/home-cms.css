@@ -5,8 +5,8 @@
 .home-sake-heading .home-cms-description { margin-inline: auto; }
 .experience-card img { object-fit: cover; }
 
-.signature-carousel-wrap {
-    max-inline-size: 940px;
+.home-feature-carousel-shell {
+    inline-size: min(1365px, calc(100% - 64px));
     margin-inline: auto;
 }
 
@@ -208,6 +208,7 @@ body #outlets .outlets-grid--carousel::-webkit-scrollbar {
 }
 
 @media (min-width: 761px) {
+    .home-feature-carousel-shell > .kc-home-side-carousel,
     .kc-home-side-carousel:has(> :is(.kc-home-post-controls, .outlets-carousel-controls):not([hidden])) {
         margin-inline: max(calc(-1 * var(--kc-side-arrow-gutter)), calc((100% - 100vw) / 2 + 12px));
         padding-inline: var(--kc-side-arrow-gutter);
@@ -233,12 +234,16 @@ body #outlets .outlets-grid--carousel::-webkit-scrollbar {
 }
 
 @media (max-width: 760px) {
+    .home-feature-carousel-shell {
+        inline-size: calc(100% - 40px);
+    }
+
     .kc-home-side-carousel > :is(.kc-home-post-controls, .outlets-carousel-controls) {
         gap: 8px;
         margin-block: 0 12px;
     }
 
-    .home-sake-carousel-shell .home-sake-layout {
+    .home-feature-carousel-shell .home-sake-layout {
         gap: 0;
     }
 }

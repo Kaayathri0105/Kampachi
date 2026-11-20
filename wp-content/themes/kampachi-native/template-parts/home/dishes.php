@@ -50,43 +50,43 @@ if ($dishes === []) {
                 ['class' => 'home-section-description home-cms-description']
             ); ?>
         </div>
-        <div class="signature-carousel-wrap">
-            <div class="kc-home-side-carousel" data-kc-content-carousel data-kc-carousel-slide
-                data-kc-carousel-per-view="1" role="region" aria-roledescription="carousel"
-                aria-label="<?php esc_attr_e('Chef’s Recommendations', 'kampachi-native'); ?>">
-                <div class="kc-home-post-track" id="signature-dish-track" data-kc-carousel-track aria-live="polite">
-                    <?php foreach ($dishes as $dish) : ?>
-                        <?php
-                        $titleFormat = $dish['format']['title'] ?? [];
-                        if (($titleFormat['tag'] ?? '') === 'p') {
-                            unset($titleFormat['tag']);
-                        }
-                        $title = Homepage_Content::text_element(
-                            $dish['title'] !== '' ? $dish['title'] : __('Dish', 'kampachi-native'),
-                            $titleFormat,
-                            'h3',
-                            ['class' => 'signature-dish-title'],
-                            true
-                        );
-                        ?>
-                        <article class="signature-dish-slide">
-                            <img src="<?php echo esc_url($dish['image']); ?>" alt="" loading="lazy" decoding="async">
-                            <?php if ($dish['description'] !== '') : ?>
-                                <details class="signature-dish-overlay" data-kc-dish-description>
-                                    <summary><?php echo $title; ?></summary>
-                                    <?php echo Homepage_Content::text_element(
-                                        $dish['description'],
-                                        $dish['format']['description'] ?? [],
-                                        'div',
-                                        ['class' => 'signature-dish-description home-cms-description']
-                                    ); ?>
-                                </details>
-                            <?php else : ?>
-                                <div class="signature-dish-overlay"><?php echo $title; ?></div>
-                            <?php endif; ?>
-                        </article>
-                    <?php endforeach; ?>
-                </div>
+    </div>
+    <div class="home-feature-carousel-shell">
+        <div class="kc-home-side-carousel" data-kc-content-carousel data-kc-carousel-slide
+            data-kc-carousel-per-view="1" role="region" aria-roledescription="carousel"
+            aria-label="<?php esc_attr_e('Chef’s Recommendations', 'kampachi-native'); ?>">
+            <div class="kc-home-post-track" id="signature-dish-track" data-kc-carousel-track aria-live="polite">
+                <?php foreach ($dishes as $dish) : ?>
+                    <?php
+                    $titleFormat = $dish['format']['title'] ?? [];
+                    if (($titleFormat['tag'] ?? '') === 'p') {
+                        unset($titleFormat['tag']);
+                    }
+                    $title = Homepage_Content::text_element(
+                        $dish['title'] !== '' ? $dish['title'] : __('Dish', 'kampachi-native'),
+                        $titleFormat,
+                        'h3',
+                        ['class' => 'signature-dish-title'],
+                        true
+                    );
+                    ?>
+                    <article class="signature-dish-slide">
+                        <img src="<?php echo esc_url($dish['image']); ?>" alt="" loading="lazy" decoding="async">
+                        <?php if ($dish['description'] !== '') : ?>
+                            <details class="signature-dish-overlay" data-kc-dish-description>
+                                <summary><?php echo $title; ?></summary>
+                                <?php echo Homepage_Content::text_element(
+                                    $dish['description'],
+                                    $dish['format']['description'] ?? [],
+                                    'div',
+                                    ['class' => 'signature-dish-description home-cms-description']
+                                ); ?>
+                            </details>
+                        <?php else : ?>
+                            <div class="signature-dish-overlay"><?php echo $title; ?></div>
+                        <?php endif; ?>
+                    </article>
+                <?php endforeach; ?>
             </div>
         </div>
     </div>

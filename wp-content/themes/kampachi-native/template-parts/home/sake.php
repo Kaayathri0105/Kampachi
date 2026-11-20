@@ -28,7 +28,7 @@ $perView = Homepage_Content::items_per_view($kampachiHome, 'sake', 1, count($kam
             ['class' => 'home-section-description home-cms-description']
         ); ?>
     </div>
-    <div class="home-sake-carousel-shell">
+    <div class="home-feature-carousel-shell">
         <div class="kc-home-side-carousel" data-kc-content-carousel data-kc-carousel-autoplay="5000"
             data-kc-carousel-per-view="<?php echo esc_attr((string) $perView); ?>"
             role="region" aria-roledescription="carousel" aria-label="Artisanal sake">

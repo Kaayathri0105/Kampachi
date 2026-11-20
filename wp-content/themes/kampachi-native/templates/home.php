@@ -1325,11 +1325,6 @@ $kampachiHome = Homepage_Content::settings();
         line-height: 1.2;
       }
 
-      .home-sake-carousel-shell {
-        width: min(1365px, calc(100% - 64px));
-        margin-inline: auto;
-      }
-
       .home-sake-layout {
         width: 100%;
         margin: 0;
@@ -1422,10 +1417,6 @@ $kampachiHome = Homepage_Content::settings();
         .home-sake-layout {
           width: 100%;
           grid-template-columns: 1fr;
-        }
-
-        .home-sake-carousel-shell {
-          width: calc(100% - 40px);
         }
 
         .home-sake-copy {
