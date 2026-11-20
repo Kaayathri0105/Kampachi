@@ -47,10 +47,6 @@
     color: #fff;
 }
 
-.signature-dish-overlay[open] {
-    background: rgb(16 9 6 / 78%);
-}
-
 .signature-dish-overlay > summary {
     display: flex;
     align-items: center;
