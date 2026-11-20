@@ -11,16 +11,19 @@ if (! defined('ABSPATH') || empty($args['slides'])) {
 $slides = $args['slides'];
 $count = count($slides);
 $hasVideo = in_array('video', array_column($slides, 'type'), true);
+$autoplayVideo = $hasVideo && ($args['autoplay_video'] ?? false);
 $label = $args['label'];
 ?>
 <section class="hero kc-shared-hero" <?php if ($args['id'] !== '') : ?>id="<?php echo esc_attr($args['id']); ?>"<?php endif; ?>
-    aria-label="<?php echo esc_attr($label); ?>" data-kc-home-hero data-kc-hero-swipe>
+    aria-label="<?php echo esc_attr($label); ?>" data-kc-home-hero data-kc-hero-swipe
+    <?php if ($autoplayVideo) : ?>data-kc-hero-video-autoplay<?php endif; ?>>
     <?php foreach ($slides as $index => $slide) : ?>
         <div class="hero-cms-slide<?php echo $index === 0 ? ' is-active' : ''; ?>"
             aria-hidden="<?php echo $index === 0 ? 'false' : 'true'; ?>" data-kc-hero-slide
             <?php echo $index === 0 ? '' : 'inert'; ?>>
             <?php if ($slide['type'] === 'video') : ?>
                 <video class="hero-video" muted playsinline preload="<?php echo $index === 0 ? 'metadata' : 'none'; ?>"
+                    <?php if ($autoplayVideo && $index === 0) : ?>autoplay<?php endif; ?>
                     <?php echo $count === 1 ? 'loop' : ''; ?> aria-label="<?php echo esc_attr($label); ?>">
                     <source src="<?php echo esc_url($slide['url']); ?>"
                         type="<?php echo esc_attr(($slide['mime'] ?? '') ?: 'video/mp4'); ?>">

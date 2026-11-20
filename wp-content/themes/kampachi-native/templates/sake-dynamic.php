@@ -62,7 +62,7 @@ $sakes = new WP_Query([
 $total = $sakes->post_count;
 ?>
 <main class="kc-catering-page kc-sake-page" id="main-content">
-    <?php kampachi_native_render_hero($hero, '', 'Sake hero'); ?>
+    <?php kampachi_native_render_hero($hero, '', 'Sake hero', autoplayVideo: true); ?>
 
     <section class="kc-catering-intro<?php echo $hero !== [] ? ' kc-catering-intro--with-hero' : ''; ?>" aria-labelledby="kc-sake-heading">
         <div class="kc-catering-container kc-catering-intro-inner">

@@ -34,4 +34,4 @@ $videoSlides = $video === null ? [] : [$video];
 $slides = is_callable([Kampachi_Homepage::class, 'displayed_slides'])
     ? Kampachi_Homepage::displayed_slides($kampachiHome, $videoSlides, $images)
     : ($images !== [] ? $images : $videoSlides);
-kampachi_native_render_hero($slides, '', 'Kampachi Japanese dining', 'home');
+kampachi_native_render_hero($slides, '', 'Kampachi Japanese dining', 'home', autoplayVideo: true);

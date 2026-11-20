@@ -13,6 +13,7 @@
         const next = hero.querySelector('[data-kc-hero-next]');
         const imageDelay = Number(hero.dataset.kcHeroImageDelay) || 7500;
         const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const autoplayVideo = hero.hasAttribute('data-kc-hero-video-autoplay');
         let index = 0;
         let timer;
         let muted = true;
@@ -41,15 +42,16 @@
             window.clearTimeout(timer);
             const activeIndex = index;
             const video = videos[activeIndex];
-            if (document.hidden || motion.matches) return;
+            if (document.hidden) return;
             if (!video) {
                 scheduleNext();
                 return;
             }
+            if (motion.matches && !autoplayVideo) return;
 
             video.muted = muted;
             video.play().catch(() => {
-                if (index !== activeIndex || document.hidden || motion.matches) return;
+                if (index !== activeIndex || document.hidden || (motion.matches && !autoplayVideo)) return;
                 if (!muted) {
                     muted = true;
                     video.muted = true;
@@ -134,7 +136,7 @@
             startActive();
         });
         motion.addEventListener('change', () => {
-            if (motion.matches && videos[index]) videos[index].pause();
+            if (motion.matches && !autoplayVideo && videos[index]) videos[index].pause();
             startActive();
         });
 

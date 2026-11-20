@@ -341,7 +341,8 @@ function kampachi_native_render_hero(
     array $slides,
     string $videoUrl = '',
     string $label = 'Kampachi hero',
-    string $id = ''
+    string $id = '',
+    bool $autoplayVideo = false
 ): void {
     if ($videoUrl !== '') {
         array_unshift($slides, ['url' => $videoUrl, 'mime' => 'video/mp4']);
@@ -363,6 +364,7 @@ function kampachi_native_render_hero(
             'slides' => $availableSlides,
             'label' => $label,
             'id' => $id,
+            'autoplay_video' => $autoplayVideo,
         ]);
     }
 }
