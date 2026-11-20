@@ -78,16 +78,13 @@
     outline-offset: 4px;
 }
 
-.signature-dish-title {
+.signature-dish-slide .signature-dish-title {
     flex: 1;
     margin: 0;
     min-inline-size: 0;
     overflow-wrap: anywhere;
+    font-size: 20px !important;
     font-weight: 400;
-}
-
-.signature-dish-title:not([data-kc-home-size]) {
-    font-size: clamp(22px, 2.7vw, 36px) !important;
 }
 
 .signature-dish-description {
