@@ -70,9 +70,17 @@ while (have_posts()) :
                                 <?php if ($detail['title'] !== '') :
                                     ?><h3><?php echo esc_html($detail['title']); ?></h3><?php
                                 endif; ?>
-                                <?php if ($detail['description'] !== '') :
-                                    ?><div class="kc-offer-rich-text"><?php echo wp_kses_post(wpautop($detail['description'])); ?></div><?php
-                                endif; ?>
+                                <?php if ($detail['description'] !== '') : ?>
+                                    <?php
+                                    // Older imports stored an arrow inside the booking link's text.
+                                    $description = str_replace(
+                                        ' — Book or enquire ↗</a>',
+                                        ' — Book or enquire</a>',
+                                        $detail['description']
+                                    );
+                                    ?>
+                                    <div class="kc-offer-rich-text"><?php echo wp_kses_post(wpautop($description)); ?></div>
+                                <?php endif; ?>
                             </section>
                         <?php endforeach; ?>
                         <?php if ($hasOutlets) : ?>
@@ -81,7 +89,7 @@ while (have_posts()) :
                                 <div class="kc-offer-rich-text">
                                     <ul class="kc-offer-outlet-list" role="list">
                                         <?php foreach ($outlets as $outletId) : ?>
-                                            <li><span class="kc-offer-list-dash" aria-hidden="true">–</span><a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?><span aria-hidden="true">↗</span></a></li>
+                                            <li><span class="kc-offer-list-dash" aria-hidden="true">–</span><a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?></a></li>
                                         <?php endforeach; ?>
                                     </ul>
                                 </div>
@@ -92,7 +100,7 @@ while (have_posts()) :
                                 <h3 id="kc-offer-menus-title"><?php echo esc_html(kampachi_native_label('menus')); ?></h3>
                                 <div class="kc-offer-menu-links">
                                     <?php foreach ($menus as $menu) : ?>
-                                        <a class="kc-offer-menu-link" href="<?php echo esc_url($menu['url']); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html($menu['title']); ?><span aria-hidden="true">↗</span></a>
+                                        <a class="kc-offer-menu-link" href="<?php echo esc_url($menu['url']); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html($menu['title']); ?></a>
                                     <?php endforeach; ?>
                                 </div>
                             </section>

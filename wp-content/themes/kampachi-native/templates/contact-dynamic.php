@@ -43,7 +43,7 @@ $notice = kampachi_native_enquiry_message($status);
                     <label>Email Address *<input type="email" name="email" maxlength="254" required autocomplete="email"></label>
                     <label>Subject *<input type="text" name="subject" maxlength="160" required></label>
                     <label>Message *<textarea name="message" rows="6" maxlength="5000" required></textarea></label>
-                    <button type="submit"><?php echo esc_html(kampachi_native_label('enquiry_button')); ?> ↗</button>
+                    <button type="submit"><?php echo esc_html(kampachi_native_label('enquiry_button')); ?></button>
                 </form>
             <?php else : ?>
                 <p>Contact us directly by email for enquiries.</p>

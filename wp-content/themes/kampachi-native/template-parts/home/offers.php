@@ -56,7 +56,7 @@ $perView = Homepage_Content::items_per_view(
             </div>
         </div>
         <div class="view-all-wrap">
-            <a class="experience-card-link view-all-button" href="<?php echo esc_url(home_url('/promotion/')); ?>"><?php echo esc_html(kampachi_native_label('more')); ?> <span aria-hidden="true">↗</span></a>
+            <a class="experience-card-link view-all-button" href="<?php echo esc_url(home_url('/promotion/')); ?>"><?php echo esc_html(kampachi_native_label('more')); ?></a>
         </div>
     </div>
 </section>

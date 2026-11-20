@@ -53,7 +53,7 @@ while (have_posts()) :
                     <?php endif; ?>
                 </section>
                 <div class="kc-sake-enquiry">
-                    <a class="kc-catering-detail-cta" href="<?php echo esc_url($ctaUrl); ?>"><?php echo esc_html($ctaText); ?> ↗</a>
+                    <a class="kc-catering-detail-cta" href="<?php echo esc_url($ctaUrl); ?>"><?php echo esc_html($ctaText); ?></a>
                 </div>
             </div>
         </section>

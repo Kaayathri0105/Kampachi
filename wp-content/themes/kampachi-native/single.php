@@ -58,7 +58,7 @@ while (have_posts()) {
                 <?php foreach (['booking_url' => 'enquire', 'menu_url' => 'menus'] as $field => $label) : ?>
                     <?php $url = kampachi_native_meta($postId, $field); ?>
                     <?php if ($url !== '') : ?>
-                        <a href="<?php echo esc_url($url); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html(kampachi_native_label($label)); ?> ↗</a>
+                        <a href="<?php echo esc_url($url); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html(kampachi_native_label($label)); ?></a>
                     <?php endif; ?>
                 <?php endforeach; ?>
             </div>

@@ -42,7 +42,6 @@ while (have_posts()) :
                     <a href="<?php echo $sourceUrl; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>"
                         target="_blank" rel="noopener noreferrer">
                         <?php echo esc_html(kampachi_native_label('view_award_source')); ?>
-                        <span aria-hidden="true">↗</span>
                     </a>
                 </div>
             <?php endif; ?>

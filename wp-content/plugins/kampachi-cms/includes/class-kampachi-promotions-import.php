@@ -156,7 +156,7 @@ final class Kampachi_Promotions_Import
             $url = esc_url_raw((string) ($outlet['booking_url'] ?? ''));
 
             if ($name !== '' && $url !== '') {
-                $markup .= '<p><a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer">' . esc_html($name) . ' — Book or enquire ↗</a></p>';
+                $markup .= '<p><a href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer">' . esc_html($name) . ' — Book or enquire</a></p>';
             }
         }
 

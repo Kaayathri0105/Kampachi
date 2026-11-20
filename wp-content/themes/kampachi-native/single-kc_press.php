@@ -38,7 +38,6 @@ while (have_posts()) :
                     <a href="<?php echo $sourceUrl; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>"
                         target="_blank" rel="noopener noreferrer">
                         <?php echo esc_html(kampachi_native_label('view_original_article')); ?>
-                        <span aria-hidden="true">↗</span>
                     </a>
                 </div>
             <?php endif; ?>

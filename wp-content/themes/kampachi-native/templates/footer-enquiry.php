@@ -74,7 +74,6 @@ $canSend = class_exists('Kampachi_Shell_Settings') && Kampachi_Shell_Settings::e
     <?php else : ?>
         <a href="<?php echo esc_url($args['url']); ?>">
             <span><?php echo esc_html($args['label']); ?></span>
-            <span aria-hidden="true">↗</span>
         </a>
     <?php endif; ?>
 </div>

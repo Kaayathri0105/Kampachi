@@ -110,7 +110,7 @@ while (have_posts()) :
                             <div class="kc-outlet-menus">
                                 <?php foreach ($menus as $menu) : ?>
                                     <a href="<?php echo esc_url($menu['url']); ?>" target="_blank" rel="noopener noreferrer">
-                                        <span><?php echo esc_html($menu['title']); ?></span><span aria-hidden="true">↗</span>
+                                        <span><?php echo esc_html($menu['title']); ?></span>
                                     </a>
                                 <?php endforeach; ?>
                             </div>
@@ -126,7 +126,7 @@ while (have_posts()) :
                 <?php if ($embedUrl !== '') : ?>
                     <iframe src="<?php echo esc_url($embedUrl); ?>" title="<?php echo esc_attr(get_the_title() . ' Google Map'); ?>" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
                 <?php endif; ?>
-                <?php if ($mapUrl !== '') : ?><p><a class="kc-outlet-directions" href="<?php echo esc_url($mapUrl); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html(kampachi_native_label('directions')); ?> ↗</a></p><?php endif; ?>
+                <?php if ($mapUrl !== '') : ?><p><a class="kc-outlet-directions" href="<?php echo esc_url($mapUrl); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html(kampachi_native_label('directions')); ?></a></p><?php endif; ?>
             </div></section>
         <?php endif; ?>
     </main>

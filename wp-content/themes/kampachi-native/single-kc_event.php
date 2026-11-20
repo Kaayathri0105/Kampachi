@@ -61,11 +61,11 @@ while (have_posts()) {
                 <?php if ($outletIds !== []) : ?>
                     <div class="kc-catering-detail-outlets"><h2><?php echo esc_html(kampachi_native_label('locations')); ?></h2>
                         <?php foreach ($outletIds as $outletId) : ?>
-                            <a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?> ↗</a>
+                            <a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?></a>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
-                <p><a class="kc-catering-detail-cta" href="<?php echo esc_url($ctaUrl); ?>"><?php echo esc_html($ctaLabel); ?> ↗</a></p>
+                <p><a class="kc-catering-detail-cta" href="<?php echo esc_url($ctaUrl); ?>"><?php echo esc_html($ctaLabel); ?></a></p>
             </div>
         </section>
     </main>
