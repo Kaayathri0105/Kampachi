@@ -60,7 +60,7 @@
 .kc-offer-inner { width: min(1200px, calc(100% - 80px)); margin-inline: auto; }
 .kc-offer-page--no-hero { padding-top: calc(var(--header-height, 96px) + 10px); }
 .kc-offer-breadcrumb { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; padding-top: 32px; font: 11px/1.7 Arial, sans-serif; color: var(--offer-muted); }
-.kc-offer-breadcrumb a, .kc-offer-back a { color: inherit; text-decoration: none; }
+.kc-offer-breadcrumb a { color: inherit; text-decoration: none; }
 .kc-offer-breadcrumb [aria-current] { overflow-wrap: anywhere; }
 .kc-offer-introduction { padding: 65px 0 82px; text-align: center; scroll-margin-top: calc(var(--header-height, 96px) + 20px); }
 .kc-offer-eyebrow { margin: 0 0 18px; color: var(--offer-accent); font: 11px/1.6 Arial, sans-serif; text-transform: uppercase; letter-spacing: .19em; }
@@ -93,7 +93,40 @@
 .kc-offer-rich-text img { max-width: 100%; height: auto; }
 .kc-offer-rich-text table { display: block; max-width: 100%; overflow: auto; }
 .kc-offer-rich-text .kc-offer-facts > div { display: block; }
-.kc-offer-back { padding: 0 0 65px; font: 12px/1.6 Arial, sans-serif; color: var(--offer-muted); }
+.kc-offer-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding-block-end: clamp(32px, 5vw, 65px);
+}
+
+.kc-offer-pagination .kc-offer-pagination-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 108px;
+    min-block-size: 44px;
+    padding: 8px 14px;
+    border: 1px solid #171514;
+    border-radius: 5px;
+    background: transparent;
+    color: #171514;
+    font: inherit;
+    line-height: 1.25;
+    text-align: center;
+    text-decoration: none;
+}
+
+.kc-offer-pagination a.kc-offer-pagination-link:hover {
+    background: #171514;
+    color: #fbfaf7;
+}
+
+.kc-offer-pagination .kc-offer-pagination-link:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
 @keyframes kc-offer-zoom { from { transform: scale(1.015); } to { transform: scale(1.12); } }
 @keyframes kc-offer-left { from { transform: scale(1.12) translateX(2%); } to { transform: scale(1.12) translateX(-2%); } }
 @keyframes kc-offer-right { from { transform: scale(1.12) translateX(-2%); } to { transform: scale(1.12) translateX(2%); } }

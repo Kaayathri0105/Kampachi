@@ -9,6 +9,7 @@
 declare(strict_types=1);
 
 use Kampachi\CMS\Offers;
+use Kampachi\CMS\OffersLanding;
 use Kampachi\CMS\Outlets;
 
 if (! defined('ABSPATH')) {
@@ -34,6 +35,7 @@ while (have_posts()) :
     $details = Offers::details($offerId);
     $outlets = Offers::outletIds($offerId);
     $hasOutlets = $outlets !== [];
+    $neighbors = OffersLanding::adjacentOffers($offerId);
     ?>
     <main class="kc-offer-page<?php echo $hero === [] ? ' kc-offer-page--no-hero' : ''; ?>" id="main-content">
         <?php kampachi_native_render_hero($hero, '', get_the_title() . ' hero'); ?>
@@ -108,7 +110,26 @@ while (have_posts()) :
                     </div>
                 </section>
             <?php endif; ?>
-            <div class="kc-offer-back"><a href="<?php echo esc_url(home_url('/promotion/')); ?>">← <?php echo esc_html(kampachi_native_label('back_offers')); ?></a></div>
+            <?php if (($neighbors['previous'] ?? null) !== null || ($neighbors['next'] ?? null) !== null) : ?>
+                <nav class="kc-offer-pagination" aria-label="<?php esc_attr_e('Offers navigation', 'kampachi-native'); ?>">
+                    <?php foreach ([
+                        'previous' => [__('Previous', 'kampachi-native'), 'prev'],
+                        'next' => [__('Next', 'kampachi-native'), 'next'],
+                    ] as $direction => [$label, $relation]) : ?>
+                        <?php $neighbor = $neighbors[$direction]; ?>
+                        <?php if ($neighbor !== null) : ?>
+                            <a class="kc-offer-pagination-link" href="<?php echo esc_url(get_permalink($neighbor)); ?>"
+                                rel="<?php echo esc_attr($relation); ?>">
+                                <?php echo esc_html($label); ?>
+                            </a>
+                        <?php else : ?>
+                            <button class="kc-offer-pagination-link" type="button" disabled>
+                                <?php echo esc_html($label); ?>
+                            </button>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </nav>
+            <?php endif; ?>
         </div>
     </main>
     <?php

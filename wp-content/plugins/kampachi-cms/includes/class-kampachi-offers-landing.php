@@ -6,6 +6,7 @@ namespace Kampachi\CMS;
 
 use Kampachi_Homepage;
 use Kampachi_Landings;
+use Kampachi_Translations;
 use WP_Post;
 
 if (! defined('ABSPATH')) {
@@ -25,6 +26,41 @@ final class OffersLanding extends CollectionLanding
     private const HERO_META = '_kampachi_offer_landing_hero';
     private const LEGACY_IMAGES = '_kampachi_hero_image_ids';
     private const LEGACY_VIDEO = '_kampachi_hero_video_id';
+
+    /** @return array{previous: ?WP_Post, next: ?WP_Post}|array{} */
+    public static function adjacentOffers(int $offerId): array
+    {
+        $landing = self::page();
+        $pageId = $landing !== null && $landing->post_status === 'publish' ? $landing->ID : 0;
+        $offers = self::posts($pageId);
+        $sourceId = absint(get_post_meta($offerId, '_kc_translation_of', true));
+        $position = array_search($sourceId ?: $offerId, wp_list_pluck($offers, 'ID'), true);
+
+        if ($position === false) {
+            return [];
+        }
+
+        $neighbors = [
+            'previous' => $offers[$position - 1] ?? null,
+            'next' => $offers[$position + 1] ?? null,
+        ];
+        $language = $sourceId > 0 ? get_post_meta($offerId, '_kc_language', true) : '';
+        if (is_string($language) && $language !== '' && class_exists(Kampachi_Translations::class)) {
+            foreach ($neighbors as $direction => $offer) {
+                if ($offer === null) {
+                    continue;
+                }
+
+                $translationId = Kampachi_Translations::translated_post_id($offer->ID, $language);
+                $translation = $translationId > 0 ? get_post($translationId) : null;
+                if ($translation instanceof WP_Post && $translation->post_status === 'publish') {
+                    $neighbors[$direction] = $translation;
+                }
+            }
+        }
+
+        return $neighbors;
+    }
 
     public static function enqueue(): void
     {
