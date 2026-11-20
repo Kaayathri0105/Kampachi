@@ -1290,83 +1290,11 @@ $kampachiHome = Homepage_Content::settings();
         line-height: 1.75;
       }
 
-      .signature-layout,
       .home-sake-layout {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         align-items: center;
         gap: clamp(28px, 5vw, 72px);
-      }
-
-      .signature-feature-photo {
-        margin: 0;
-      }
-
-      .signature-feature-photo img {
-        display: block;
-        width: 100%;
-        aspect-ratio: 1.22 / 1;
-        object-fit: cover;
-        transition: opacity 180ms ease;
-      }
-
-      .signature-feature-photo figcaption {
-        margin-top: 12px;
-        font-size: 12px;
-        letter-spacing: 0.04em;
-      }
-
-      .signature-dish-row {
-        display: grid;
-        grid-template-columns: 38px minmax(0, 1fr);
-        gap: 16px;
-        padding: 21px 0;
-      }
-
-      .signature-dish-row + .signature-dish-row {
-        border-top: 1px solid rgba(38, 31, 27, 0.16);
-      }
-
-      .signature-dish-number {
-        margin: 5px 0 0;
-        font-size: 11px;
-        letter-spacing: 0.12em;
-      }
-
-      .signature-dish-row .signature-dish-title {
-        margin: 0 0 8px;
-        font-size: clamp(21px, 2vw, 27px);
-        font-weight: 400;
-        letter-spacing: 0.025em;
-      }
-
-      .signature-dish-select {
-        padding: 0;
-        border: 0;
-        background: transparent;
-        color: inherit;
-        cursor: pointer;
-        font: inherit;
-        text-align: left;
-        transition:
-          opacity 180ms ease,
-          text-decoration-color 180ms ease;
-      }
-
-      .signature-dish-select:hover {
-        opacity: 0.72;
-      }
-
-      .signature-dish-select[aria-pressed="true"] {
-        text-decoration: underline;
-        text-decoration-color: rgba(16, 3, 4, 0.42);
-        text-underline-offset: 0.16em;
-      }
-
-      .signature-dish-row p:last-child {
-        margin: 0;
-        font-size: 14px;
-        line-height: 1.7;
       }
 
       .home-sake-section {
@@ -1474,14 +1402,9 @@ $kampachiHome = Homepage_Content::settings();
       }
 
       @media (max-width: 760px) {
-        .signature-layout,
         .home-sake-layout {
           grid-template-columns: 1fr;
           gap: 28px;
-        }
-
-        .signature-feature-photo img {
-          aspect-ratio: 1.5 / 1;
         }
 
         .home-sake-carousel {
@@ -1701,40 +1624,29 @@ $kampachiHome = Homepage_Content::settings();
     <script src="<?php echo esc_url(get_template_directory_uri() . '/assets/components/footer.js'); ?>" data-site-root="./"></script>
 
     <script>
-    (() => {
-        'use strict';
-      const signatureDishImage = document.getElementById(
-        "signature-dish-image",
-      );
-      const signatureDishCaption = document.getElementById(
-        "signature-dish-caption",
-      );
-      const signatureDishButtons = document.querySelectorAll(
-        ".signature-dish-select",
-      );
+        document.querySelectorAll('[data-kc-dish-description]').forEach((details) => {
+            const slide = details.closest('.signature-dish-slide');
+            let openedOnHover = false;
 
-      if (signatureDishImage && signatureDishCaption) {
-      signatureDishButtons.forEach((button) => {
-        const preload = new Image();
-        preload.src = button.dataset.image;
-
-        button.addEventListener("click", () => {
-          signatureDishButtons.forEach((dishButton) => {
-            dishButton.setAttribute(
-              "aria-pressed",
-              String(dishButton === button),
-            );
-          });
-
-          signatureDishImage.src = button.dataset.image;
-          signatureDishImage.alt = button.dataset.alt;
-          signatureDishCaption.textContent = button.dataset.caption;
+            slide.addEventListener('pointerenter', (event) => {
+                if (event.pointerType === 'mouse' && !details.open) {
+                    openedOnHover = true;
+                    details.open = true;
+                }
+            });
+            slide.addEventListener('pointerleave', (event) => {
+                if (event.pointerType === 'mouse' && openedOnHover) {
+                    if (!details.matches(':focus-within')) details.open = false;
+                    openedOnHover = false;
+                }
+            });
+            details.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && details.open) {
+                    details.open = false;
+                    details.querySelector('summary').focus();
+                }
+            });
         });
-      });
-
-      }
-
-        })();
     </script>
     <script src="<?php echo esc_url(get_template_directory_uri() . '/assets/header-scroll.js'); ?>"></script>
   

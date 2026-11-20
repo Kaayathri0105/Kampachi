@@ -2,36 +2,106 @@
 .home-cms-description:empty { display: none; }
 .home-cms-description p:first-child { margin-top: 0; }
 .home-cms-description p:last-child { margin-bottom: 0; }
-.signature-dish-row .home-cms-description { font-size: 14px; }
 .home-sake-heading .home-cms-description { margin-inline: auto; }
 .experience-card img { object-fit: cover; }
 
-.home-signature-section .signature-feature-photo {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
+.signature-carousel-wrap {
+    max-inline-size: 940px;
+    margin-inline: auto;
 }
 
-.home-signature-section .signature-feature-photo::after {
+.signature-dish-slide {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    align-items: end;
+    min-block-size: clamp(300px, 52vw, 550px);
+    overflow: hidden;
+    background: #211915;
+}
+
+.signature-dish-slide > img,
+.signature-dish-slide::after {
     position: absolute;
+    inset: 0;
+}
+
+.signature-dish-slide > img {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+}
+
+.signature-dish-slide::after {
     z-index: 1;
-    inset: 35% 0 0;
-    background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .94));
+    background: linear-gradient(to bottom, transparent 35%, rgb(0 0 0 / 92%) 100%);
     content: "";
     pointer-events: none;
 }
 
-.home-signature-section .signature-feature-photo figcaption {
-    position: absolute;
+.signature-dish-overlay {
+    position: relative;
     z-index: 2;
-    inset: auto 0 0;
-    margin: 0;
-    padding: clamp(20px, 3vw, 36px);
+    padding: clamp(18px, 3vw, 36px);
     color: #fff;
-    font-size: clamp(22px, 2.4vw, 34px) !important;
-    line-height: 1.2;
-    letter-spacing: 0;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, .3);
+}
+
+.signature-dish-overlay[open] {
+    background: rgb(16 9 6 / 78%);
+}
+
+.signature-dish-overlay > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-block-size: 44px;
+    list-style: none;
+    cursor: pointer;
+}
+
+.signature-dish-overlay > summary::-webkit-details-marker {
+    display: none;
+}
+
+.signature-dish-overlay > summary::after {
+    flex: 0 0 14px;
+    block-size: 14px;
+    background: linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat,
+        linear-gradient(currentColor, currentColor) center / 1px 100% no-repeat;
+    content: "";
+}
+
+.signature-dish-overlay[open] > summary::after {
+    background-size: 100% 1px, 0 0;
+}
+
+.signature-dish-overlay > summary:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 4px;
+}
+
+.signature-dish-title {
+    flex: 1;
+    margin: 0;
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+    font-weight: 400;
+}
+
+.signature-dish-title:not([data-kc-home-size]) {
+    font-size: clamp(22px, 2.7vw, 36px) !important;
+}
+
+.signature-dish-description {
+    max-inline-size: 62ch;
+    margin-block: 8px 0;
+    overflow-wrap: anywhere;
+}
+
+.signature-dish-description a {
+    color: inherit;
 }
 
 .outlet-card__description {
