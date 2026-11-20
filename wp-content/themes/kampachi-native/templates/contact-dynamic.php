@@ -12,13 +12,7 @@ $title = kampachi_native_meta($pageId, 'intro_title') ?: get_the_title($pageId);
 $subtitle = kampachi_native_meta($pageId, 'intro_subtitle');
 $intro = kampachi_native_meta($pageId, 'intro_description');
 $status = isset($_GET['enquiry']) && is_string($_GET['enquiry']) ? sanitize_key(wp_unslash($_GET['enquiry'])) : '';
-$messages = [
-    'sent' => 'Thank you. Your enquiry has been sent.',
-    'invalid' => 'Please complete all required fields and try again.',
-    'failed' => 'We could not send your enquiry. Please contact us directly by email.',
-    'limited' => 'Too many submissions. Please try again later.',
-    'unavailable' => 'Online enquiries are temporarily unavailable. Please contact us directly.',
-];
+$notice = kampachi_native_enquiry_message($status);
 ?>
 <main id="main-content" class="kc-editorial-page kc-contact-page">
     <?php kampachi_native_render_page_hero($pageId); ?>
@@ -37,8 +31,8 @@ $messages = [
         </section>
         <section class="kc-contact-form-wrap" id="enquiry" aria-labelledby="enquiry-heading">
             <h2 id="enquiry-heading"><?php echo esc_html(kampachi_native_label('enquiry_title')); ?></h2>
-            <?php if (isset($messages[$status])) : ?>
-                <p class="kc-contact-notice" role="status"><?php echo esc_html($messages[$status]); ?></p>
+            <?php if ($notice !== '') : ?>
+                <p class="kc-contact-notice" role="status"><?php echo esc_html($notice); ?></p>
             <?php endif; ?>
             <?php if (class_exists('Kampachi_Shell_Settings') && Kampachi_Shell_Settings::enquiry_recipients() !== []) : ?>
                 <form class="kc-contact-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">

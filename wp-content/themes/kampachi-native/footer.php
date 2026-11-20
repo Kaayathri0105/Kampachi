@@ -204,12 +204,7 @@ $footerBackgroundStyle = '--kampachi-footer-bg: url(' . wp_json_encode(
                     <?php endforeach; ?>
                 </div>
             </section>
-            <div class="footer-cta">
-                <a href="<?php echo esc_url($enquiryUrl); ?>">
-                    <span><?php echo esc_html($enquiryText); ?></span>
-                    <span aria-hidden="true">↗</span>
-                </a>
-            </div>
+            <?php get_template_part('templates/footer-enquiry', null, ['label' => $enquiryText, 'url' => $enquiryUrl]); ?>
         </div>
         <div class="footer-bottom">
             <p class="copyright">Copyright © <?php echo esc_html(wp_date('Y') . ' ' . $companyName); ?></p>

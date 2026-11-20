@@ -150,6 +150,7 @@ function kampachi_native_assets(): void
         'kampachi-native-header-behavior' => 'assets/components/header-behavior.js',
         'kampachi-native-header-scroll' => 'assets/header-scroll.js',
         'kampachi-native-outlet-carousel' => 'assets/outlet-carousel.js',
+        'kampachi-native-footer-enquiry' => 'assets/footer-enquiry.js',
     ] as $handle => $relative) {
         $path = get_theme_file_path($relative);
         if (is_file($path)) {
@@ -158,6 +159,18 @@ function kampachi_native_assets(): void
     }
 }
 add_action('wp_enqueue_scripts', 'kampachi_native_assets');
+
+function kampachi_native_enquiry_message(string $status): string
+{
+    return match ($status) {
+        'sent' => __('Thank you. Your enquiry has been sent.', 'kampachi-native'),
+        'invalid' => __('Please complete all required fields and try again.', 'kampachi-native'),
+        'failed' => __('We could not send your enquiry. Please contact us directly by email.', 'kampachi-native'),
+        'limited' => __('Too many submissions. Please try again later.', 'kampachi-native'),
+        'unavailable' => __('Online enquiries are temporarily unavailable. Please contact us directly.', 'kampachi-native'),
+        default => '',
+    };
+}
 
 function kampachi_native_meta(int $postId, string $key): string
 {

@@ -31,7 +31,7 @@ final class Kampachi_Shell_Settings
             'contact_email' => ['Public contact email', 'email'],
             'contact_phone' => ['Public telephone', 'text'],
             'footer_cta_text' => ['Enquiry button text', 'text'],
-            'footer_cta_url' => ['Enquiry button URL (optional)', 'url'],
+            'footer_cta_url' => ['Fallback link if the enquiry form is unavailable (optional)', 'url'],
             'footer_company' => ['Copyright company name', 'text'],
             'instagram_url' => ['Instagram URL', 'url'],
             'facebook_url' => ['Facebook URL', 'url'],
@@ -110,7 +110,7 @@ final class Kampachi_Shell_Settings
         } elseif ($group === 'footer') {
             echo '<p>Manage the footer content and page links here. Add pages and arrange them in Footer Pages &amp; Links below. Changes apply to every page using the shared footer.</p>';
         } else {
-            echo '<p>Enquiries from the Contact Us form will be emailed to these addresses. This setting does not control job application emails.</p>';
+            echo '<p>Enquiries from the footer and Contact Us forms will be emailed to these addresses. This setting does not control job application emails.</p>';
             echo '<p>WordPress email delivery requires a functioning mail service (for example, configured SMTP). Form submissions are not stored by this module.</p>';
         }
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
@@ -241,9 +241,18 @@ final class Kampachi_Shell_Settings
 
     public static function send_enquiry(): void
     {
+        $fromFooter = ($_POST['kc_enquiry_source'] ?? null) === 'footer';
         $return = home_url('/contact-us/');
-        $redirect = static function (string $state) use ($return): void {
-            wp_safe_redirect(add_query_arg('enquiry', $state, $return), 303);
+        $statusKey = 'enquiry';
+        if ($fromFooter) {
+            $referer = wp_get_referer();
+            if ($referer !== false) {
+                $return = explode('#', $referer, 2)[0] . '#footer-enquiry';
+                $statusKey = 'footer_enquiry';
+            }
+        }
+        $redirect = static function (string $state) use ($return, $statusKey): void {
+            wp_safe_redirect(add_query_arg($statusKey, $state, $return), 303);
             exit;
         };
         if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST') {
@@ -263,12 +272,16 @@ final class Kampachi_Shell_Settings
             $redirect('limited');
         }
         set_transient($fingerprint, $count + 1, HOUR_IN_SECONDS);
-        $name = isset($_POST['name']) && is_string($_POST['name']) ? sanitize_text_field(wp_unslash($_POST['name'])) : '';
+        $name = self::enquiry_name($fromFooter);
+        $telephone = $fromFooter ? self::enquiry_text('telephone') : '';
         $email = isset($_POST['email']) && is_string($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
-        $subject = isset($_POST['subject']) && is_string($_POST['subject']) ? sanitize_text_field(wp_unslash($_POST['subject'])) : '';
+        $subject = self::enquiry_text('subject');
         $message = isset($_POST['message']) && is_string($_POST['message']) ? sanitize_textarea_field(wp_unslash($_POST['message'])) : '';
-        if ($name === '' || strlen($name) > 120 || ! is_email($email)
-            || $subject === '' || strlen($subject) > 160 || $message === '' || strlen($message) > 5000) {
+        if (
+            $name === '' || ! is_email($email) || mb_strlen($telephone, 'UTF-8') > 40
+            || $subject === '' || mb_strlen($subject, 'UTF-8') > 160
+            || $message === '' || mb_strlen($message, 'UTF-8') > 5000
+        ) {
             $redirect('invalid');
         }
         $recipients = self::enquiry_recipients();
@@ -277,8 +290,37 @@ final class Kampachi_Shell_Settings
         }
         $prefix = self::get('enquiry_subject_prefix', 'Kampachi Enquiry');
         $headers = ['Content-Type: text/plain; charset=UTF-8', 'Reply-To: ' . $email];
-        $content = "Name: {$name}\nEmail: {$email}\nSubject: {$subject}\n\n{$message}";
+        $contact = "Name: {$name}\nEmail: {$email}";
+        if ($telephone !== '') {
+            $contact .= "\nTelephone: {$telephone}";
+        }
+        $content = "{$contact}\nSubject: {$subject}\n\n{$message}";
         $sent = wp_mail($recipients, sanitize_text_field($prefix . ' — ' . $subject), $content, $headers);
         $redirect($sent ? 'sent' : 'failed');
+    }
+
+    private static function enquiry_name(bool $fromFooter): string
+    {
+        if (! $fromFooter) {
+            $name = self::enquiry_text('name');
+            return mb_strlen($name, 'UTF-8') <= 120 ? $name : '';
+        }
+
+        $firstName = self::enquiry_text('first_name');
+        $lastName = self::enquiry_text('last_name');
+        if (
+            $firstName === '' || $lastName === ''
+            || mb_strlen($firstName, 'UTF-8') > 60 || mb_strlen($lastName, 'UTF-8') > 60
+        ) {
+            return '';
+        }
+
+        return $firstName . ' ' . $lastName;
+    }
+
+    private static function enquiry_text(string $field): string
+    {
+        $value = $_POST[$field] ?? null;
+        return is_string($value) ? sanitize_text_field(wp_unslash($value)) : '';
     }
 }
