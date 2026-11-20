@@ -117,7 +117,14 @@ $footerSocials = [
     ],
 ];
 $publicAddress = kampachi_setting('footer_address');
-$enquiryUrl = kampachi_setting('footer_cta_url', home_url('/contact-us/'));
+$enquiryText = trim(kampachi_setting('footer_cta_text'));
+if ($enquiryText === '') {
+    $enquiryText = __('Click to Enquire', 'kampachi-native');
+}
+$enquiryUrl = esc_url_raw(kampachi_setting('footer_cta_url'));
+if ($enquiryUrl === '') {
+    $enquiryUrl = home_url('/contact-us/#enquiry');
+}
 $footerBackgroundId = absint(kampachi_setting('footer_background_id'));
 $footerBackground = $footerBackgroundId > 0
     ? wp_get_attachment_image_url($footerBackgroundId, 'full') : false;
@@ -197,9 +204,12 @@ $footerBackgroundStyle = '--kampachi-footer-bg: url(' . wp_json_encode(
                     <?php endforeach; ?>
                 </div>
             </section>
-            <?php if ($enquiryUrl !== '' && kampachi_setting('footer_cta_text') !== '') : ?>
-            <div class="footer-cta"><a href="<?php echo esc_url($enquiryUrl); ?>"><?php echo esc_html(kampachi_setting('footer_cta_text')); ?> <span aria-hidden="true">↗</span></a></div>
-            <?php endif; ?>
+            <div class="footer-cta">
+                <a href="<?php echo esc_url($enquiryUrl); ?>">
+                    <span><?php echo esc_html($enquiryText); ?></span>
+                    <span aria-hidden="true">↗</span>
+                </a>
+            </div>
         </div>
         <div class="footer-bottom">
             <p class="copyright">Copyright © <?php echo esc_html(wp_date('Y') . ' ' . $companyName); ?></p>

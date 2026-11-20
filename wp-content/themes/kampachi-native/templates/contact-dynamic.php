@@ -35,8 +35,8 @@ $messages = [
             <?php $contactPhone = kampachi_setting('contact_phone'); ?>
             <?php if ($contactPhone !== '') : ?><p><?php echo esc_html($contactPhone); ?></p><?php endif; ?>
         </section>
-        <section class="kc-contact-form-wrap">
-            <h2><?php echo esc_html(kampachi_native_label('enquiry_title')); ?></h2>
+        <section class="kc-contact-form-wrap" id="enquiry" aria-labelledby="enquiry-heading">
+            <h2 id="enquiry-heading"><?php echo esc_html(kampachi_native_label('enquiry_title')); ?></h2>
             <?php if (isset($messages[$status])) : ?>
                 <p class="kc-contact-notice" role="status"><?php echo esc_html($messages[$status]); ?></p>
             <?php endif; ?>
