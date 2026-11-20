@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Kampachi CMS
- * Description: Native Kampachi modules for homepage, offers, sake, 47in27, outlets, press, contact, careers, navigation and SEO.
+ * Description: Native Kampachi modules for homepage, offers, sake, 47in27, outlets, press, awards, contact, careers, navigation and SEO.
  * Version: 3.5.1
  * Requires PHP: 8.1
  * Text Domain: kampachi-cms
@@ -9,6 +9,7 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\Awards;
 use Kampachi\CMS\Press;
 
 if (! defined('ABSPATH')) {
@@ -23,6 +24,7 @@ final class Kampachi_CMS
         'kc_outlet' => ['Outlets', 'Outlet', 'dashicons-location', 'outlets'],
         'kc_job' => ['Careers', 'Vacancy', 'dashicons-businessperson', 'vacancies'],
         Press::POST_TYPE => ['Press & Media', 'Press Article', 'dashicons-media-document', Press::PAGE_SLUG],
+        Awards::POST_TYPE => [Awards::PAGE_TITLE, 'Award', 'dashicons-awards', Awards::PAGE_SLUG],
         'kc_prefecture' => ['Prefectures', 'Prefecture', 'dashicons-location-alt', 'prefectures'],
     ];
 
@@ -63,12 +65,14 @@ final class Kampachi_CMS
     public static function register_types(): void
     {
         foreach (self::TYPES as $type => [$plural, $singular, $icon, $slug]) {
+            $hasLandingPage = in_array($type, [Press::POST_TYPE, Awards::POST_TYPE], true);
+
             register_post_type($type, [
                 'labels' => ['name' => $plural, 'singular_name' => $singular, 'add_new_item' => 'Add ' . $singular, 'edit_item' => 'Edit ' . $singular],
                 'public' => true,
                 'show_in_rest' => true,
-                'has_archive' => ! in_array($type, ['kc_outlet', Press::POST_TYPE], true),
-                'rewrite' => $type === Press::POST_TYPE ? ['slug' => $slug, 'with_front' => false] : ['slug' => $slug],
+                'has_archive' => $type !== 'kc_outlet' && ! $hasLandingPage,
+                'rewrite' => $hasLandingPage ? ['slug' => $slug, 'with_front' => false] : ['slug' => $slug],
                 'menu_icon' => $icon,
                 'show_in_menu' => $type === 'kc_prefecture' ? 'kampachi-47in27-module' : true,
                 'supports' => ['title', 'editor', 'thumbnail', 'excerpt', 'revisions', 'page-attributes'],
@@ -87,7 +91,11 @@ final class Kampachi_CMS
     public static function register_metaboxes(): void
     {
         foreach (array_keys(self::TYPES) as $postType) {
-            if (in_array($postType, ['kc_offer', 'kc_sake', 'kc_outlet', 'kc_job', Press::POST_TYPE], true)) {
+            if (in_array(
+                $postType,
+                ['kc_offer', 'kc_sake', 'kc_outlet', 'kc_job', Press::POST_TYPE, Awards::POST_TYPE],
+                true
+            )) {
                 continue;
             }
 
@@ -390,6 +398,7 @@ final class Kampachi_CMS
 }
 
 require_once __DIR__ . '/includes/class-kampachi-press.php';
+require_once __DIR__ . '/includes/class-kampachi-awards.php';
 require_once __DIR__ . '/includes/class-kampachi-content.php';
 require_once __DIR__ . '/includes/class-kampachi-seo.php';
 require_once __DIR__ . '/includes/class-kampachi-admin-style.php';
@@ -408,6 +417,7 @@ require_once __DIR__ . '/includes/class-kampachi-collection-landing.php';
 require_once __DIR__ . '/includes/class-kampachi-offers-landing.php';
 require_once __DIR__ . '/includes/class-kampachi-outlets-landing.php';
 require_once __DIR__ . '/includes/class-kampachi-press-landing.php';
+require_once __DIR__ . '/includes/class-kampachi-awards-landing.php';
 require_once __DIR__ . '/includes/class-kampachi-promotions-import.php';
 require_once __DIR__ . '/includes/class-kampachi-master-settings.php';
 require_once __DIR__ . '/includes/class-kampachi-wp-config-manager.php';
@@ -504,9 +514,11 @@ Kampachi_Homepage::boot();
 Kampachi_47in27::boot();
 Kampachi_Landings::boot();
 Press::boot();
+Awards::boot();
 \Kampachi\CMS\OffersLanding::boot();
 \Kampachi\CMS\OutletsLanding::boot();
 \Kampachi\CMS\PressLanding::boot();
+\Kampachi\CMS\AwardsLanding::boot();
 Kampachi_Promotions_Import::boot();
 Kampachi_Master_Settings::boot();
 \Kampachi\CMS\WPConfigManager::boot();

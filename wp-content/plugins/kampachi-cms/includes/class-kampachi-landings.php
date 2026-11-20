@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\Awards;
+use Kampachi\CMS\AwardsLanding;
 use Kampachi\CMS\HeroMotion;
 use Kampachi\CMS\OffersLanding;
 use Kampachi\CMS\OutletsLanding;
@@ -27,6 +29,7 @@ final class Kampachi_Landings
         'privacy-policy' => 'Privacy Policy',
         'outlets' => 'Outlets',
         Press::PAGE_SLUG => 'Press & Media',
+        Awards::PAGE_SLUG => Awards::PAGE_TITLE,
     ];
 
     public static function boot(): void
@@ -43,6 +46,7 @@ final class Kampachi_Landings
             'kc_offer' => ['promotion', 'Offers Landing', OffersLanding::class],
             'kc_outlet' => ['outlets', 'Outlets Landing', OutletsLanding::class],
             Press::POST_TYPE => [Press::PAGE_SLUG, 'Press & Media Landing', PressLanding::class],
+            Awards::POST_TYPE => [Awards::PAGE_SLUG, 'Awards & Accolades Landing', AwardsLanding::class],
         ];
         foreach ($landings as $type => [$slug, $title, $editor]) {
             $hook = add_submenu_page(
@@ -239,6 +243,10 @@ final class Kampachi_Landings
 
     private static function has_rich_intro(WP_Post $post): bool
     {
-        return in_array($post->post_name, ['promotion', 'sake', 'outlets', Press::PAGE_SLUG], true);
+        return in_array(
+            $post->post_name,
+            ['promotion', 'sake', 'outlets', Press::PAGE_SLUG, Awards::PAGE_SLUG],
+            true
+        );
     }
 }

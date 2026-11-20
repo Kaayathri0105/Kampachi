@@ -8,6 +8,7 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\AwardsLanding;
 use Kampachi\CMS\OutletsLanding;
 use Kampachi\CMS\PressLanding;
 
@@ -32,10 +33,12 @@ $collectionType = [
     'outlets' => 'kc_outlet',
     'careers' => 'kc_job',
     'press-media' => 'kc_press',
+    'awards-accolades' => 'kc_award',
 ][$slug] ?? '';
 $landingEditor = match ($collectionType) {
     'kc_outlet' => OutletsLanding::class,
     'kc_press' => PressLanding::class,
+    'kc_award' => AwardsLanding::class,
     default => null,
 };
 ?>

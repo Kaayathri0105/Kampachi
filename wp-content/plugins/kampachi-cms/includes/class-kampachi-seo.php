@@ -26,6 +26,7 @@ final class Seo
     private const POST_TYPES = [
         'page', 'post', 'kc_offer', 'kc_sake', 'kc_outlet',
         'kc_event', 'kc_job', 'kc_prefecture', Press::POST_TYPE,
+        Awards::POST_TYPE,
     ];
 
     public static function boot(): void

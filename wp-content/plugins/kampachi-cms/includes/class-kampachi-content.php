@@ -19,6 +19,7 @@ final class Content
 
     public const POST_TYPES = [
         'kc_offer', 'kc_sake', 'kc_outlet', 'kc_event', 'kc_job', 'kc_prefecture', Press::POST_TYPE,
+        Awards::POST_TYPE,
     ];
 
     private const LABELS = [
@@ -45,6 +46,8 @@ final class Content
         'back_outlets' => 'Back to Outlets',
         'back_press' => 'Back to Press & Media',
         'view_original_article' => 'Read the original article',
+        'back_awards' => 'Back to Awards & Accolades',
+        'view_award_source' => 'View award source',
         'back_home' => 'Back to Home',
         'contact_title' => 'Contact Us',
         'enquiry_title' => 'Send an Enquiry',
