@@ -57,7 +57,7 @@
 }
 
 .offer-category-nav .nav-label-en {
-    font-size: 14px !important;
+    font-size: 12px !important;
 }
 
 #site-menu :is(.nav-link, .nav-sublink, .nav-list > li > a, .sub-menu a):is(:hover, :focus-visible),
@@ -175,7 +175,7 @@
     }
 
     .offer-category-nav .nav-label-en {
-        font-size: 17px !important;
+        font-size: 15px !important;
     }
 }
 
