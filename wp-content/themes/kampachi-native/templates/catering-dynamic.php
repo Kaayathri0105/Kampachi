@@ -41,14 +41,7 @@ foreach ($galleryIds as $imageId) {
         ];
     }
 }
-$events = new WP_Query([
-    'post_type' => Catering::POST_TYPE,
-    'post_status' => 'publish',
-    'posts_per_page' => -1,
-    'orderby' => ['menu_order' => 'ASC', 'date' => 'DESC'],
-    'no_found_rows' => true,
-    'ignore_sticky_posts' => true,
-]);
+$events = kampachi_native_collection_query(Catering::POST_TYPE);
 $totalEvents = $events->post_count;
 $heroOwnerId = kampachi_native_hero_owner_id($pageId, [
     '_kampachi_catering_hero_media_ids',

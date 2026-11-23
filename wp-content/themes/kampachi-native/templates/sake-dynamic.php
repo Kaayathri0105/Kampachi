@@ -51,14 +51,7 @@ foreach (Sake::hero_ids($heroOwnerId) as $mediaId) {
     ];
 }
 
-$sakes = new WP_Query([
-    'post_type' => Sake::POST_TYPE,
-    'post_status' => 'publish',
-    'posts_per_page' => -1,
-    'orderby' => ['menu_order' => 'ASC', 'date' => 'DESC'],
-    'no_found_rows' => true,
-    'ignore_sticky_posts' => true,
-]);
+$sakes = kampachi_native_collection_query(Sake::POST_TYPE);
 $total = $sakes->post_count;
 ?>
 <main class="kc-catering-page kc-sake-page" id="main-content">

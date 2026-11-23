@@ -117,8 +117,10 @@ if (! defined('ABSPATH')) {
             <button class="menu-button" type="button" aria-label="Open navigation menu" aria-controls="site-menu" aria-expanded="false"><span class="menu-lines" aria-hidden="true"></span></button>
         </div>
     </div>
-    <?php if (class_exists(OffersLanding::class)) : ?>
-        <?php
+    <?php
+    $sectionNav = kampachi_native_header_post_navigation();
+    $hasOfferCategories = false;
+    if ($sectionNav === null && class_exists(OffersLanding::class)) {
         $offerLandingId = OffersLanding::queriedPageId();
         $isOfferListing = $offerLandingId > 0 || is_post_type_archive('kc_offer');
         $offerLanding = $offerLandingId > 0 ? get_post($offerLandingId) : null;
@@ -133,23 +135,40 @@ if (! defined('ABSPATH')) {
         $offerUrl = $offerLanding?->post_status === 'publish'
             ? get_permalink($offerLanding)
             : get_post_type_archive_link('kc_offer');
-        ?>
-        <?php if (count($offerCategories) > 1 && is_string($offerUrl) && $offerUrl !== '') : ?>
-            <nav class="offer-category-nav" aria-label="<?php esc_attr_e('Offer categories', 'kampachi-native'); ?>">
-                <ul>
-                    <?php foreach ($offerCategories as $key => $label) : ?>
-                        <?php $categoryUrl = $key === 'all' ? $offerUrl : add_query_arg('offer_category', $key, $offerUrl); ?>
-                        <li>
-                            <a class="nav-link" href="<?php echo esc_url($categoryUrl . '#offer-categories'); ?>"
-                               data-offer-category-link="<?php echo esc_attr($key); ?>"
-                                <?php if ($key === $currentCategory) : ?>aria-current="true"<?php endif; ?>>
-                                <?php echo kampachi_native_nav_label($label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                            </a>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </nav>
-        <?php endif; ?>
+        if (count($offerCategories) > 1 && is_string($offerUrl) && $offerUrl !== '') {
+            $hasOfferCategories = true;
+            $sectionNav = ['label' => __('Offer categories', 'kampachi-native'), 'links' => []];
+            foreach ($offerCategories as $key => $label) {
+                $categoryUrl = $key === 'all' ? $offerUrl : add_query_arg('offer_category', $key, $offerUrl);
+                $sectionNav['links'][] = [
+                    'label' => $label,
+                    'url' => $categoryUrl . '#offer-categories',
+                    'current' => $key === $currentCategory ? 'true' : '',
+                    'offerCategory' => $key,
+                ];
+            }
+        }
+    }
+    ?>
+    <?php if (! empty($sectionNav['links'])) : ?>
+        <nav class="header-section-nav<?php echo $hasOfferCategories ? ' offer-category-nav' : ''; ?>"
+             aria-label="<?php echo esc_attr($sectionNav['label']); ?>">
+            <ul>
+                <?php foreach ($sectionNav['links'] as $link) : ?>
+                    <li>
+                        <a class="nav-link" href="<?php echo esc_url($link['url']); ?>"
+                            <?php if (isset($link['offerCategory'])) : ?>
+                                data-offer-category-link="<?php echo esc_attr($link['offerCategory']); ?>"
+                            <?php endif; ?>
+                            <?php if ($link['current'] !== '') : ?>
+                                aria-current="<?php echo esc_attr($link['current']); ?>"
+                            <?php endif; ?>>
+                            <?php echo kampachi_native_nav_label($link['label']); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </nav>
     <?php endif; ?>
 </header>
 <nav class="menu-overlay" id="site-menu" aria-label="Main navigation" aria-hidden="false">

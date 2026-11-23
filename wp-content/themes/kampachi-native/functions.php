@@ -229,15 +229,91 @@ function kampachi_native_label(string $key): string
         : '';
 }
 
+function kampachi_native_landing_slug(): string
+{
+    if (! is_singular(['page', 'kc_landing'])) {
+        return '';
+    }
+
+    $pageId = get_queried_object_id();
+    $sourceId = absint(get_post_meta($pageId, '_kc_translation_of', true));
+
+    return (string) get_post_field('post_name', $sourceId ?: $pageId);
+}
+
+function kampachi_native_collection_query(string $postType): WP_Query
+{
+    return new WP_Query([
+        'post_type' => $postType,
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'orderby' => ['menu_order' => 'ASC', 'date' => 'DESC'],
+        'no_found_rows' => true,
+        'ignore_sticky_posts' => true,
+    ]);
+}
+
+/** @return array{label: string, links: list<array{label: string, url: string, current: string}>}|null */
+function kampachi_native_header_post_navigation(): ?array
+{
+    $landingSlug = kampachi_native_landing_slug();
+    $sections = [
+        'sake' => ['kc_sake', __('Sake breweries and brands', 'kampachi-native'), __('All Sake', 'kampachi-native')],
+        'catering-events' => [
+            'kc_event',
+            __('Catering and private dining events', 'kampachi-native'),
+            __('All Events', 'kampachi-native'),
+        ],
+    ];
+
+    foreach ($sections as $slug => [$postType, $label, $landingLabel]) {
+        $onLanding = $landingSlug === $slug;
+        if (! post_type_exists($postType) || (! $onLanding && ! is_singular($postType))) {
+            continue;
+        }
+
+        $posts = kampachi_native_collection_query($postType)->posts;
+        if ($posts === []) {
+            return null;
+        }
+
+        $currentId = get_queried_object_id();
+        $sourceId = absint(get_post_meta($currentId, '_kc_translation_of', true)) ?: $currentId;
+        $landing = $onLanding
+            ? get_post($currentId)
+            : (class_exists(Kampachi_Landings::class) ? Kampachi_Landings::page($slug) : null);
+        $landing ??= get_page_by_path($slug);
+
+        $links = [];
+        if ($landing instanceof WP_Post && $landing->post_status === 'publish') {
+            $url = get_permalink($landing);
+            if (is_string($url) && $url !== '') {
+                $links[] = ['label' => $landingLabel, 'url' => $url, 'current' => $onLanding ? 'page' : ''];
+            }
+        }
+
+        foreach ($posts as $post) {
+            $isCurrent = ! $onLanding && $post->ID === $sourceId;
+            $linkId = $isCurrent && get_post_status($currentId) === 'publish' ? $currentId : $post->ID;
+            $title = get_the_title($linkId);
+            $url = get_permalink($linkId);
+            if ($title !== '' && is_string($url) && $url !== '') {
+                $links[] = ['label' => $title, 'url' => $url, 'current' => $isCurrent ? 'page' : ''];
+            }
+        }
+
+        return ['label' => $label, 'links' => $links];
+    }
+
+    return null;
+}
+
 /**
  * The shared presentation layer is loaded for every non-homepage module.
  */
 function kampachi_native_module_assets(): void
 {
-    $sourceId = absint(get_post_meta(get_queried_object_id(), '_kc_translation_of', true));
-    $sourceSlug = $sourceId > 0 ? (string) get_post_field('post_name', $sourceId) : '';
-    $landing = is_singular(['page', 'kc_landing']) ? get_queried_object() : null;
-    $slug = $sourceSlug !== '' ? $sourceSlug : ($landing instanceof WP_Post ? $landing->post_name : '');
+    $slug = kampachi_native_landing_slug();
     $isCateringPage = $slug === 'catering-events';
     $isSakePage = $slug === 'sake';
     $is47in27Page = $slug === '47in27';
