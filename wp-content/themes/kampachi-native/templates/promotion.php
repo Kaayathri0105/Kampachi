@@ -69,6 +69,7 @@ foreach ($promotionPosts as $promotion) {
 
     $promotionCards[] = [
         'title' => get_the_title($promotion),
+        'date' => $promotion->post_date,
         'description' => get_the_excerpt($promotion),
         'image' => kampachi_native_post_image($promotion->ID),
         'url' => get_permalink($promotion),
@@ -1221,6 +1222,27 @@ $selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selected
             border-bottom: 1px solid rgba(44, 39, 35, 0.16);
         }
 
+        .promotion-sort {
+            display: flex;
+            flex: 0 0 auto;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            color: #615b56;
+            white-space: nowrap;
+        }
+
+        .promotion-sort select {
+            min-height: 44px;
+            padding: 0 10px;
+            border: 1px solid #8d8176;
+            border-radius: 0;
+            background-color: #fbfaf7;
+            color: #171514;
+            color-scheme: light;
+            font: inherit;
+        }
+
         .promotion-filters {
             display: flex;
             flex-wrap: wrap;
@@ -1501,9 +1523,13 @@ $selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selected
             .promotion-toolbar {
                 align-items: flex-end;
                 flex-direction: column;
-                gap: 5px;
+                gap: 12px;
                 margin: 27px 0 18px;
                 border: 0;
+            }
+
+            .promotion-sort {
+                margin-bottom: 0;
             }
 
             .promotion-filters {
@@ -1685,11 +1711,29 @@ $selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selected
                             <?php endforeach; ?>
                         </div>
 
+                        <?php if (count($promotionCards) > 1) : ?>
+                            <div class="promotion-sort">
+                                <label for="promotion-sort"><?php esc_html_e('Sort by', 'kampachi-native'); ?></label>
+                                <select id="promotion-sort">
+                                    <option value=""><?php esc_html_e('Default order', 'kampachi-native'); ?></option>
+                                    <option value="newest"><?php esc_html_e('Newest to oldest', 'kampachi-native'); ?></option>
+                                    <option value="oldest"><?php esc_html_e('Oldest to newest', 'kampachi-native'); ?></option>
+                                    <option value="title-asc"><?php esc_html_e('A to Z', 'kampachi-native'); ?></option>
+                                    <option value="title-desc"><?php esc_html_e('Z to A', 'kampachi-native'); ?></option>
+                                </select>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="promotion-grid">
                         <?php foreach ($promotionCards as $promotionCard) : ?>
-                            <article class="promotion-card" data-promotion-category="<?php echo esc_attr($promotionCard['categories']); ?>" id="promotion-<?php echo esc_attr((string) $promotionCard['id']); ?>">
+                            <article
+                                class="promotion-card"
+                                id="promotion-<?php echo esc_attr((string) $promotionCard['id']); ?>"
+                                data-promotion-category="<?php echo esc_attr($promotionCard['categories']); ?>"
+                                data-promotion-date="<?php echo esc_attr($promotionCard['date']); ?>"
+                                data-promotion-title="<?php echo esc_attr($promotionCard['title']); ?>"
+                            >
                                 <div class="promotion-card-image">
                                     <?php if ($promotionCard['image'] !== '') : ?>
                                         <img src="<?php echo esc_url($promotionCard['image']); ?>" alt="<?php echo esc_attr($promotionCard['title']); ?>" loading="lazy" decoding="async">
@@ -1729,6 +1773,8 @@ $selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selected
         const headerCategoryLinks = document.querySelectorAll('[data-offer-category-link]');
         const promotionFilterCounts = document.querySelectorAll('[data-promotion-filter-count]');
         const promotionCards = Array.from(document.querySelectorAll('[data-promotion-category]'));
+        const promotionGrid = document.querySelector('.promotion-grid');
+        const promotionSort = document.querySelector('#promotion-sort');
         const promotionToolbar = document.querySelector('.promotion-toolbar');
         const promotionCount = document.querySelector('#promotion-count');
         const promotionEmptyState = document.querySelector('.promotion-empty-state');
@@ -1737,15 +1783,46 @@ $selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selected
         const previousPageButton = document.querySelector('[data-page-previous]');
         const nextPageButton = document.querySelector('[data-page-next]');
         const promotionPageSize = 6;
+        const titleOrder = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
+        const sortOptions = new Map([
+            ['newest', (a, b) => b.dataset.promotionDate.localeCompare(a.dataset.promotionDate)],
+            ['oldest', (a, b) => a.dataset.promotionDate.localeCompare(b.dataset.promotionDate)],
+            ['title-asc', (a, b) => titleOrder.compare(a.dataset.promotionTitle, b.dataset.promotionTitle)],
+            ['title-desc', (a, b) => titleOrder.compare(b.dataset.promotionTitle, a.dataset.promotionTitle)],
+        ]);
+        let orderedPromotions = promotionCards;
         let selectedPromotionCategory = document.querySelector('[data-promotion-filter][aria-pressed="true"]')
             ?.dataset.promotionFilter ?? 'all';
         let currentPromotionPage = 1;
 
         function getFilteredPromotions() {
-            return promotionCards.filter((card) => (
+            return orderedPromotions.filter((card) => (
                 selectedPromotionCategory === 'all'
                 || card.dataset.promotionCategory.split(/\s+/).includes(selectedPromotionCategory)
             ));
+        }
+
+        function applyPromotionSort() {
+            const sort = promotionSort.value;
+            const compare = sortOptions.get(sort);
+            orderedPromotions = compare ? [...promotionCards].sort(compare) : promotionCards;
+            promotionGrid.append(...orderedPromotions);
+            currentPromotionPage = 1;
+
+            const updateSortParameter = (url) => {
+                if (compare) {
+                    url.searchParams.set('offer_sort', sort);
+                } else {
+                    url.searchParams.delete('offer_sort');
+                }
+
+                return url;
+            };
+
+            window.history.replaceState(null, '', updateSortParameter(new URL(window.location.href)));
+            headerCategoryLinks.forEach((link) => {
+                link.href = updateSortParameter(new URL(link.href)).href;
+            });
         }
 
         function scrollToPromotionFilters() {
@@ -1865,6 +1942,19 @@ $selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selected
                 scrollToPromotionFilters();
             }
         });
+
+        if (promotionSort) {
+            const initialSort = new URL(window.location.href).searchParams.get('offer_sort');
+            if (sortOptions.has(initialSort)) {
+                promotionSort.value = initialSort;
+                applyPromotionSort();
+            }
+
+            promotionSort.addEventListener('change', () => {
+                applyPromotionSort();
+                renderPromotions();
+            });
+        }
 
         renderPromotions();
     
