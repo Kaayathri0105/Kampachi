@@ -22,7 +22,7 @@ final class Kampachi_Editorial
     public static function boot(): void
     {
         add_action('add_meta_boxes', [self::class, 'register_boxes']);
-        add_action('save_post_page', [self::class, 'save_page'], 20, 2);
+        add_action('save_post_' . Kampachi_Landings::POST_TYPE, [self::class, 'save_page'], 20, 2);
         add_action('save_post_kc_job', [self::class, 'save_job'], 20, 2);
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_assets']);
     }
@@ -31,14 +31,14 @@ final class Kampachi_Editorial
     {
         add_meta_box('kc_job_application', 'Vacancy Details & Application', [self::class, 'job_box'], 'kc_job', 'normal', 'high');
         $post = get_post();
-        if (! $post instanceof WP_Post || $post->post_type !== 'page') {
+        if (! $post instanceof WP_Post || $post->post_type !== Kampachi_Landings::POST_TYPE) {
             return;
         }
         if ($post->post_name === 'about-us') {
-            add_meta_box('kc_about_photos', 'About Kampachi — Photo Gallery', [self::class, 'about_box'], 'page', 'normal', 'high');
+            add_meta_box('kc_about_photos', 'About Kampachi — Photo Gallery', [self::class, 'about_box'], Kampachi_Landings::POST_TYPE, 'normal', 'high');
         }
         if ($post->post_name === 'privacy-policy') {
-            add_meta_box('kc_privacy_sections', 'Privacy & Policy — Content Sections', [self::class, 'privacy_box'], 'page', 'normal', 'high');
+            add_meta_box('kc_privacy_sections', 'Privacy & Policy — Content Sections', [self::class, 'privacy_box'], Kampachi_Landings::POST_TYPE, 'normal', 'high');
         }
     }
 

@@ -58,7 +58,7 @@ final class Kampachi_Header_Editor
 
         $result = [];
         foreach (['home', 'promotion', 'sake', '47in27', 'catering-events', 'outlets', 'contact-us'] as $slug) {
-            $page = get_page_by_path($slug, OBJECT, 'page');
+            $page = $slug === 'home' ? get_page_by_path($slug, OBJECT, 'page') : Kampachi_Landings::page($slug);
             $children = $slug === 'outlets' ? self::location_children() : [];
 
             if ($page instanceof WP_Post && $page->post_status === 'publish') {

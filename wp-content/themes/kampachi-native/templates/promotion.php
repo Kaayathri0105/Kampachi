@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Kampachi\Native;
 
 use Kampachi\CMS\OffersLanding;
+use Kampachi_Landings;
 use WP_Post;
 use WP_Term;
 
@@ -19,8 +20,8 @@ if (! defined('ABSPATH')) {
 
 $promotionPage = get_queried_object();
 
-if (! $promotionPage instanceof WP_Post || $promotionPage->post_type !== 'page') {
-    $promotionPage = get_page_by_path('promotion', OBJECT, 'page');
+if (! $promotionPage instanceof WP_Post || ! in_array($promotionPage->post_type, ['page', 'kc_landing'], true)) {
+    $promotionPage = class_exists(Kampachi_Landings::class) ? Kampachi_Landings::page('promotion') : null;
 
     if (! $promotionPage instanceof WP_Post || $promotionPage->post_status !== 'publish') {
         $promotionPage = null;

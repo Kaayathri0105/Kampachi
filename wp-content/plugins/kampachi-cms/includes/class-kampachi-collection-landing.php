@@ -77,7 +77,7 @@ abstract class CollectionLanding
 
     protected static function page(): ?WP_Post
     {
-        $page = get_page_by_path(static::PAGE_SLUG, OBJECT, 'page');
+        $page = Kampachi_Landings::page(static::PAGE_SLUG);
 
         return $page instanceof WP_Post && $page->post_status !== 'trash' ? $page : null;
     }
@@ -283,7 +283,7 @@ abstract class CollectionLanding
         check_admin_referer(self::createAction());
         if (self::page() === null) {
             $result = wp_insert_post([
-                'post_type' => 'page',
+                'post_type' => Kampachi_Landings::POST_TYPE,
                 'post_status' => 'publish',
                 'post_name' => static::PAGE_SLUG,
                 'post_title' => static::PAGE_TITLE,
@@ -525,7 +525,7 @@ abstract class CollectionLanding
             return $page !== null && $page->post_status === 'publish' ? $page->ID : 0;
         }
 
-        $post = is_singular('page') ? get_queried_object() : null;
+        $post = is_singular(['page', Kampachi_Landings::POST_TYPE]) ? get_queried_object() : null;
         if (! $post instanceof WP_Post) {
             return 0;
         }

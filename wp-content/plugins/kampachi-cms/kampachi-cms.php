@@ -289,11 +289,13 @@ final class Kampachi_CMS
 
     private static function render_page_links(string $slug): void
     {
-        $page = get_page_by_path($slug);
+        $page = $slug === 'home' ? get_page_by_path($slug) : Kampachi_Landings::page($slug);
 
         if (! $page instanceof WP_Post) {
             echo '<p>The page has not been created yet.</p>';
-            echo '<p><a class="button button-primary" href="' . esc_url(admin_url('post-new.php?post_type=page')) . '">Create Page</a></p>';
+            if ($slug === 'home') {
+                echo '<p><a class="button button-primary" href="' . esc_url(admin_url('post-new.php?post_type=page')) . '">Create Page</a></p>';
+            }
             return;
         }
 
@@ -382,16 +384,20 @@ final class Kampachi_CMS
             }
         }
 
-        foreach (['Home' => 'home', 'Promotions' => 'promotion', 'Sake' => 'sake', '47in27' => '47in27', 'Contact Us' => 'contact-us', 'Careers' => 'careers', 'Catering & Events' => 'catering-events', 'Privacy Policy' => 'privacy-policy', 'About Us' => 'about-us'] as $title => $slug) {
-            if (get_page_by_path($slug) instanceof WP_Post) {
-                continue;
-            }
-            $id = wp_insert_post(['post_type' => 'page', 'post_title' => $title, 'post_name' => $slug, 'post_status' => 'publish'], true);
-            if ($slug === 'home' && is_int($id) && ! get_option('page_on_front')) {
+        if (! get_page_by_path('home') instanceof WP_Post) {
+            $id = wp_insert_post([
+                'post_type' => 'page',
+                'post_title' => 'Home',
+                'post_name' => 'home',
+                'post_status' => 'publish',
+            ], true);
+            if (is_int($id) && $id > 0 && ! get_option('page_on_front')) {
                 update_option('show_on_front', 'page');
                 update_option('page_on_front', $id);
             }
         }
+        Kampachi_Landings::register_type();
+        Kampachi_Landings::install();
         \Kampachi\CMS\Catering::register_type();
         flush_rewrite_rules();
     }
@@ -483,6 +489,7 @@ add_filter('wp_insert_post_data', static function (
 
     if (! in_array($post->post_type, [
         'post',
+        Kampachi_Landings::POST_TYPE,
         'kc_offer',
         'kc_sake',
         'kc_outlet',

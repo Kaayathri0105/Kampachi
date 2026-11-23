@@ -34,7 +34,7 @@ final class Catering
         add_action('init', [self::class, 'register_type']);
         add_action('admin_menu', [self::class, 'register_menus'], 20);
         add_action('add_meta_boxes', [self::class, 'register_boxes']);
-        add_action('save_post_page', [self::class, 'save_landing'], 20, 2);
+        add_action('save_post_' . \Kampachi_Landings::POST_TYPE, [self::class, 'save_landing'], 20, 2);
         add_action('save_post_' . self::POST_TYPE, [self::class, 'save_event'], 10, 2);
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_admin']);
         add_action('admin_post_kampachi_order_events', [self::class, 'save_order']);
@@ -45,7 +45,7 @@ final class Catering
 
     public static function configure_page_editor(WP_Screen $screen): void
     {
-        if ($screen->base !== 'post' || $screen->post_type !== 'page') {
+        if ($screen->base !== 'post' || $screen->post_type !== \Kampachi_Landings::POST_TYPE) {
             return;
         }
 
@@ -53,7 +53,7 @@ final class Catering
         $page = $postId > 0 ? get_post($postId) : null;
         if ($page instanceof WP_Post && $page->post_name === self::PAGE_SLUG) {
             // This page is composed entirely of the structured Section 1/2/3 editors.
-            remove_post_type_support('page', 'editor');
+            remove_post_type_support(\Kampachi_Landings::POST_TYPE, 'editor');
         }
     }
 
@@ -95,7 +95,7 @@ final class Catering
             wp_die(esc_html__('You cannot edit this landing page.', 'kampachi-cms'));
         }
 
-        $page = get_page_by_path(self::PAGE_SLUG);
+        $page = \Kampachi_Landings::page(self::PAGE_SLUG);
         $events = get_posts([
             'post_type' => self::POST_TYPE,
             'post_status' => ['publish', 'draft', 'pending', 'private', 'future'],
@@ -112,7 +112,7 @@ final class Catering
         self::render_page_actions($page);
 
         if (! $page instanceof WP_Post) {
-            echo '<div class="notice notice-warning inline"><p>The Catering landing page is missing. Create a published WordPress page with slug <code>catering-events</code> before editing Sections 1 and 3.</p></div>';
+            echo '<div class="notice notice-warning inline"><p>The Catering &amp; Events landing could not be loaded.</p></div>';
         } elseif (current_user_can('edit_post', $page->ID)) {
             self::start_dashboard_form('seo');
             Seo::renderLandingPanel($page, 'Catering & Events Landing Page SEO');
@@ -154,7 +154,7 @@ final class Catering
         echo '<div class="kc-catering-admin-actions">';
         if ($page instanceof WP_Post) {
             if (current_user_can('edit_post', $page->ID)) {
-                echo '<a class="button" href="' . esc_url(get_edit_post_link($page->ID, 'raw')) . '">Open WordPress Page Editor</a>';
+                echo '<a class="button" href="' . esc_url(get_edit_post_link($page->ID, 'raw')) . '">Edit Landing Record</a>';
             }
             echo '<a class="button" target="_blank" rel="noopener noreferrer" href="' . esc_url(get_permalink($page)) . '">View Website Page ↗</a>';
         }
@@ -253,7 +253,7 @@ final class Catering
         }
         check_admin_referer('kampachi_catering_dashboard_save', 'kampachi_catering_dashboard_nonce');
 
-        $page = get_page_by_path(self::PAGE_SLUG);
+        $page = \Kampachi_Landings::page(self::PAGE_SLUG);
         if (! $page instanceof WP_Post || ! current_user_can('edit_post', $page->ID)) {
             wp_die(esc_html__('Landing page is missing or not editable.', 'kampachi-cms'), '', ['response' => 403]);
         }
@@ -283,12 +283,12 @@ final class Catering
     {
         $page = isset($_GET['post']) ? get_post(absint($_GET['post'])) : null;
 
-        if ($page instanceof WP_Post && $page->post_type === 'page' && $page->post_name === self::PAGE_SLUG) {
+        if ($page instanceof WP_Post && $page->post_type === \Kampachi_Landings::POST_TYPE && $page->post_name === self::PAGE_SLUG) {
             add_meta_box(
                 'kampachi_catering_hero',
                 'Section 1 — Hero Images & Videos',
                 [self::class, 'render_hero_media_box'],
-                'page',
+                \Kampachi_Landings::POST_TYPE,
                 'normal',
                 'high'
             );
@@ -296,7 +296,7 @@ final class Catering
                 'kampachi_catering_values',
                 'Section 3 — Trust & Value Highlights',
                 [self::class, 'render_values_box'],
-                'page',
+                \Kampachi_Landings::POST_TYPE,
                 'normal',
                 'high'
             );
@@ -322,7 +322,7 @@ final class Catering
         $eventScreen = $screen->post_type === self::POST_TYPE && in_array($hook, ['post.php', 'post-new.php'], true);
         $landingScreen = false;
 
-        if ($screen->post_type === 'page' && $hook === 'post.php') {
+        if ($screen->post_type === \Kampachi_Landings::POST_TYPE && $hook === 'post.php') {
             $post = isset($_GET['post']) ? get_post(absint($_GET['post'])) : null;
             $landingScreen = $post instanceof WP_Post && $post->post_name === self::PAGE_SLUG;
         }

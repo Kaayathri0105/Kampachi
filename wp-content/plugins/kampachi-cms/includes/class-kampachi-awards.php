@@ -38,20 +38,6 @@ final class Awards
             return;
         }
 
-        if (! get_page_by_path(self::PAGE_SLUG, OBJECT, 'page') instanceof WP_Post) {
-            $page = wp_insert_post([
-                'post_type' => 'page',
-                'post_status' => 'publish',
-                'post_name' => self::PAGE_SLUG,
-                'post_title' => self::PAGE_TITLE,
-            ], true);
-
-            if (is_wp_error($page)) {
-                delete_option(self::INSTALL_OPTION);
-                return;
-            }
-        }
-
         flush_rewrite_rules(false);
     }
 

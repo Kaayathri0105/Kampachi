@@ -19,6 +19,8 @@ if (! defined('ABSPATH')) {
  */
 final class Kampachi_Landings
 {
+    public const POST_TYPE = 'kc_landing';
+
     public const PAGES = [
         'promotion' => 'Promotions',
         'sake' => 'Sake',
@@ -34,10 +36,178 @@ final class Kampachi_Landings
 
     public static function boot(): void
     {
+        add_action('init', [self::class, 'register_type']);
+        add_action('wp_loaded', [self::class, 'install']);
+        add_action('parse_request', [self::class, 'route']);
+        add_filter('post_type_link', [self::class, 'permalink'], 10, 4);
         add_action('add_meta_boxes_page', [self::class, 'register_box']);
+        add_action('add_meta_boxes_' . self::POST_TYPE, [self::class, 'register_box']);
         add_action('save_post_page', [self::class, 'save'], 10, 2);
+        add_action('save_post_' . self::POST_TYPE, [self::class, 'save'], 10, 2);
         add_action('admin_enqueue_scripts', [self::class, 'assets']);
         add_action('admin_menu', [self::class, 'register_menus'], 30);
+    }
+
+    public static function register_type(): void
+    {
+        register_post_type(self::POST_TYPE, [
+            'labels' => ['name' => 'Module Landings', 'singular_name' => 'Module Landing'],
+            'public' => true,
+            'show_in_menu' => false,
+            'show_in_rest' => true,
+            'capability_type' => 'page',
+            'map_meta_cap' => true,
+            'rewrite' => false,
+            'has_archive' => false,
+            'supports' => ['title', 'editor', 'thumbnail', 'excerpt', 'revisions'],
+        ]);
+    }
+
+    public static function page(string $slug): ?WP_Post
+    {
+        $landing = get_page_by_path($slug, OBJECT, self::POST_TYPE);
+
+        return $landing instanceof WP_Post ? $landing : null;
+    }
+
+    public static function permalink(string $url, WP_Post $post, bool $leaveName, bool $sample): string
+    {
+        if ($post->post_type !== self::POST_TYPE || get_option('permalink_structure') === '') {
+            return $url;
+        }
+        if (! $sample && ! in_array($post->post_status, ['publish', 'private'], true)) {
+            return $url;
+        }
+
+        $slug = $leaveName ? '%postname%' : $post->post_name;
+
+        return home_url(user_trailingslashit('/' . $slug, 'single'));
+    }
+
+    public static function route(WP $request): void
+    {
+        $slug = $request->request;
+        if (! is_string($slug) || $slug === '' || str_contains($slug, '/')) {
+            return;
+        }
+
+        $landing = self::page($slug);
+        if ($landing === null) {
+            return;
+        }
+
+        $query = array_intersect_key($request->query_vars, array_flip(['preview', 'page', 'cpage']));
+        $request->query_vars = $query + ['post_type' => self::POST_TYPE, 'p' => $landing->ID];
+    }
+
+    public static function install(): void
+    {
+        if (get_option('kampachi_module_landings_v1') === '1') {
+            return;
+        }
+
+        $pages = self::PAGES + ['47in27' => '47in27'];
+        $complete = true;
+        foreach ($pages as $slug => $title) {
+            if (! self::install_landing($slug, $title)) {
+                $complete = false;
+            }
+        }
+        if ($complete) {
+            update_option('kampachi_module_landings_v1', '1', false);
+        }
+    }
+
+    private static function install_landing(string $slug, string $title): bool
+    {
+        $landing = self::page($slug);
+        if ($landing === null) {
+            $legacy = get_page_by_path($slug, OBJECT, 'page');
+            if (! $legacy instanceof WP_Post) {
+                $legacy = self::trashed_page($slug);
+            }
+
+            if ($legacy !== null) {
+                if ($legacy->post_status === 'trash' && ! self::restore_legacy_page($legacy->ID)) {
+                    return false;
+                }
+                if (! self::convert_page($legacy->ID)) {
+                    return false;
+                }
+            } else {
+                $created = wp_insert_post([
+                    'post_type' => self::POST_TYPE,
+                    'post_status' => 'publish',
+                    'post_name' => $slug,
+                    'post_title' => $title,
+                ], true);
+                if (is_wp_error($created) || $created === 0) {
+                    return false;
+                }
+            }
+            $landing = self::page($slug);
+        }
+        if ($landing === null) {
+            return false;
+        }
+
+        $translations = get_posts([
+            'post_type' => 'page',
+            'post_status' => ['publish', 'draft', 'pending', 'private', 'future'],
+            'numberposts' => -1,
+            'fields' => 'ids',
+            'kc_include_translations' => true,
+            'meta_key' => '_kc_translation_of',
+            'meta_value' => (string) $landing->ID,
+        ]);
+        foreach ($translations as $id) {
+            if (! self::convert_page($id)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static function trashed_page(string $slug): ?WP_Post
+    {
+        $pages = get_posts([
+            'post_type' => 'page',
+            'post_status' => 'trash',
+            'numberposts' => 1,
+            'meta_key' => '_wp_desired_post_slug',
+            'meta_value' => $slug,
+            'post_parent' => 0,
+            'orderby' => ['modified' => 'DESC', 'ID' => 'DESC'],
+        ]);
+
+        return $pages[0] ?? null;
+    }
+
+    private static function convert_page(int $id): bool
+    {
+        if (! set_post_type($id, self::POST_TYPE) && get_post_type($id) !== self::POST_TYPE) {
+            return false;
+        }
+
+        foreach (wp_get_associated_nav_menu_items($id, 'post_type') as $menuItem) {
+            update_post_meta($menuItem, '_menu_item_object', self::POST_TYPE);
+        }
+
+        return true;
+    }
+
+    private static function restore_legacy_page(int $id): bool
+    {
+        $restoreStatus = static fn (string $draft, int $postId, string $previous): string =>
+            $postId === $id && $previous === 'publish' ? 'publish' : $draft;
+
+        add_filter('wp_untrash_post_status', $restoreStatus, 10, 3);
+        try {
+            return wp_untrash_post($id) instanceof WP_Post;
+        } finally {
+            remove_filter('wp_untrash_post_status', $restoreStatus, 10);
+        }
     }
 
     public static function register_menus(): void
@@ -90,7 +260,10 @@ final class Kampachi_Landings
         $postId = isset($_GET['post']) ? absint($_GET['post']) : 0;
         $post = $postId > 0 ? get_post($postId) : null;
 
-        if (! $post instanceof WP_Post || $post->post_type !== 'page' || ! isset(self::PAGES[$post->post_name])) {
+        if (! $post instanceof WP_Post
+            || ! in_array($post->post_type, ['page', self::POST_TYPE], true)
+            || ! isset(self::PAGES[$post->post_name])
+        ) {
             return;
         }
 

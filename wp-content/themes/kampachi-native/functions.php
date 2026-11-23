@@ -194,7 +194,7 @@ function kampachi_native_design(string $slug): bool
 function kampachi_render_editor_content(): void
 {
     $post = get_post(get_queried_object_id());
-    if (! $post instanceof WP_Post || $post->post_type !== 'page') {
+    if (! $post instanceof WP_Post || ! in_array($post->post_type, ['page', 'kc_landing'], true)) {
         return;
     }
 
@@ -236,9 +236,11 @@ function kampachi_native_module_assets(): void
 {
     $sourceId = absint(get_post_meta(get_queried_object_id(), '_kc_translation_of', true));
     $sourceSlug = $sourceId > 0 ? (string) get_post_field('post_name', $sourceId) : '';
-    $isCateringPage = is_page('catering-events') || $sourceSlug === 'catering-events';
-    $isSakePage = is_page('sake') || $sourceSlug === 'sake';
-    $is47in27Page = is_page('47in27') || $sourceSlug === '47in27';
+    $landing = is_singular(['page', 'kc_landing']) ? get_queried_object() : null;
+    $slug = $sourceSlug !== '' ? $sourceSlug : ($landing instanceof WP_Post ? $landing->post_name : '');
+    $isCateringPage = $slug === 'catering-events';
+    $isSakePage = $slug === 'sake';
+    $is47in27Page = $slug === '47in27';
     $styles = [
         'kampachi-hero-banners' => 'assets/components/hero-banners.css',
     ];
@@ -379,7 +381,7 @@ function kampachi_native_hero_owner_id(int $pageId, array $mediaKeys): int
     $sourceId = absint(get_post_meta($pageId, '_kc_translation_of', true));
     $source = $sourceId > 0 ? get_post($sourceId) : null;
 
-    if (! $source instanceof WP_Post || $source->post_type !== 'page') {
+    if (! $source instanceof WP_Post || ! in_array($source->post_type, ['page', 'kc_landing'], true)) {
         return $pageId;
     }
 

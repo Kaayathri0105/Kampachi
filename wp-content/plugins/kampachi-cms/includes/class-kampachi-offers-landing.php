@@ -137,7 +137,7 @@ final class OffersLanding extends CollectionLanding
         }
 
         $sourceId = absint(get_post_meta($pageId, '_kc_translation_of', true));
-        if ($sourceId > 0 && get_post_type($sourceId) === 'page') {
+        if ($sourceId > 0 && in_array(get_post_type($sourceId), ['page', Kampachi_Landings::POST_TYPE], true)) {
             $saved = get_post_meta($sourceId, self::HERO_META, true);
             if (is_array($saved)) {
                 return $saved;

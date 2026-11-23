@@ -19,7 +19,7 @@ while (have_posts()) :
     $image = kampachi_native_post_image($articleId, 'full');
     $publication = kampachi_native_meta($articleId, 'press_publication');
     $sourceUrl = esc_url(kampachi_native_meta($articleId, 'press_source_url'), ['https', 'http']);
-    $landing = get_page_by_path('press-media', OBJECT, 'page');
+    $landing = Kampachi_Landings::page('press-media');
     ?>
     <main class="kc-detail-page kc-press-detail">
         <?php if ($image !== '') : ?>

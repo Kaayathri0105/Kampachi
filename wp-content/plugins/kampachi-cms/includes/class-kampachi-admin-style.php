@@ -22,6 +22,7 @@ final class AdminStyle
     private const VERSION = '2.8.2';
 
     private const POST_TYPES = [
+        \Kampachi_Landings::POST_TYPE,
         'kc_event',
         'kc_offer',
         'kc_sake',

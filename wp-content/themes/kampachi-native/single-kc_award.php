@@ -23,7 +23,7 @@ while (have_posts()) :
     $year = kampachi_native_meta($awardId, 'award_year');
     $subtitle = implode(' · ', array_filter([$organisation, $year]));
     $sourceUrl = esc_url(kampachi_native_meta($awardId, 'award_source_url'), ['https', 'http']);
-    $landing = get_page_by_path(Awards::PAGE_SLUG, OBJECT, 'page');
+    $landing = Kampachi_Landings::page(Awards::PAGE_SLUG);
     ?>
     <main class="kc-detail-page kc-award-detail">
         <?php if ($image !== '') : ?>

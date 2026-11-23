@@ -35,7 +35,7 @@ final class Seo
     ];
 
     private const POST_TYPES = [
-        'page', 'post', 'kc_offer', 'kc_sake', 'kc_outlet',
+        'page', \Kampachi_Landings::POST_TYPE, 'post', 'kc_offer', 'kc_sake', 'kc_outlet',
         'kc_event', 'kc_job', 'kc_prefecture', Press::POST_TYPE,
         Awards::POST_TYPE,
     ];
@@ -375,7 +375,8 @@ final class Seo
     /** @return array{title: string, description: string}|array{} */
     private static function landingDefaults(WP_Post $post): array
     {
-        if ($post->post_type !== 'page' || (int) $post->post_parent !== 0) {
+        if (! in_array($post->post_type, ['page', \Kampachi_Landings::POST_TYPE], true)
+            || (int) $post->post_parent !== 0) {
             return [];
         }
 
@@ -392,7 +393,7 @@ final class Seo
     private static function sourceDescription(WP_Post $post): string
     {
         $key = match ($post->post_type) {
-            'page' => '_kampachi_intro_description',
+            'page', \Kampachi_Landings::POST_TYPE => '_kampachi_intro_description',
             'kc_offer' => '_kampachi_offer_introduction',
             'kc_sake' => '_kampachi_sake_description',
             'kc_outlet' => '_kampachi_outlet_intro',
@@ -411,7 +412,7 @@ final class Seo
 
     private static function landingDescription(WP_Post $post): string
     {
-        if ($post->post_type !== 'page') {
+        if (! in_array($post->post_type, ['page', \Kampachi_Landings::POST_TYPE], true)) {
             return '';
         }
 

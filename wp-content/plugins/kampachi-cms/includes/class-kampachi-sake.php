@@ -120,7 +120,7 @@ final class Sake
             wp_die(esc_html__('You cannot edit the Sake landing page.', 'kampachi-cms'));
         }
 
-        $page = get_page_by_path(self::PAGE_SLUG);
+        $page = \Kampachi_Landings::page(self::PAGE_SLUG);
         $posts = get_posts([
             'post_type' => self::POST_TYPE,
             'post_status' => ['publish', 'draft', 'pending', 'private', 'future'],
@@ -151,7 +151,7 @@ final class Sake
             echo '</form>';
             self::render_intro($page);
         } else {
-            echo '<div class="notice notice-warning inline"><p>A published Sake page with slug <code>sake</code> is required, and you need permission to edit it.</p></div>';
+            echo '<div class="notice notice-warning inline"><p>The Sake landing could not be loaded. Make sure you have permission to edit it.</p></div>';
         }
 
         self::render_order($posts);
@@ -358,10 +358,10 @@ final class Sake
         }
 
         check_admin_referer('kampachi_save_sake_landing', 'kampachi_sake_landing_nonce');
-        $page = get_page_by_path(self::PAGE_SLUG);
+        $page = \Kampachi_Landings::page(self::PAGE_SLUG);
 
         if (! $page instanceof WP_Post || ! current_user_can('edit_post', $page->ID)) {
-            wp_die('Sake landing page is missing or not editable.', '', ['response' => 403]);
+            wp_die('The Sake landing is missing or not editable.', '', ['response' => 403]);
         }
 
         if (($_POST['section'] ?? '') === 'seo') {

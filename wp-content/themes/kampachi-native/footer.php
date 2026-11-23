@@ -34,7 +34,10 @@ if ($companyName === '') {
 $privacyUrl = get_privacy_policy_url();
 if ($privacyUrl === '') {
     foreach (['privacy-policy', 'privacy-and-policy'] as $slug) {
-        $privacyPage = get_page_by_path($slug, OBJECT, 'page');
+        $privacyPage = class_exists(Kampachi_Landings::class)
+            ? Kampachi_Landings::page($slug)
+            : null;
+        $privacyPage ??= get_page_by_path($slug, OBJECT, 'page');
         if ($privacyPage instanceof WP_Post && $privacyPage->post_status === 'publish') {
             $privacyUrl = get_permalink($privacyPage);
             break;

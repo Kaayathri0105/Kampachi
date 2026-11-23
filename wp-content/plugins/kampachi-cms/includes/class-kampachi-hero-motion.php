@@ -126,7 +126,7 @@ final class HeroMotion
             'kc_outlet' => 'kampachi_outlet_hero_ids',
             'kc_event' => 'kampachi_catering_event_images',
             'kc_sake' => 'kampachi_sake_images',
-            'page' => match ($post->post_name) {
+            'page', \Kampachi_Landings::POST_TYPE => match ($post->post_name) {
                 'promotion', 'about-us', 'careers', 'contact-us', 'privacy-policy', 'outlets' => 'kampachi_landing',
                 'catering-events' => 'kampachi_catering_hero_media',
                 'sake' => 'kampachi_sake_hero_media',
