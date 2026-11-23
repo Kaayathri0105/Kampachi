@@ -75,6 +75,12 @@
     });
     search.on('input', filterPosts);
     posts.on('change', '[data-kc-collection-visible]', updatePosts);
+    posts.on('change', '[data-kc-collection-highlight]', function () {
+        const changes = posts.find('[data-kc-collection-highlight]:enabled').get()
+            .filter((checkbox) => checkbox.checked !== checkbox.defaultChecked)
+            .map((checkbox) => checkbox.closest('[data-item]').dataset.item + ':' + Number(checkbox.checked));
+        writeField('highlight_changes', changes);
+    });
 
     form.on('click', '[data-kc-landing-move]', function () {
         const row = $(this).closest('li');

@@ -97,9 +97,16 @@ final class Press
         }
 
         $highlight = $_POST['kampachi_press_highlight'] ?? null;
-        if ($highlight === '1') {
+        if ($highlight === '1' || $highlight === '0') {
+            self::setHighlight($postId, $highlight === '1');
+        }
+    }
+
+    public static function setHighlight(int $postId, bool $highlight): void
+    {
+        if ($highlight) {
             update_post_meta($postId, self::HIGHLIGHT_META, '1');
-        } elseif ($highlight === '0') {
+        } else {
             delete_post_meta($postId, self::HIGHLIGHT_META);
         }
     }

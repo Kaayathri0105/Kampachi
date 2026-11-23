@@ -113,8 +113,8 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
         </section>
     <?php endif; ?>
 
-    <section class="kc-press-section" id="press-archive" aria-labelledby="press-archive-title">
-        <h2 id="press-archive-title"><?php esc_html_e('Press Archive', 'kampachi-native'); ?></h2>
+    <section class="kc-press-section" id="press-archive"
+        aria-label="<?php esc_attr_e('Press Archive', 'kampachi-native'); ?>">
         <form class="kc-press-filters" method="get" action="<?php echo esc_url($landingUrl . '#press-archive'); ?>">
             <?php foreach ($landingParams as $name => $value) : ?>
                 <?php if (is_scalar($value)) : ?>

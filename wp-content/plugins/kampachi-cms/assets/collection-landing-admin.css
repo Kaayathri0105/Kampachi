@@ -68,6 +68,13 @@
     white-space: nowrap;
 }
 
+.kc-collection-item-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px 12px;
+}
+
 .kc-collection-landing .nav-tab-wrapper {
     display: flex;
     flex-wrap: wrap;

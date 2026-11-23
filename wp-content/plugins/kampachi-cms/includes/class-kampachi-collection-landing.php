@@ -17,6 +17,8 @@ abstract class CollectionLanding
     protected const KEY = '';
     protected const TITLE = '';
     protected const ITEMS_LABEL = '';
+    protected const ITEMS_TITLE = 'Dynamic Items';
+    protected const ITEMS_HELP = '';
     protected const POST_TYPE = '';
     protected const PAGE_SLUG = '';
     protected const PAGE_TITLE = '';
@@ -210,7 +212,7 @@ abstract class CollectionLanding
         $sections = [
             'hero' => 'Hero',
             'introduction' => 'Introduction',
-            'items' => 'Dynamic Items',
+            'items' => static::ITEMS_TITLE,
             'seo' => 'SEO & Social Sharing',
         ];
         foreach ($sections as $id => $label) {
@@ -331,10 +333,12 @@ abstract class CollectionLanding
         $ids = array_map(static fn (WP_Post $post): int => $post->ID, $posts);
         $hidden = array_intersect(self::ids($settings['hidden'] ?? []), $ids);
 
-        echo '<section id="kc-collection-items" class="kc-panel"><h2>Dynamic Items</h2>';
+        echo '<section id="kc-collection-items" class="kc-panel"><h2>' . esc_html(static::ITEMS_TITLE) . '</h2>';
         $itemsLabel = self::itemsLabel();
-        echo '<p>Drag ' . esc_html($itemsLabel) . ' to change their order. Clear Show to hide an item on this landing page.</p>';
-        $fields = ['order' => $ids, 'hidden' => $hidden];
+        $help = static::ITEMS_HELP ?: 'Drag ' . $itemsLabel
+            . ' to change their order. Clear Show to hide an item on this landing page.';
+        echo '<p>' . esc_html($help) . '</p>';
+        $fields = ['order' => $ids, 'hidden' => $hidden] + static::extraItemFields();
         if ($categories !== []) {
             $fields['categories'] = array_keys($categories);
         }
@@ -355,6 +359,16 @@ abstract class CollectionLanding
         }
         echo '</ul><p role="status" data-kc-collection-empty' . ($posts === [] ? '' : ' hidden')
             . '>No ' . esc_html($itemsLabel) . ' match this view.</p></section>';
+    }
+
+    /** @return array<string, array<int, int|string>> */
+    protected static function extraItemFields(): array
+    {
+        return [];
+    }
+
+    protected static function renderItemControls(WP_Post $post): void
+    {
     }
 
     /** @param array<string, string> $categories */
@@ -407,8 +421,10 @@ abstract class CollectionLanding
         self::reorderControls($title);
         echo '<div class="kc-collection-landing-post-label"><strong>' . esc_html($title) . '</strong>';
         echo '<span class="description">' . esc_html(implode(', ', $names)) . '</span></div>';
-        echo '<label><input type="checkbox" data-kc-collection-visible' . checked(! $hidden, true, false)
-            . ' aria-label="' . esc_attr('Show ' . $title) . '"> Show</label></li>';
+        echo '<div class="kc-collection-item-options"><label><input type="checkbox" data-kc-collection-visible'
+            . checked(! $hidden, true, false) . ' aria-label="' . esc_attr('Show ' . $title) . '"> Show</label>';
+        static::renderItemControls($post);
+        echo '</div></li>';
     }
 
     private static function renderSeo(WP_Post $page): void
@@ -489,6 +505,12 @@ abstract class CollectionLanding
             $settings['image'] = $image > 0 && wp_attachment_is_image($image) ? $image : 0;
         }
         update_post_meta($pageId, self::metaKey(), $settings);
+        static::saveItemControls($raw, $eligible);
+    }
+
+    /** @param list<int> $eligible */
+    protected static function saveItemControls(array $raw, array $eligible): void
+    {
     }
 
     /** @return list<int> */
