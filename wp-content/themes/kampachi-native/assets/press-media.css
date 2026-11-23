@@ -290,3 +290,37 @@
         transform: none;
     }
 }
+
+.kc-awards-page .kc-press-entry {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: clamp(12px, 3vw, 26px);
+}
+
+.kc-award-logo {
+    width: clamp(58px, 12vw, 110px);
+    height: clamp(58px, 12vw, 110px);
+    flex-shrink: 0;
+    object-fit: contain;
+}
+
+.kc-award-description {
+    margin: 6px 0 0;
+    overflow-wrap: anywhere;
+    color: var(--kc-muted);
+}
+
+.kc-awards-page .kc-press-card-media {
+    background: rgba(255, 252, 247, 0.78);
+}
+
+.kc-awards-page .kc-press-card-media::after {
+    content: none;
+}
+
+.kc-awards-page .kc-press-card-media img {
+    box-sizing: border-box;
+    padding: 24px;
+    object-fit: contain;
+}

@@ -28,9 +28,21 @@ $slug = $sourceId > 0 ? (string) get_post_field('post_name', $sourceId) : $page-
 $title = kampachi_native_meta($postId, 'intro_title') ?: get_the_title($postId);
 $subtitle = kampachi_native_meta($postId, 'intro_subtitle');
 $description = kampachi_native_meta($postId, 'intro_description');
-if ($slug === 'press-media' && class_exists(PressLanding::class)) {
+$archiveEditor = match ($slug) {
+    'press-media' => PressLanding::class,
+    'awards-accolades' => AwardsLanding::class,
+    default => null,
+};
+
+if ($archiveEditor !== null && class_exists($archiveEditor)) {
+    $isAwards = $archiveEditor === AwardsLanding::class;
+    if ($isAwards && trim($description) === '' && trim($page->post_content) === '') {
+        $description = __('Explore the awards and accolades Kampachi has received over the years.', 'kampachi-native');
+    }
+
     get_template_part('templates/press-media', null, [
         'pageId' => $postId,
+        'isAwards' => $isAwards,
         'title' => $title,
         'description' => $description !== '' ? $description : $page->post_content,
     ]);
@@ -46,7 +58,6 @@ $collectionType = [
 ][$slug] ?? '';
 $landingEditor = match ($collectionType) {
     'kc_outlet' => OutletsLanding::class,
-    'kc_award' => AwardsLanding::class,
     default => null,
 };
 ?>

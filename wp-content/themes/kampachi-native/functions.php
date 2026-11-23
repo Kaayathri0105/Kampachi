@@ -337,7 +337,7 @@ function kampachi_native_module_assets(): void
         $styles['kampachi-47in27-layout'] = 'assets/47in27.css';
     }
 
-    if ($slug === 'press-media') {
+    if (in_array($slug, ['press-media', 'awards-accolades'], true)) {
         $styles['kampachi-press-layout'] = 'assets/press-media.css';
     }
 
@@ -361,7 +361,7 @@ function kampachi_native_module_assets(): void
         'kampachi-modules' => 'assets/native-pages.js',
     ];
 
-    if ($slug === 'press-media') {
+    if (in_array($slug, ['press-media', 'awards-accolades'], true)) {
         $scripts['kampachi-press-archive'] = 'assets/press-archive.js';
     }
 

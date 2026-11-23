@@ -24,6 +24,7 @@ abstract class CollectionLanding
     protected const PAGE_TITLE = '';
     protected const TAXONOMY = '';
     protected const HAS_ARCHIVE = false;
+    protected const HIGHLIGHT_META = '';
 
     private static function action(): string
     {
@@ -364,11 +365,19 @@ abstract class CollectionLanding
     /** @return array<string, array<int, int|string>> */
     protected static function extraItemFields(): array
     {
-        return [];
+        return static::HIGHLIGHT_META !== '' ? ['highlight_changes' => []] : [];
     }
 
     protected static function renderItemControls(WP_Post $post): void
     {
+        if (static::HIGHLIGHT_META === '') {
+            return;
+        }
+
+        echo '<label><input type="checkbox" data-kc-collection-highlight'
+            . checked(static::isHighlight($post->ID), true, false)
+            . disabled(! current_user_can('edit_post', $post->ID), true, false)
+            . ' aria-label="' . esc_attr('Highlight ' . get_the_title($post)) . '"> Highlight</label>';
     }
 
     /** @param array<string, string> $categories */
@@ -511,6 +520,31 @@ abstract class CollectionLanding
     /** @param list<int> $eligible */
     protected static function saveItemControls(array $raw, array $eligible): void
     {
+        $changes = $raw['highlight_changes'] ?? null;
+        if (static::HIGHLIGHT_META === '' || ! is_string($changes) || $changes === '') {
+            return;
+        }
+
+        $allowed = array_fill_keys($eligible, true);
+        foreach (explode(',', $changes) as $change) {
+            if (! preg_match('/^([1-9]\d*):([01])$/D', $change, $match)) {
+                continue;
+            }
+
+            $postId = (int) $match[1];
+            if (isset($allowed[$postId]) && current_user_can('edit_post', $postId)) {
+                if ($match[2] === '1') {
+                    update_post_meta($postId, static::HIGHLIGHT_META, '1');
+                } else {
+                    delete_post_meta($postId, static::HIGHLIGHT_META);
+                }
+            }
+        }
+    }
+
+    public static function isHighlight(int $postId): bool
+    {
+        return static::HIGHLIGHT_META !== '' && get_post_meta($postId, static::HIGHLIGHT_META, true) === '1';
     }
 
     /** @return list<int> */

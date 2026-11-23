@@ -21,7 +21,7 @@ final class Awards
     private const NONCE = 'kampachi_award_nonce';
     private const FIELDS = [
         'award_organisation' => ['Awarding body', 'text'],
-        'award_year' => ['Award year', 'number'],
+        'award_year' => ['Award year(s)', 'text'],
         'award_source_url' => ['Official award or announcement URL', 'url'],
     ];
 
@@ -60,12 +60,10 @@ final class Awards
         foreach (self::FIELDS as $key => [$label, $type]) {
             $name = 'kampachi_' . $key;
             $value = get_post_meta($post->ID, '_' . $name, true);
-            $yearAttributes = $type === 'number' ? ' min="1000" max="9999" step="1"' : '';
 
             echo '<p><label for="' . esc_attr($name) . '"><strong>' . esc_html($label) . '</strong></label></p>';
             echo '<input class="widefat" id="' . esc_attr($name) . '" name="' . esc_attr($name) . '" type="'
-                . esc_attr($type) . '" value="' . esc_attr(is_string($value) ? $value : '') . '"'
-                . $yearAttributes . '>';
+                . esc_attr($type) . '" value="' . esc_attr(is_string($value) ? $value : '') . '">';
         }
     }
 
@@ -92,13 +90,19 @@ final class Awards
 
             $raw = trim(wp_unslash($raw));
             $value = match ($type) {
-                'number' => preg_match('/^[1-9]\d{3}$/D', $raw) === 1 ? $raw : '',
                 'url' => self::sourceUrl($raw),
                 default => sanitize_text_field($raw),
             };
 
             update_post_meta($postId, '_' . $name, wp_slash($value));
         }
+    }
+
+    public static function originalUrl(int $postId): string
+    {
+        $value = get_post_meta($postId, '_kampachi_award_source_url', true);
+
+        return is_string($value) ? self::sourceUrl($value) : '';
     }
 
     private static function sourceUrl(string $value): string

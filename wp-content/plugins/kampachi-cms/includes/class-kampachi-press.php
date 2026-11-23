@@ -19,7 +19,7 @@ final class Press
     private const SCHEMA_OPTION = 'kampachi_press_schema';
     private const NONCE = 'kampachi_press_nonce';
     private const SAVE_ACTION = 'kampachi_save_press_details';
-    private const HIGHLIGHT_META = '_kampachi_press_highlight';
+    public const HIGHLIGHT_META = '_kampachi_press_highlight';
     private const FIELDS = [
         'press_publication' => ['Publication or media outlet', 'text'],
         'press_source_url' => ['Original article URL', 'url'],
