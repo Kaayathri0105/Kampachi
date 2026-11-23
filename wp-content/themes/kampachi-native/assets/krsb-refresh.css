@@ -8,6 +8,7 @@
 .site-header.is-scrolled {
     height: var(--header-height) !important;
     background-color: #000 !important;
+    border-bottom: 0 !important;
     box-shadow: none !important;
 }
 
