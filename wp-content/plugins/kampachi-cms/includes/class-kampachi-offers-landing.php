@@ -8,6 +8,7 @@ use Kampachi_Homepage;
 use Kampachi_Landings;
 use Kampachi_Translations;
 use WP_Post;
+use WP_Term;
 
 if (! defined('ABSPATH')) {
     exit;
@@ -26,6 +27,40 @@ final class OffersLanding extends CollectionLanding
     private const HERO_META = '_kampachi_offer_landing_hero';
     private const LEGACY_IMAGES = '_kampachi_hero_image_ids';
     private const LEGACY_VIDEO = '_kampachi_hero_video_id';
+
+    /** @return array<string, string> */
+    public static function categories(int $pageId): array
+    {
+        $categories = [];
+        foreach (self::posts($pageId) as $offer) {
+            $categories += self::offerCategories($offer);
+        }
+
+        return self::orderCategories($pageId, $categories);
+    }
+
+    /** @return array<string, string> */
+    public static function offerCategories(WP_Post $offer): array
+    {
+        $categories = [];
+        $terms = get_the_terms($offer->ID, self::TAXONOMY);
+        foreach (is_array($terms) ? $terms : [] as $term) {
+            if ($term instanceof WP_Term) {
+                $categories['term-' . $term->term_id] = $term->name;
+            }
+        }
+
+        return $categories;
+    }
+
+    /** @param array<string, string> $categories */
+    public static function selectedCategory(array $categories): string
+    {
+        $category = $_GET['offer_category'] ?? null;
+        $category = is_string($category) ? sanitize_key(wp_unslash($category)) : '';
+
+        return isset($categories[$category]) ? $category : 'all';
+    }
 
     /** @return array{previous: ?WP_Post, next: ?WP_Post}|array{} */
     public static function adjacentOffers(int $offerId): array

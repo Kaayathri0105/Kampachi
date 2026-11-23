@@ -54,18 +54,18 @@ foreach ($promotionPosts as $promotion) {
         continue;
     }
 
-    $categoryKeys = [];
-    $terms = get_the_terms($promotion->ID, 'kc_offer_category');
-
-    foreach (is_array($terms) ? $terms : [] as $term) {
-        if (! $term instanceof WP_Term) {
-            continue;
+    if (class_exists(OffersLanding::class)) {
+        $categories = OffersLanding::offerCategories($promotion);
+    } else {
+        $categories = [];
+        $terms = get_the_terms($promotion->ID, 'kc_offer_category');
+        foreach (is_array($terms) ? $terms : [] as $term) {
+            if ($term instanceof WP_Term) {
+                $categories['term-' . $term->term_id] = $term->name;
+            }
         }
-
-        $categoryKey = 'term-' . $term->term_id;
-        $categoryKeys[] = $categoryKey;
-        $promotionCategories[$categoryKey] = $term->name;
     }
+    $promotionCategories += $categories;
 
     $promotionCards[] = [
         'title' => get_the_title($promotion),
@@ -73,7 +73,7 @@ foreach ($promotionPosts as $promotion) {
         'image' => kampachi_native_post_image($promotion->ID),
         'url' => get_permalink($promotion),
         'id' => $promotion->ID,
-        'categories' => implode(' ', $categoryKeys),
+        'categories' => implode(' ', array_keys($categories)),
     ];
 }
 
@@ -83,6 +83,7 @@ if (class_exists(OffersLanding::class)) {
     asort($promotionCategories, SORT_NATURAL | SORT_FLAG_CASE);
     $promotionCategories = ['all' => 'All Offers'] + $promotionCategories;
 }
+$selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selectedCategory($promotionCategories) : 'all';
 ?>
 
     
@@ -1182,7 +1183,7 @@ if (class_exists(OffersLanding::class)) {
         }
 
         .promotions-collection {
-            padding: calc(var(--header-height) + clamp(38px, 6vh, 66px)) 0 82px;
+            padding: calc(var(--header-height) + var(--offer-category-nav-height, 0px) + clamp(38px, 6vh, 66px)) 0 82px;
         }
 
         .promotions-intro {
@@ -1216,7 +1217,7 @@ if (class_exists(OffersLanding::class)) {
             justify-content: space-between;
             gap: 20px;
             margin: 36px 0 23px;
-            scroll-margin-top: calc(var(--header-height) + 16px);
+            scroll-margin-top: calc(var(--header-height) + var(--offer-category-nav-height, 0px) + 16px);
             border-bottom: 1px solid rgba(44, 39, 35, 0.16);
         }
 
@@ -1484,7 +1485,7 @@ if (class_exists(OffersLanding::class)) {
 
         @media (max-width: 620px) {
             .promotions-collection {
-                padding-top: calc(var(--header-height) + 38px);
+                padding-top: calc(var(--header-height) + var(--offer-category-nav-height, 0px) + 38px);
                 padding-bottom: 56px;
             }
 
@@ -1676,11 +1677,11 @@ if (class_exists(OffersLanding::class)) {
                         <?php endif; ?>
                     </header>
 
-                    <div class="promotion-toolbar">
+                    <div class="promotion-toolbar" id="offer-categories">
                         <div class="promotion-filters" role="group" aria-label="Filter promotions">
                             <?php foreach ($promotionCategories as $categoryKey => $categoryName) : ?>
-                                <?php $isAllOffers = $categoryKey === 'all'; ?>
-                                <button class="promotion-filter<?php echo $isAllOffers ? ' is-active' : ''; ?>" type="button" data-promotion-filter="<?php echo esc_attr($categoryKey); ?>" aria-pressed="<?php echo $isAllOffers ? 'true' : 'false'; ?>"><?php echo esc_html($categoryName); ?></button>
+                                <?php $isSelected = $categoryKey === $selectedCategory; ?>
+                                <button class="promotion-filter<?php echo $isSelected ? ' is-active' : ''; ?>" type="button" data-promotion-filter="<?php echo esc_attr($categoryKey); ?>" aria-pressed="<?php echo $isSelected ? 'true' : 'false'; ?>"><?php echo esc_html($categoryName); ?></button>
                             <?php endforeach; ?>
                         </div>
 
@@ -1725,6 +1726,7 @@ if (class_exists(OffersLanding::class)) {
         'use strict';
 
         const promotionFilters = document.querySelectorAll('[data-promotion-filter]');
+        const headerCategoryLinks = document.querySelectorAll('[data-offer-category-link]');
         const promotionFilterCounts = document.querySelectorAll('[data-promotion-filter-count]');
         const promotionCards = Array.from(document.querySelectorAll('[data-promotion-category]'));
         const promotionToolbar = document.querySelector('.promotion-toolbar');
@@ -1735,7 +1737,8 @@ if (class_exists(OffersLanding::class)) {
         const previousPageButton = document.querySelector('[data-page-previous]');
         const nextPageButton = document.querySelector('[data-page-next]');
         const promotionPageSize = 6;
-        let selectedPromotionCategory = 'all';
+        let selectedPromotionCategory = document.querySelector('[data-promotion-filter][aria-pressed="true"]')
+            ?.dataset.promotionFilter ?? 'all';
         let currentPromotionPage = 1;
 
         function getFilteredPromotions() {
@@ -1824,6 +1827,22 @@ if (class_exists(OffersLanding::class)) {
                     button.classList.toggle('is-active', isSelected);
                     button.setAttribute('aria-pressed', String(isSelected));
                 });
+
+                headerCategoryLinks.forEach((link) => {
+                    if (link.dataset.offerCategoryLink === selectedPromotionCategory) {
+                        link.setAttribute('aria-current', 'true');
+                    } else {
+                        link.removeAttribute('aria-current');
+                    }
+                });
+
+                const url = new URL(window.location.href);
+                if (selectedPromotionCategory === 'all') {
+                    url.searchParams.delete('offer_category');
+                } else {
+                    url.searchParams.set('offer_category', selectedPromotionCategory);
+                }
+                window.history.replaceState(null, '', url);
 
                 renderPromotions();
             });

@@ -7,6 +7,7 @@
 
 declare(strict_types=1);
 
+use Kampachi\CMS\OffersLanding;
 use Kampachi\CMS\Outlets;
 
 if (! defined('ABSPATH')) {
@@ -116,6 +117,40 @@ if (! defined('ABSPATH')) {
             <button class="menu-button" type="button" aria-label="Open navigation menu" aria-controls="site-menu" aria-expanded="false"><span class="menu-lines" aria-hidden="true"></span></button>
         </div>
     </div>
+    <?php if (class_exists(OffersLanding::class)) : ?>
+        <?php
+        $offerLandingId = OffersLanding::queriedPageId();
+        $isOfferListing = $offerLandingId > 0 || is_post_type_archive('kc_offer');
+        $offerLanding = $offerLandingId > 0 ? get_post($offerLandingId) : null;
+        if (is_singular('kc_offer') && class_exists(Kampachi_Landings::class)) {
+            $offerLanding = Kampachi_Landings::page('promotion');
+        }
+
+        $offerCategories = $isOfferListing || is_singular('kc_offer')
+            ? OffersLanding::categories($offerLanding?->ID ?? 0)
+            : [];
+        $currentCategory = $isOfferListing ? OffersLanding::selectedCategory($offerCategories) : '';
+        $offerUrl = $offerLanding?->post_status === 'publish'
+            ? get_permalink($offerLanding)
+            : get_post_type_archive_link('kc_offer');
+        ?>
+        <?php if (count($offerCategories) > 1 && is_string($offerUrl) && $offerUrl !== '') : ?>
+            <nav class="offer-category-nav" aria-label="<?php esc_attr_e('Offer categories', 'kampachi-native'); ?>">
+                <ul>
+                    <?php foreach ($offerCategories as $key => $label) : ?>
+                        <?php $categoryUrl = $key === 'all' ? $offerUrl : add_query_arg('offer_category', $key, $offerUrl); ?>
+                        <li>
+                            <a href="<?php echo esc_url($categoryUrl . '#offer-categories'); ?>"
+                               data-offer-category-link="<?php echo esc_attr($key); ?>"
+                                <?php if ($key === $currentCategory) : ?>aria-current="true"<?php endif; ?>>
+                                <?php echo esc_html($label); ?>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </nav>
+        <?php endif; ?>
+    <?php endif; ?>
 </header>
 <nav class="menu-overlay" id="site-menu" aria-label="Main navigation" aria-hidden="false">
     <div class="primary-nav">

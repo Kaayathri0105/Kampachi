@@ -2,6 +2,56 @@
 :root{--header-height:88px}
 .site-header {height:var(--header-height);position:fixed;top:0;right:0;left:0;z-index:50;background:#000!important;color:#fff}
 .site-header .header-inner {width:min(1450px,calc(100% - 64px));height:100%;display:flex;align-items:center;justify-content:space-between;margin:auto}
+body:has(.offer-category-nav) {
+    --offer-category-nav-height: 44px;
+}
+
+.site-header .offer-category-nav {
+    position: absolute;
+    inset: 100% 0 auto;
+    display: flex;
+    block-size: var(--offer-category-nav-height);
+    overflow-x: auto;
+    padding-inline: clamp(12px, 3vw, 32px);
+    background: #161210;
+    scrollbar-width: thin;
+}
+
+.offer-category-nav ul {
+    display: flex;
+    flex: 0 0 auto;
+    gap: clamp(4px, 1.1vw, 20px);
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+}
+
+.offer-category-nav a {
+    display: flex;
+    box-sizing: border-box;
+    align-items: center;
+    block-size: 100%;
+    padding-inline: 8px;
+    border-block-end: 2px solid transparent;
+    color: #f5ebe0;
+    font: 400 clamp(11px, 1vw, 14px)/1.2 "Cormorant Garamond", Georgia, serif;
+    letter-spacing: 0.09em;
+    text-decoration: none;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.offer-category-nav a:hover,
+.offer-category-nav a[aria-current] {
+    border-block-end-color: #e0c9aa;
+    color: #e0c9aa;
+}
+
+.offer-category-nav a:focus-visible {
+    outline: 2px solid #e0c9aa;
+    outline-offset: -3px;
+}
+
 .site-header .brand {display:block;position:relative;flex:0 0 118px;width:118px;left:auto;transform:none}
 .site-header .brand-logo {display:block;width:118px;max-height:60px;object-fit:contain}
 .site-header .header-actions {display:flex;align-items:center;gap:16px;margin-left:auto}
