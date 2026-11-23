@@ -51,7 +51,8 @@ usort($archive, static function (array $left, array $right) use ($sort): int {
     return $sort === 'oldest' ? $order : -$order;
 });
 
-$pageCount = (int) ceil(count($archive) / $perPage);
+$resultCount = count($archive);
+$pageCount = (int) ceil($resultCount / $perPage);
 $pageNumber = min($pageNumber, max($pageCount, 1));
 $archive = array_slice($archive, ($pageNumber - 1) * $perPage, $perPage);
 $pagination = $pageCount > 1 ? paginate_links([
@@ -71,8 +72,7 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
     <?php kampachi_native_render_intro($args['title'], '', $args['description']); ?>
 
     <?php if ($highlights !== []) : ?>
-        <section class="kc-press-section" aria-labelledby="press-highlights-title">
-            <h2 id="press-highlights-title"><?php esc_html_e('Highlights', 'kampachi-native'); ?></h2>
+        <section class="kc-press-section" aria-label="<?php esc_attr_e('Press highlights', 'kampachi-native'); ?>">
             <div class="kc-press-carousel" data-press-carousel>
                 <div class="kc-press-controls" data-press-controls hidden>
                     <button type="button" data-press-previous aria-controls="press-highlights-track"
@@ -130,7 +130,8 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
             <?php endforeach; ?>
             <div class="kc-press-search">
                 <label for="press-search"><?php esc_html_e('Search by title or publication', 'kampachi-native'); ?></label>
-                <input id="press-search" name="press_search" type="search" value="<?php echo esc_attr($search); ?>">
+                <input id="press-search" name="press_search" type="search" enterkeyhint="search"
+                    value="<?php echo esc_attr($search); ?>">
             </div>
             <div>
                 <label for="press-order"><?php esc_html_e('Sort by date', 'kampachi-native'); ?></label>
@@ -143,41 +144,50 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                     </option>
                 </select>
             </div>
-            <button class="view-all-button" type="submit"><?php esc_html_e('Apply', 'kampachi-native'); ?></button>
         </form>
 
-        <?php if ($archive === []) : ?>
-            <p><?php esc_html_e('No press articles found.', 'kampachi-native'); ?></p>
-        <?php else : ?>
-            <ul class="kc-press-list">
-                <?php foreach ($archive as $entry) : ?>
-                    <?php
-                    $title = get_the_title($entry['post']);
-                    $url = Press::originalUrl($entry['post']->ID);
-                    ?>
-                    <li>
-                        <div>
-                            <p class="kc-press-meta">
-                                <?php echo esc_html(implode(' · ', array_filter([$entry['publication'], $entry['date']]))); ?>
-                            </p>
-                            <h3><?php echo esc_html($title); ?></h3>
-                        </div>
-                        <?php if ($url !== '') : ?>
-                            <a class="kc-discover" href="<?php echo esc_url($url); ?>" target="_blank"
-                                rel="noopener noreferrer"
-                                aria-label="<?php echo esc_attr(sprintf(__('Discover %s', 'kampachi-native'), $title)); ?>">
-                                <?php echo esc_html(kampachi_native_label('discover')); ?>
-                            </a>
-                        <?php endif; ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
+        <div class="kc-press-status" role="status" data-press-status></div>
+        <div id="press-archive-results" data-results-message="<?php
+            echo esc_attr(sprintf(
+                /* translators: %s is the number of matching press articles. */
+                _n('%s press article found.', '%s press articles found.', $resultCount, 'kampachi-native'),
+                number_format_i18n($resultCount)
+            ));
+        ?>">
+            <?php if ($archive === []) : ?>
+                <p><?php esc_html_e('No press articles found.', 'kampachi-native'); ?></p>
+            <?php else : ?>
+                <ul class="kc-press-list">
+                    <?php foreach ($archive as $entry) : ?>
+                        <?php
+                        $title = get_the_title($entry['post']);
+                        $url = Press::originalUrl($entry['post']->ID);
+                        ?>
+                        <li>
+                            <div>
+                                <p class="kc-press-meta">
+                                    <?php echo esc_html(implode(' · ', array_filter([$entry['publication'], $entry['date']]))); ?>
+                                </p>
+                                <h3><?php echo esc_html($title); ?></h3>
+                            </div>
+                            <?php if ($url !== '') : ?>
+                                <a class="kc-discover" href="<?php echo esc_url($url); ?>" target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="<?php echo esc_attr(sprintf(__('Discover %s', 'kampachi-native'), $title)); ?>">
+                                    <?php echo esc_html(kampachi_native_label('discover')); ?>
+                                </a>
+                            <?php endif; ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
 
-        <?php if (is_string($pagination)) : ?>
-            <nav class="kc-press-pagination" aria-label="<?php esc_attr_e('Press archive pages', 'kampachi-native'); ?>">
-                <?php echo wp_kses_post($pagination); ?>
-            </nav>
-        <?php endif; ?>
+            <?php if (is_string($pagination)) : ?>
+                <nav class="kc-press-pagination"
+                    aria-label="<?php esc_attr_e('Press archive pages', 'kampachi-native'); ?>">
+                    <?php echo wp_kses_post($pagination); ?>
+                </nav>
+            <?php endif; ?>
+        </div>
     </section>
 </main>

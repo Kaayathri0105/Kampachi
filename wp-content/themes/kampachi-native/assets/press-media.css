@@ -9,11 +9,6 @@
     padding-block-end: clamp(44px, 7vw, 90px);
 }
 
-.kc-press-section > h2 {
-    margin: 0 0 24px;
-    text-align: center;
-}
-
 .kc-press-carousel {
     --press-arrow-size: 44px;
     --press-arrow-gutter: calc(var(--press-arrow-size) + clamp(6px, 1vw, 12px));
@@ -210,8 +205,13 @@
     font-family: inherit;
 }
 
-.kc-press-filters .view-all-button {
-    cursor: pointer;
+.kc-press-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
 .kc-press-list {
