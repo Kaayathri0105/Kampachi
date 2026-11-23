@@ -27,22 +27,13 @@ function kampachi_native_setup(): void
 add_action('after_setup_theme', 'kampachi_native_setup');
 
 
-/**
- * Render CMS-provided Japanese and English labels without inferring translations.
- * The Japanese caption is deliberately optional for new navigation items.
- */
-function kampachi_native_nav_label(string $title, string $japanese = ''): string
+function kampachi_native_nav_label(string $title): string
 {
-    $caption = trim($japanese) !== ''
-        ? '<span class="nav-label-jp" lang="ja" aria-hidden="true">' . esc_html($japanese) . '</span>'
-        : '<span class="nav-label-jp nav-label-jp--empty" aria-hidden="true"></span>';
-
-    return $caption . '<span class="nav-label-en">' . esc_html($title) . '</span>';
+    return '<span class="nav-label-en">' . esc_html($title) . '</span>';
 }
 
 /**
- * Native WordPress menu fallback: Japanese captions may also be stored as
- * menu-item metadata. The Kampachi CMS Header editor is the preferred source.
+ * Give the native WordPress menu fallback the same primary label markup.
  */
 function kampachi_native_primary_nav_label(
     string $title,
@@ -54,9 +45,7 @@ function kampachi_native_primary_nav_label(
         return $title;
     }
 
-    $caption = get_post_meta($item->ID, '_kc_nav_japanese_title', true);
-
-    return kampachi_native_nav_label($title, is_string($caption) ? $caption : '');
+    return kampachi_native_nav_label($title);
 }
 add_filter('nav_menu_item_title', 'kampachi_native_primary_nav_label', 10, 4);
 

@@ -244,12 +244,9 @@ body {
     box-shadow: none;
 }
 
-#site-header .reservation-trigger .nav-label-jp:empty {
-    display: none;
-}
-
-#site-header .reservation-trigger .nav-label-jp {
-    display: block;
+#site-header .reservation-label {
+    flex: 1;
+    text-align: center;
 }
 
 @media (max-width: 600px) {

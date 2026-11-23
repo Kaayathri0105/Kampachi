@@ -83,10 +83,7 @@ if (! defined('ABSPATH')) {
             <?php if (kampachi_setting('reservation_enabled', '1') !== '0' && $bookingLinks !== []) : ?>
                 <div class="reservation-wrap">
                     <button class="reservation-link reservation-trigger" type="button" aria-controls="reservation-menu" aria-expanded="false">
-                        <span class="reservation-label"><?php echo kampachi_native_nav_label(
-                            kampachi_setting('reservation_label', 'RESERVATION'),
-                            kampachi_setting('reservation_japanese')
-                        ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+                        <span class="reservation-label"><?php echo esc_html(kampachi_setting('reservation_label', 'RESERVATION')); ?></span>
                         <span class="reservation-chevron" aria-hidden="true"></span>
                     </button>
                     <div class="reservation-menu" id="reservation-menu" aria-label="Choose a Kampachi outlet" aria-hidden="true" inert hidden>
@@ -135,8 +132,6 @@ if (! defined('ABSPATH')) {
                         continue;
                     }
                     $navTitle = isset($navItem['title']) && is_string($navItem['title']) ? $navItem['title'] : '';
-                    $navJapanese = isset($navItem['japanese_title']) && is_string($navItem['japanese_title'])
-                        ? $navItem['japanese_title'] : '';
                     $navUrl = isset($navItem['url']) && is_string($navItem['url']) ? $navItem['url'] : '';
                     $navChildren = isset($navItem['children']) && is_array($navItem['children']) ? $navItem['children'] : [];
                     if ($navTitle === '') {
@@ -153,9 +148,9 @@ if (! defined('ABSPATH')) {
                     <li class="nav-item<?php echo $hasChildren ? ' nav-item--dropdown' : ''; ?>">
                         <?php if ($hasChildren) : ?><div class="nav-item-row"><?php endif; ?>
                             <?php if ($navUrl !== '') : ?>
-                                <a class="nav-link" href="<?php echo esc_url($navUrl); ?>"><?php echo kampachi_native_nav_label($navTitle, $navJapanese); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></a>
+                                <a class="nav-link" href="<?php echo esc_url($navUrl); ?>"><?php echo kampachi_native_nav_label($navTitle); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></a>
                             <?php else : ?>
-                                <span class="nav-link"><?php echo kampachi_native_nav_label($navTitle, $navJapanese); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+                                <span class="nav-link"><?php echo kampachi_native_nav_label($navTitle); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
                             <?php endif; ?>
                             <?php if ($hasChildren) : ?>
                                 <button class="nav-dropdown-toggle" type="button" aria-controls="header-submenu-<?php echo esc_attr((string) $navIndex); ?>" aria-expanded="false" aria-label="Show <?php echo esc_attr($navTitle); ?>" data-menu-label="<?php echo esc_attr($navTitle); ?>"><span class="nav-dropdown-chevron" aria-hidden="true"></span></button>
