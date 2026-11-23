@@ -20,6 +20,29 @@ body {
     content: none !important;
 }
 
+.view-all-button {
+    display: inline-flex;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 44px;
+    max-inline-size: 100%;
+    padding: 8px 24px;
+    border: 1px solid #241d19;
+    border-radius: 0;
+    color: #241d19;
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.view-all-button:is(:hover, :focus-visible) {
+    background: #241d19;
+    color: #f5ebe0;
+}
+
 .site-header,
 .site-header.is-scrolled {
     background: #000000 !important;

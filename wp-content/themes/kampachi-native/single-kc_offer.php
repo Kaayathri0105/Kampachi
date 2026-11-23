@@ -40,10 +40,18 @@ while (have_posts()) :
         <div class="kc-offer-inner">
             <nav class="kc-offer-breadcrumb" aria-label="Breadcrumb"><a href="<?php echo esc_url(home_url('/promotion/')); ?>"><?php echo esc_html(kampachi_native_label('offers')); ?></a><span aria-hidden="true">/</span><span aria-current="page"><?php echo esc_html(get_the_title()); ?></span></nav>
             <header class="kc-offer-introduction" id="offer-content">
-                
                 <h1><?php echo esc_html(get_the_title()); ?></h1>
                 <?php if ($introduction !== '') : ?>
                     <div class="kc-offer-copy"><?php echo wp_kses_post(wpautop($introduction)); ?></div>
+                <?php endif; ?>
+                <?php if ($ctas !== []) : ?>
+                    <div class="kc-offer-cta">
+                        <?php foreach ($ctas as $cta) : ?>
+                            <a class="view-all-button kc-offer-cta-link" href="<?php echo esc_url($cta['url']); ?>">
+                                <?php echo esc_html($cta['label']); ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
                 <?php endif; ?>
             </header>
 
@@ -84,15 +92,6 @@ while (have_posts()) :
                         <?php endforeach; ?>
                     </div>
                 </section>
-            <?php endif; ?>
-            <?php if ($ctas !== []) : ?>
-                <div class="kc-offer-cta">
-                    <?php foreach ($ctas as $cta) : ?>
-                        <a class="kc-offer-cta-link" href="<?php echo esc_url($cta['url']); ?>">
-                            <?php echo esc_html($cta['label']); ?>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
             <?php endif; ?>
             <?php if (($neighbors['previous'] ?? null) !== null || ($neighbors['next'] ?? null) !== null) : ?>
                 <nav class="kc-offer-pagination" aria-label="<?php esc_attr_e('Offers navigation', 'kampachi-native'); ?>">

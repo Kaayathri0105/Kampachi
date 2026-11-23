@@ -5,26 +5,6 @@
 .home-sake-heading .home-cms-description { margin-inline: auto; }
 .experience-card img { object-fit: cover; }
 
-.experiences-section .view-all-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-block-size: 44px;
-    padding: 8px 24px;
-    border: 1px solid #241d19;
-    border-radius: 0;
-    color: #241d19;
-    font-size: 0.8125rem;
-    letter-spacing: 0.12em;
-    text-decoration: none;
-    text-transform: uppercase;
-}
-
-.experiences-section .view-all-button:is(:hover, :focus-visible) {
-    background: #241d19;
-    color: #f5ebe0;
-}
-
 .home-feature-carousel-shell {
     inline-size: min(1365px, calc(100% - 64px));
     margin-inline: auto;
