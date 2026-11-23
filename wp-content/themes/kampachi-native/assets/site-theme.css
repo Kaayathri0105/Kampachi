@@ -23,7 +23,6 @@ body {
 .site-header,
 .site-header.is-scrolled {
     background: #000000 !important;
-    border-bottom-color: rgba(255, 255, 255, 0.6) !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
 }

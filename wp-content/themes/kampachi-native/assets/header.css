@@ -9,10 +9,9 @@
     inset: 0 0 auto !important;
     z-index: 50 !important;
     background: #000000 !important;
-    border-bottom: 1px solid transparent;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+    transition: background-color 220ms ease, box-shadow 220ms ease;
 }
 
 .site-header::before {
@@ -38,7 +37,6 @@
 }
 
 .site-header.is-scrolled {
-    border-bottom-color: transparent;
     background: #000000 !important;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
 }
