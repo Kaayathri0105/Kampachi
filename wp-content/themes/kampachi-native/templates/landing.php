@@ -28,6 +28,15 @@ $slug = $sourceId > 0 ? (string) get_post_field('post_name', $sourceId) : $page-
 $title = kampachi_native_meta($postId, 'intro_title') ?: get_the_title($postId);
 $subtitle = kampachi_native_meta($postId, 'intro_subtitle');
 $description = kampachi_native_meta($postId, 'intro_description');
+if ($slug === 'press-media' && class_exists(PressLanding::class)) {
+    get_template_part('templates/press-media', null, [
+        'pageId' => $postId,
+        'title' => $title,
+        'description' => $description !== '' ? $description : $page->post_content,
+    ]);
+    return;
+}
+
 $collectionType = [
     'sake' => 'kc_sake',
     'outlets' => 'kc_outlet',
@@ -37,7 +46,6 @@ $collectionType = [
 ][$slug] ?? '';
 $landingEditor = match ($collectionType) {
     'kc_outlet' => OutletsLanding::class,
-    'kc_press' => PressLanding::class,
     'kc_award' => AwardsLanding::class,
     default => null,
 };

@@ -337,6 +337,10 @@ function kampachi_native_module_assets(): void
         $styles['kampachi-47in27-layout'] = 'assets/47in27.css';
     }
 
+    if ($slug === 'press-media') {
+        $styles['kampachi-press-layout'] = 'assets/press-media.css';
+    }
+
     $styles['kampachi-module-pages'] = 'assets/native-pages.css';
     $styles['kampachi-editorial-pages'] = 'assets/editorial-pages.css';
 
@@ -356,6 +360,10 @@ function kampachi_native_module_assets(): void
         'kampachi-navigation' => 'assets/47in27.js',
         'kampachi-modules' => 'assets/native-pages.js',
     ];
+
+    if ($slug === 'press-media') {
+        $scripts['kampachi-press-carousel'] = 'assets/press-media.js';
+    }
 
     if ($isCateringPage || is_singular('kc_event') || $isSakePage || is_singular('kc_sake') || is_singular('kc_outlet')) {
         $scripts['kampachi-catering-pages'] = 'assets/catering-pages.js';

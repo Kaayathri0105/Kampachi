@@ -19,6 +19,7 @@ final class Press
     private const SCHEMA_OPTION = 'kampachi_press_schema';
     private const NONCE = 'kampachi_press_nonce';
     private const SAVE_ACTION = 'kampachi_save_press_details';
+    private const HIGHLIGHT_META = '_kampachi_press_highlight';
     private const FIELDS = [
         'press_publication' => ['Publication or media outlet', 'text'],
         'press_source_url' => ['Original article URL', 'url'],
@@ -63,6 +64,10 @@ final class Press
             echo '<input class="widefat" id="' . esc_attr($name) . '" name="' . esc_attr($name) . '" type="'
                 . esc_attr($type) . '" value="' . esc_attr(is_string($value) ? $value : '') . '">';
         }
+        echo '<p><input type="hidden" name="kampachi_press_highlight" value="0">';
+        echo '<label><input type="checkbox" name="kampachi_press_highlight" value="1"'
+            . checked(self::isHighlight($post->ID), true, false) . '> Show in Press &amp; Media highlights</label></p>';
+        echo '<p class="description">Add a featured image for the highlight card. Other articles appear in the archive.</p>';
     }
 
     public static function save(int $postId, WP_Post $post): void
@@ -90,6 +95,25 @@ final class Press
             $value = $type === 'url' ? self::sourceUrl($raw) : sanitize_text_field($raw);
             update_post_meta($postId, '_' . $name, wp_slash($value));
         }
+
+        $highlight = $_POST['kampachi_press_highlight'] ?? null;
+        if ($highlight === '1') {
+            update_post_meta($postId, self::HIGHLIGHT_META, '1');
+        } elseif ($highlight === '0') {
+            delete_post_meta($postId, self::HIGHLIGHT_META);
+        }
+    }
+
+    public static function isHighlight(int $postId): bool
+    {
+        return get_post_meta($postId, self::HIGHLIGHT_META, true) === '1';
+    }
+
+    public static function originalUrl(int $postId): string
+    {
+        $url = get_post_meta($postId, '_kampachi_press_source_url', true);
+
+        return is_string($url) ? self::sourceUrl($url) : '';
     }
 
     private static function sourceUrl(string $value): string
