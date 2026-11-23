@@ -143,6 +143,12 @@ final class Sake
         echo '</div>';
 
         if ($page instanceof WP_Post && current_user_can('edit_post', $page->ID)) {
+            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+            echo '<input type="hidden" name="action" value="kampachi_save_sake_landing">';
+            echo '<input type="hidden" name="section" value="seo">';
+            wp_nonce_field('kampachi_save_sake_landing', 'kampachi_sake_landing_nonce');
+            Seo::renderLandingPanel($page, 'Sake Landing Page SEO');
+            echo '</form>';
             self::render_intro($page);
         } else {
             echo '<div class="notice notice-warning inline"><p>A published Sake page with slug <code>sake</code> is required, and you need permission to edit it.</p></div>';
@@ -158,9 +164,14 @@ final class Sake
             ? sanitize_key(wp_unslash($_GET['sake_saved']))
             : '';
 
-        if ($saved === 'intro' || $saved === 'order') {
+        $messages = [
+            'intro' => 'Section 1 saved successfully.',
+            'order' => 'Sake post order saved.',
+            'seo' => 'Sake landing page SEO saved.',
+        ];
+        if (isset($messages[$saved])) {
             echo '<div class="notice notice-success is-dismissible"><p>';
-            echo esc_html($saved === 'intro' ? 'Section 1 saved successfully.' : 'Sake post order saved.');
+            echo esc_html($messages[$saved]);
             echo '</p></div>';
         } elseif ($saved === 'error') {
             echo '<div class="notice notice-error"><p>Some Sake posts could not be reordered. Please try again.</p></div>';
@@ -197,9 +208,6 @@ final class Sake
             echo '</div>';
         }
 
-        echo '<div class="kc-catering-field"><h3>SEO Metadata</h3>';
-        Seo::renderBox($page);
-        echo '</div>';
         submit_button('Save Section 1');
         echo '</form></section>';
     }
@@ -356,6 +364,12 @@ final class Sake
             wp_die('Sake landing page is missing or not editable.', '', ['response' => 403]);
         }
 
+        if (($_POST['section'] ?? '') === 'seo') {
+            Seo::saveLandingPanel($page);
+            wp_safe_redirect(admin_url('edit.php?post_type=kc_sake&page=kampachi-landing-sake&sake_saved=seo#kc-section-seo'));
+            exit;
+        }
+
         $fields = isset($_POST['kampachi_sake_landing']) && is_array($_POST['kampachi_sake_landing'])
             ? wp_unslash($_POST['kampachi_sake_landing'])
             : [];
@@ -383,7 +397,6 @@ final class Sake
         }
 
         HeroMotion::saveDashboard($page->ID, 'kampachi_sake_hero_media');
-        Seo::savePost($page->ID, $page);
 
         wp_safe_redirect(admin_url('edit.php?post_type=kc_sake&page=kampachi-landing-sake&sake_saved=intro#kc-sake-intro'));
         exit;

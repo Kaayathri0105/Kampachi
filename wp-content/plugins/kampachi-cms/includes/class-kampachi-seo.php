@@ -98,6 +98,68 @@ final class Seo
         echo 'Each translated page has its own SEO fields.</p>';
     }
 
+    public static function renderHomepagePanel(): void
+    {
+        $fields = self::homepageFields();
+        if ($fields !== null) {
+            self::renderPanel('Homepage SEO', 'kc_home_meta', 'home[seo]', $fields);
+        }
+    }
+
+    public static function renderLandingPanel(WP_Post $page, string $heading): void
+    {
+        wp_nonce_field('kampachi_save_seo', 'kampachi_seo_nonce');
+        self::renderPanel(
+            $heading,
+            'kc_landing_meta',
+            'kampachi_seo',
+            [
+                'title' => self::meta($page->ID, self::TITLE_KEY),
+                'description' => self::meta($page->ID, self::DESCRIPTION_KEY),
+            ],
+            self::landingDefaults($page),
+            'Save SEO'
+        );
+    }
+
+    /**
+     * @param array{title: string, description: string} $fields
+     * @param array{title: string, description: string}|array{} $defaults
+     */
+    private static function renderPanel(
+        string $heading,
+        string $id,
+        string $name,
+        array $fields,
+        array $defaults = [],
+        string $submitLabel = ''
+    ): void {
+        $titlePlaceholder = $defaults !== [] ? ' placeholder="' . esc_attr($defaults['title']) . '"' : '';
+        $descriptionPlaceholder = $defaults !== [] ? ' placeholder="' . esc_attr($defaults['description']) . '"' : '';
+        echo '<section id="kc-section-seo" class="kc-panel"><h2>' . esc_html($heading) . '</h2>';
+        echo '<div class="kc-field">';
+        echo '<label class="kc-label" for="' . esc_attr($id . '_title') . '">Meta title</label>';
+        echo '<input class="widefat" id="' . esc_attr($id . '_title') . '" name="' . esc_attr($name . '[title]')
+            . '" type="text" value="' . esc_attr($fields['title']) . '"' . $titlePlaceholder . '>';
+        echo '</div><div class="kc-field">';
+        echo '<label class="kc-label" for="' . esc_attr($id . '_description') . '">Meta description</label>';
+        echo '<textarea class="widefat" id="' . esc_attr($id . '_description') . '" name="'
+            . esc_attr($name . '[description]') . '" rows="3"' . $descriptionPlaceholder . '>'
+            . esc_textarea($fields['description']) . '</textarea>';
+        echo '</div><p class="description">These fields set the page title and description in the HTML head. '
+            . 'Leave them blank to use the default SEO values.</p>';
+        if ($submitLabel !== '') {
+            submit_button($submitLabel, 'primary', 'save_landing_seo', false);
+        }
+        echo '</section>';
+    }
+
+    public static function saveLandingPanel(WP_Post $page): void
+    {
+        check_admin_referer('kampachi_save_seo', 'kampachi_seo_nonce');
+        self::savePost($page->ID, $page);
+    }
+
     public static function savePost(int $postId, WP_Post $post): void
     {
         if (

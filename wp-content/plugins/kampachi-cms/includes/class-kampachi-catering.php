@@ -114,6 +114,9 @@ final class Catering
         if (! $page instanceof WP_Post) {
             echo '<div class="notice notice-warning inline"><p>The Catering landing page is missing. Create a published WordPress page with slug <code>catering-events</code> before editing Sections 1 and 3.</p></div>';
         } elseif (current_user_can('edit_post', $page->ID)) {
+            self::start_dashboard_form('seo');
+            Seo::renderLandingPanel($page, 'Catering & Events Landing Page SEO');
+            echo '</form>';
             self::render_intro_section($page);
         } else {
             echo '<p>You do not have permission to edit this landing page.</p>';
@@ -135,8 +138,9 @@ final class Catering
         $order = isset($_GET['ordered']) && is_string($_GET['ordered'])
             ? sanitize_key(wp_unslash($_GET['ordered'])) : '';
 
-        if (in_array($saved, ['intro', 'values'], true)) {
-            $label = $saved === 'intro' ? 'Section 1' : 'Section 3';
+        $labels = ['intro' => 'Section 1', 'values' => 'Section 3', 'seo' => 'Catering & Events landing page SEO'];
+        if (isset($labels[$saved])) {
+            $label = $labels[$saved];
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html($label) . ' saved successfully.</p></div>';
         } elseif ($order === '1') {
             echo '<div class="notice notice-success is-dismissible"><p>Event order saved.</p></div>';
@@ -193,9 +197,6 @@ final class Catering
             echo '</div>';
         }
 
-        echo '<div class="kc-catering-field"><h3>SEO Metadata</h3>';
-        Seo::renderBox($page);
-        echo '</div>';
         submit_button('Save Section 1');
         echo '</form></section>';
     }
@@ -265,7 +266,8 @@ final class Catering
             \Kampachi_Landings::save($page->ID, $page);
             self::save_hero_media($page->ID);
             HeroMotion::saveDashboard($page->ID, 'kampachi_catering_hero_media');
-            Seo::savePost($page->ID, $page);
+        } elseif ($section === 'seo') {
+            Seo::saveLandingPanel($page);
         } elseif ($section === 'values') {
             check_admin_referer('kampachi_catering_landing', 'kampachi_catering_landing_nonce');
             self::save_landing($page->ID, $page);
