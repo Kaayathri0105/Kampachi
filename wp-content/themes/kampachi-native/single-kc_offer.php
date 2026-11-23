@@ -10,7 +10,6 @@ declare(strict_types=1);
 
 use Kampachi\CMS\Offers;
 use Kampachi\CMS\OffersLanding;
-use Kampachi\CMS\Outlets;
 
 if (! defined('ABSPATH')) {
     exit;
@@ -31,10 +30,8 @@ while (have_posts()) :
     $dates = Offers::dateRange($offerId);
     $times = Offers::timeRange($offerId);
     $hasSchedule = $dates !== '' || $times !== '';
-    $menus = Offers::menus($offerId);
     $details = Offers::details($offerId);
-    $outlets = Offers::outletIds($offerId);
-    $hasOutlets = $outlets !== [];
+    $cta = Offers::cta($offerId);
     $neighbors = OffersLanding::adjacentOffers($offerId);
     ?>
     <main class="kc-offer-page<?php echo $hero === [] ? ' kc-offer-page--no-hero' : ''; ?>" id="main-content">
@@ -50,7 +47,7 @@ while (have_posts()) :
                 <?php endif; ?>
             </header>
 
-            <?php if ($details !== [] || $hasOutlets || $menus !== [] || $hasSchedule) : ?>
+            <?php if ($details !== [] || $hasSchedule) : ?>
                 <section class="kc-offer-details" aria-labelledby="kc-offer-details-title">
                     <div class="kc-offer-details-heading"><h2 id="kc-offer-details-title"><?php echo esc_html(kampachi_native_label('offer_details')); ?></h2></div>
                     <div class="kc-offer-detail-sections">
@@ -85,30 +82,15 @@ while (have_posts()) :
                                 <?php endif; ?>
                             </section>
                         <?php endforeach; ?>
-                        <?php if ($hasOutlets) : ?>
-                            <section class="kc-offer-detail-section kc-offer-outlets" aria-labelledby="kc-offer-outlets-title">
-                                <h3 id="kc-offer-outlets-title"><?php echo esc_html(kampachi_native_label('locations')); ?></h3>
-                                <div class="kc-offer-rich-text">
-                                    <ul class="kc-offer-outlet-list" role="list">
-                                        <?php foreach ($outlets as $outletId) : ?>
-                                            <li><span class="kc-offer-list-dash" aria-hidden="true">–</span><a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?></a></li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                </div>
-                            </section>
-                        <?php endif; ?>
-                        <?php if ($menus !== []) : ?>
-                            <section class="kc-offer-detail-section kc-offer-menus" aria-labelledby="kc-offer-menus-title">
-                                <h3 id="kc-offer-menus-title"><?php echo esc_html(kampachi_native_label('menus')); ?></h3>
-                                <div class="kc-offer-menu-links">
-                                    <?php foreach ($menus as $menu) : ?>
-                                        <a class="kc-offer-menu-link" href="<?php echo esc_url($menu['url']); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html($menu['title']); ?></a>
-                                    <?php endforeach; ?>
-                                </div>
-                            </section>
-                        <?php endif; ?>
                     </div>
                 </section>
+            <?php endif; ?>
+            <?php if ($cta !== null) : ?>
+                <div class="kc-offer-cta">
+                    <a class="kc-offer-cta-link" href="<?php echo esc_url($cta['url']); ?>">
+                        <?php echo esc_html($cta['label']); ?>
+                    </a>
+                </div>
             <?php endif; ?>
             <?php if (($neighbors['previous'] ?? null) !== null || ($neighbors['next'] ?? null) !== null) : ?>
                 <nav class="kc-offer-pagination" aria-label="<?php esc_attr_e('Offers navigation', 'kampachi-native'); ?>">

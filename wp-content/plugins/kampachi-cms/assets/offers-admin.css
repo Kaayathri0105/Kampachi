@@ -16,8 +16,6 @@
 .kc-offers-repeat-body > label { margin-bottom: 15px; }
 .kc-offers-row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
 .kc-offers-editor .dashicons-move { cursor: move; flex: 0 0 20px; color: #94704e; }
-.kc-offers-outlets { display: flex; flex-wrap: wrap; gap: 12px 24px; }
-.kc-offers-outlets label { padding: 9px 12px; border: 1px solid #dfd5ca; background: #f5ebe0; }
 .kc-offers-editor .ui-sortable-placeholder { visibility: visible !important; min-height: 80px; border: 1px dashed #94704e; background: #f5ebe0; }
 @media (max-width: 780px) {
     .kc-offers-columns { grid-template-columns: 1fr; gap: 0; }

@@ -519,7 +519,6 @@ Awards::boot();
 \Kampachi\CMS\OutletsLanding::boot();
 \Kampachi\CMS\PressLanding::boot();
 \Kampachi\CMS\AwardsLanding::boot();
-Kampachi_Promotions_Import::boot();
 Kampachi_Master_Settings::boot();
 \Kampachi\CMS\WPConfigManager::boot();
 Kampachi_GitHub_Sync::boot();

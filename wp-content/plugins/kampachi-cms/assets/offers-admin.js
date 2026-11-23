@@ -6,7 +6,7 @@
 
     const descriptionEditor = window.kampachiDescriptionEditor;
     let unique = Date.now();
-    const rowSelector = '[data-offer-hero], [data-offer-menu], [data-offer-detail]';
+    const rowSelector = '[data-offer-hero], [data-offer-detail]';
 
     function prepareEditors($scope) {
         $scope.find('textarea.kc-offers-rich').each(function () {
@@ -21,12 +21,9 @@
     }
 
     function renumber() {
-        ['menus', 'details'].forEach(function (group) {
-            const selector = group === 'menus' ? '[data-offer-menu]' : '[data-offer-detail]';
-            $root.find(selector).each(function (index) {
-                $(this).find('[name]').each(function () {
-                    this.name = this.name.replace(new RegExp('kampachi_offer\\[' + group + '\\]\\[[^\\]]+\\]'), 'kampachi_offer[' + group + '][' + index + ']');
-                });
+        $root.find('[data-offer-detail]').each(function (index) {
+            $(this).find('[name]').each(function () {
+                this.name = this.name.replace(/kampachi_offer\[details\]\[[^\]]+\]/, 'kampachi_offer[details][' + index + ']');
             });
         });
     }
@@ -36,13 +33,12 @@
         $root.find('[name="kampachi_offer_hero_ids"]').val(ids.join(',')).trigger('change');
     }
 
-    function addRow(kind) {
-        const template = $root.find('[data-offer-' + kind + '-template]').get(0);
+    function addDetail() {
+        const template = $root.find('[data-offer-detail-template]').get(0);
         const $row = $(template.innerHTML.replace(/__INDEX__/g, String(++unique)));
-        $root.find(kind === 'menu' ? '[data-offer-menus]' : '[data-offer-details]').append($row);
+        $root.find('[data-offer-details]').append($row);
         renumber();
         prepareEditors($row);
-        return $row;
     }
 
     function rowActions($row) {
@@ -72,13 +68,6 @@
         frame.open();
     }
 
-    function fillMenu($row, item) {
-        if (item.mime !== 'application/pdf' && item.type !== 'image') return;
-        $row.find('[data-offer-menu-id]').val(item.id);
-        $row.find('[data-offer-menu-url]').val(item.url);
-        if (!$row.find('[data-offer-menu-title]').val()) $row.find('[data-offer-menu-title]').val(item.title || item.filename || 'View Menu');
-    }
-
     $root.on('click', '[data-offer-pick-thumbnail]', function () {
         mediaPicker('Choose Card Thumbnail Image', ['image'], false, function (items) {
             const item = items[0];
@@ -106,22 +95,7 @@
             syncHero();
         });
     });
-    $root.on('click', '[data-offer-add-menu]', function () { addRow('menu'); });
-    $root.on('click', '[data-offer-add-detail]', function () { addRow('detail'); });
-    $root.on('click', '[data-offer-add-menu-files]', function () {
-        mediaPicker('Add Menu PDFs / Images', ['application/pdf', 'image'], true, function (items) {
-            items.forEach(function (item) {
-                if (item.mime === 'application/pdf' || item.type === 'image') fillMenu(addRow('menu'), item);
-            });
-        });
-    });
-    $root.on('click', '[data-offer-pick-menu]', function () {
-        const $row = $(this).closest('[data-offer-menu]');
-        mediaPicker('Choose Menu PDF / Image', ['application/pdf', 'image'], false, function (items) {
-            if (items[0]) fillMenu($row, items[0]);
-        });
-    });
-    $root.on('input', '[data-offer-menu-url]', function () { $(this).closest('[data-offer-menu]').find('[data-offer-menu-id]').val('0'); });
+    $root.on('click', '[data-offer-add-detail]', addDetail);
     $root.on('click', '[data-offer-remove]', function () {
         const $row = $(this).closest(rowSelector);
         removeEditors($row);
@@ -142,7 +116,7 @@
         $row.find(up ? '[data-offer-up]' : '[data-offer-down]').trigger('focus');
     });
 
-    $root.find('[data-offer-hero-list], [data-offer-menus], [data-offer-details]').sortable({
+    $root.find('[data-offer-hero-list], [data-offer-details]').sortable({
         items: '> div',
         handle: '.dashicons-move',
         start: function (event, ui) { ui.placeholder.height(ui.item.outerHeight()); removeEditors(ui.item); },

@@ -18,9 +18,7 @@ final class Offers
 
     private const HERO = '_kampachi_offer_hero_ids';
     private const INTRO = '_kampachi_offer_introduction';
-    private const MENUS = '_kampachi_offer_menus';
     private const DETAILS = '_kampachi_offer_details';
-    private const OUTLETS = '_kampachi_offer_outlet_ids';
 
     public static function boot(): void
     {
@@ -98,8 +96,7 @@ final class Offers
         self::renderSchedule($post->ID);
         echo '<section class="kc-offers-panel" data-offer-details-panel><h3>Offer Details</h3>';
         self::renderDetails($post->ID);
-        self::renderOutlets($post->ID);
-        self::renderMenus($post->ID);
+        self::renderCta($post->ID);
         echo '</section>';
 
         self::renderThumbnail($post->ID);
@@ -178,53 +175,14 @@ final class Offers
         echo '<button type="button" class="button-link-delete" data-offer-remove>Remove</button></div>';
     }
 
-    private static function renderMenus(int $postId): void
+    private static function renderCta(int $postId): void
     {
-        echo '<section class="kc-offers-subpanel"><h4>Menus</h4><p>Add a title and '
-            . 'upload a PDF or menu image, or enter a menu link. Add and reorder as many '
-            . 'menus as needed.</p><div data-offer-menus>';
-        foreach (self::menus($postId) as $index => $menu) {
-            self::menuRow($menu, (string) $index);
-        }
-        echo '</div><p><button type="button" class="button" data-offer-add-menu>Add '
-            . 'Menu</button> <button type="button" class="button" '
-            . 'data-offer-add-menu-files>Add Multiple Menu Files</button></p>';
-        echo '<template data-offer-menu-template>';
-        self::menuRow(['title' => '', 'url' => '', 'attachment_id' => 0], '__INDEX__');
-        echo '</template></section>';
-    }
-
-    /** @param array{title: string, url: string, attachment_id: int} $menu */
-    private static function menuRow(array $menu, string $index): void
-    {
-        $prefix = 'kampachi_offer[menus][' . $index . ']';
-        echo '<div class="kc-offers-repeat" data-offer-menu><span class="dashicons '
-            . 'dashicons-move" aria-hidden="true"></span><div class="kc-offers-repeat-body">';
-        echo '<label><strong>Menu title</strong><input class="widefat" name="' . esc_attr($prefix . '[title]') . '" data-offer-menu-title value="' . esc_attr($menu['title']) . '"></label>';
-        echo '<label><strong>Menu file / link</strong><input class="widefat" type="url" '
-            . 'name="' . esc_attr($prefix . '[url]') . '" data-offer-menu-url value="' . esc_attr($menu['url']) . '"></label>';
-        echo '<input type="hidden" name="' . esc_attr($prefix . '[attachment_id]') . '" data-offer-menu-id value="' . esc_attr((string) $menu['attachment_id']) . '">';
-        echo '<button type="button" class="button" data-offer-pick-menu>Choose PDF / Image</button></div>';
-        self::rowActions();
-        echo '</div>';
-    }
-
-    private static function renderOutlets(int $postId): void
-    {
-        $selected = self::outletIds($postId);
-        $outlets = Outlets::publishedLocations();
-        echo '<section class="kc-offers-subpanel"><h4>Locations</h4><div class="kc-offers-outlets">';
-        foreach ($outlets as $outlet) {
-            if (! $outlet instanceof WP_Post) {
-                continue;
-            }
-            echo '<label><input type="checkbox" name="kampachi_offer[outlet_ids][]" value="' . esc_attr((string) $outlet->ID) . '" ' . checked(in_array($outlet->ID, $selected, true), true, false) . '> ' . esc_html(Outlets::locationName($outlet)) . '</label>';
-        }
-        if ($outlets === []) {
-            echo '<p>Add and publish outlet posts under Outlets to select them here.</p>';
-        }
-        echo '</div>';
-        echo '</section>';
+        echo '<section class="kc-offers-subpanel"><h4>CTA Button</h4>';
+        echo '<p>Enter both the label and the full link to show a button on this offer page.</p>';
+        echo '<div class="kc-offers-columns">';
+        self::input('offer_cta_label', 'Button label', self::field($postId, 'offer_cta_label'));
+        self::input('offer_cta_url', 'Button URL', self::field($postId, 'offer_cta_url'), 'url');
+        echo '</div></section>';
     }
 
     private static function renderDetails(int $postId): void
@@ -277,10 +235,8 @@ final class Offers
         self::saveSchedule($postId, $raw);
         self::saveThumbnail($postId, $raw);
         update_post_meta($postId, self::INTRO, wp_slash(wp_kses_post(self::string($raw['introduction'] ?? ''))));
-        update_post_meta($postId, self::MENUS, self::cleanMenus($raw['menus'] ?? []));
         update_post_meta($postId, self::DETAILS, wp_slash(self::cleanDetails($raw['details'] ?? [])));
-        update_post_meta($postId, self::OUTLETS, Outlets::locationIds($raw['outlet_ids'] ?? []));
-        update_post_meta($postId, '_kampachi_offer_locations_saved', true);
+        self::saveCta($postId, $raw);
         $hero = self::string($_POST['kampachi_offer_hero_ids'] ?? '');
         update_post_meta($postId, self::HERO, self::cleanMediaIds(explode(',', wp_unslash($hero))));
     }
@@ -485,36 +441,39 @@ final class Offers
             : '';
     }
 
-    /** @return array<int, array{title: string, url: string, attachment_id: int}> */
-    private static function cleanMenus(mixed $raw): array
+    /** @param array<string, mixed> $raw */
+    private static function saveCta(int $postId, array $raw): void
     {
-        $menus = [];
-        foreach (is_array($raw) ? $raw : [] as $row) {
-            if (! is_array($row)) {
-                continue;
-            }
-            $id = is_scalar($row['attachment_id'] ?? null) ? absint($row['attachment_id']) : 0;
-            $mime = $id > 0 ? get_post_mime_type($id) : false;
-            $id = $mime === 'application/pdf' || ($id > 0 && wp_attachment_is_image($id)) ? $id : 0;
-            $url = $id > 0 ? wp_get_attachment_url($id) : self::string($row['url'] ?? '');
-            $url = is_string($url) ? esc_url_raw($url, ['http', 'https']) : '';
-            if ($url === '') {
-                continue;
-            }
-            $title = sanitize_text_field(self::string($row['title'] ?? ''));
-            $menus[] = ['title' => $title !== '' ? $title : 'View Menu', 'url' => $url, 'attachment_id' => $id];
+        if (isset($raw['offer_cta_label']) && is_string($raw['offer_cta_label'])) {
+            $label = sanitize_text_field($raw['offer_cta_label']);
+            update_post_meta($postId, '_kampachi_offer_cta_label', wp_slash($label));
         }
-        return $menus;
+
+        if (isset($raw['offer_cta_url']) && is_string($raw['offer_cta_url'])) {
+            $url = self::cleanCtaUrl($raw['offer_cta_url']);
+            update_post_meta($postId, '_kampachi_offer_cta_url', $url);
+        }
     }
 
-    /** @return array<int, array{title: string, url: string, attachment_id: int}> */
-    public static function menus(int $postId): array
+    private static function cleanCtaUrl(string $value): string
     {
-        if (metadata_exists('post', $postId, self::MENUS)) {
-            return self::cleanMenus(get_post_meta($postId, self::MENUS, true));
+        $value = trim($value);
+        $parts = wp_parse_url($value);
+
+        if (! is_array($parts) || ! isset($parts['scheme'], $parts['host'])) {
+            return '';
         }
-        $url = self::field($postId, 'menu_url');
-        return $url !== '' ? self::cleanMenus([['title' => 'View Menu', 'url' => $url, 'attachment_id' => 0]]) : [];
+
+        return esc_url_raw($value, ['http', 'https']);
+    }
+
+    /** @return array{label: string, url: string}|null */
+    public static function cta(int $postId): ?array
+    {
+        $label = trim(self::field($postId, 'offer_cta_label'));
+        $url = self::cleanCtaUrl(self::field($postId, 'offer_cta_url'));
+
+        return $label !== '' && $url !== '' ? ['label' => $label, 'url' => $url] : null;
     }
 
     /** @return array<int, array{title: string, description: string}> */
@@ -552,19 +511,6 @@ final class Offers
             }
         }
         return self::cleanDetails($rows);
-    }
-
-    /** @return list<int> */
-    public static function outletIds(int $postId): array
-    {
-        $selected = get_post_meta($postId, self::OUTLETS, true);
-        $selected = is_array($selected) ? $selected : [];
-
-        if (! get_post_meta($postId, '_kampachi_offer_locations_saved', true)) {
-            $selected = array_merge($selected, Outlets::legacyLocationIds(self::field($postId, 'outlet_name')));
-        }
-
-        return Outlets::locationIds($selected);
     }
 
     public static function dateRange(int $postId): string
