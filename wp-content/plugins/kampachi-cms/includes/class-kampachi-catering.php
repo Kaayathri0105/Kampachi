@@ -193,6 +193,9 @@ final class Catering
             echo '</div>';
         }
 
+        echo '<div class="kc-catering-field"><h3>SEO Metadata</h3>';
+        Seo::renderBox($page);
+        echo '</div>';
         submit_button('Save Section 1');
         echo '</form></section>';
     }
@@ -262,6 +265,7 @@ final class Catering
             \Kampachi_Landings::save($page->ID, $page);
             self::save_hero_media($page->ID);
             HeroMotion::saveDashboard($page->ID, 'kampachi_catering_hero_media');
+            Seo::savePost($page->ID, $page);
         } elseif ($section === 'values') {
             check_admin_referer('kampachi_catering_landing', 'kampachi_catering_landing_nonce');
             self::save_landing($page->ID, $page);

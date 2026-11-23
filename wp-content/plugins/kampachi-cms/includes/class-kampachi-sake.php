@@ -197,6 +197,9 @@ final class Sake
             echo '</div>';
         }
 
+        echo '<div class="kc-catering-field"><h3>SEO Metadata</h3>';
+        Seo::renderBox($page);
+        echo '</div>';
         submit_button('Save Section 1');
         echo '</form></section>';
     }
@@ -380,6 +383,7 @@ final class Sake
         }
 
         HeroMotion::saveDashboard($page->ID, 'kampachi_sake_hero_media');
+        Seo::savePost($page->ID, $page);
 
         wp_safe_redirect(admin_url('edit.php?post_type=kc_sake&page=kampachi-landing-sake&sake_saved=intro#kc-sake-intro'));
         exit;

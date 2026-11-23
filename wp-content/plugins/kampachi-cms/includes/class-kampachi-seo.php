@@ -23,6 +23,17 @@ final class Seo
 
     private const FIELDS = ['title' => self::TITLE_KEY, 'description' => self::DESCRIPTION_KEY];
 
+    private const LANDING_DEFAULTS = [
+        'sake' => [
+            'title' => 'Japanese Sake Collection | Kampachi Malaysia',
+            'description' => 'Explore Kampachi Malaysia’s Japanese sake collection. Discover independent breweries across Japan and browse the bottles featured at Kampachi.',
+        ],
+        'catering-events' => [
+            'title' => 'Japanese Catering & Private Dining | Kampachi Malaysia',
+            'description' => 'Plan private dining, celebrations and corporate events with Kampachi Malaysia. Explore Japanese catering and enquire about your event.',
+        ],
+    ];
+
     private const POST_TYPES = [
         'page', 'post', 'kc_offer', 'kc_sake', 'kc_outlet',
         'kc_event', 'kc_job', 'kc_prefecture', Press::POST_TYPE,
@@ -61,20 +72,29 @@ final class Seo
 
     public static function renderBox(WP_Post $post): void
     {
+        $defaults = self::landingDefaults($post);
         wp_nonce_field('kampachi_save_seo', 'kampachi_seo_nonce');
         echo '<p><label for="kampachi-seo-title"><strong>';
         echo esc_html__('SEO meta title', 'kampachi-cms');
         echo '</strong></label></p>';
         echo '<input class="widefat" id="kampachi-seo-title" name="kampachi_seo[title]" type="text" value="';
         echo esc_attr(self::meta($post->ID, self::TITLE_KEY));
-        echo '" placeholder="' . esc_attr(get_the_title($post)) . '">';
-        echo '<p class="description">Leave blank to use the WordPress page title.</p>';
+        echo '" placeholder="' . esc_attr($defaults['title'] ?? get_the_title($post)) . '">';
+        echo '<p class="description">' . esc_html($defaults !== []
+            ? 'Leave blank to use the suggested title.'
+            : 'Leave blank to use the WordPress page title.') . '</p>';
         echo '<p><label for="kampachi-seo-description"><strong>';
         echo esc_html__('SEO meta description', 'kampachi-cms');
         echo '</strong></label></p>';
-        echo '<textarea class="widefat" id="kampachi-seo-description" name="kampachi_seo[description]" rows="4">';
+        echo '<textarea class="widefat" id="kampachi-seo-description" name="kampachi_seo[description]" rows="4"';
+        if ($defaults !== []) {
+            echo ' placeholder="' . esc_attr($defaults['description']) . '"';
+        }
+        echo '>';
         echo esc_textarea(self::meta($post->ID, self::DESCRIPTION_KEY));
-        echo '</textarea><p class="description">Leave blank to derive a description from this page’s CMS content. ';
+        echo '</textarea><p class="description">' . esc_html($defaults !== []
+            ? 'Leave blank to use the suggested description.'
+            : 'Leave blank to derive a description from this page’s CMS content.') . ' ';
         echo 'Each translated page has its own SEO fields.</p>';
     }
 
@@ -204,7 +224,10 @@ final class Seo
         $custom = '';
         $postId = self::requestPostId();
         if ($postId > 0) {
-            $custom = self::meta($postId, self::TITLE_KEY);
+            $post = get_post($postId);
+            if ($post instanceof WP_Post) {
+                $custom = self::postTitle($post);
+            }
         } elseif (is_front_page()) {
             $custom = self::homepageOptions()['title'];
         }
@@ -273,7 +296,28 @@ final class Seo
 
         $post = get_post($postId);
 
-        return $post instanceof WP_Post ? self::excerpt(self::sourceDescription($post)) : '';
+        if (! $post instanceof WP_Post) {
+            return '';
+        }
+
+        return self::landingDefaults($post)['description'] ?? self::excerpt(self::sourceDescription($post));
+    }
+
+    private static function postTitle(WP_Post $post): string
+    {
+        $custom = self::meta($post->ID, self::TITLE_KEY);
+
+        return $custom !== '' ? $custom : (self::landingDefaults($post)['title'] ?? '');
+    }
+
+    /** @return array{title: string, description: string}|array{} */
+    private static function landingDefaults(WP_Post $post): array
+    {
+        if ($post->post_type !== 'page' || (int) $post->post_parent !== 0) {
+            return [];
+        }
+
+        return self::LANDING_DEFAULTS[$post->post_name] ?? [];
     }
 
     private static function excerpt(string $text): string
@@ -347,7 +391,7 @@ final class Seo
             }
 
             $type = get_post_type_object($post->post_type);
-            $title = self::meta($post->ID, self::TITLE_KEY);
+            $title = self::postTitle($post);
             echo '<tr><td><a href="' . esc_url(get_edit_post_link($post->ID, 'raw')) . '">';
             echo esc_html(get_the_title($post)) . '</a> <small>' . esc_html($post->post_status) . '</small></td>';
             echo '<td>' . esc_html($type !== null ? $type->labels->singular_name : $post->post_type) . '</td>';
