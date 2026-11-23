@@ -1216,6 +1216,7 @@ if (class_exists(OffersLanding::class)) {
             justify-content: space-between;
             gap: 20px;
             margin: 36px 0 23px;
+            scroll-margin-top: calc(var(--header-height) + 16px);
             border-bottom: 1px solid rgba(44, 39, 35, 0.16);
         }
 
@@ -1726,7 +1727,7 @@ if (class_exists(OffersLanding::class)) {
         const promotionFilters = document.querySelectorAll('[data-promotion-filter]');
         const promotionFilterCounts = document.querySelectorAll('[data-promotion-filter-count]');
         const promotionCards = Array.from(document.querySelectorAll('[data-promotion-category]'));
-        const promotionGrid = document.querySelector('.promotion-grid');
+        const promotionToolbar = document.querySelector('.promotion-toolbar');
         const promotionCount = document.querySelector('#promotion-count');
         const promotionEmptyState = document.querySelector('.promotion-empty-state');
         const promotionPagination = document.querySelector('.promotion-pagination');
@@ -1744,9 +1745,9 @@ if (class_exists(OffersLanding::class)) {
             ));
         }
 
-        function scrollToPromotionGrid() {
+        function scrollToPromotionFilters() {
             const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            promotionGrid.scrollIntoView({
+            promotionToolbar.scrollIntoView({
                 behavior: reduceMotion ? 'auto' : 'smooth',
                 block: 'start',
             });
@@ -1772,7 +1773,7 @@ if (class_exists(OffersLanding::class)) {
                 pageButton.addEventListener('click', () => {
                     currentPromotionPage = page;
                     renderPromotions();
-                    scrollToPromotionGrid();
+                    scrollToPromotionFilters();
                 });
                 promotionPageList.append(pageButton);
             }
@@ -1825,7 +1826,6 @@ if (class_exists(OffersLanding::class)) {
                 });
 
                 renderPromotions();
-                scrollToPromotionGrid();
             });
         });
 
@@ -1833,7 +1833,7 @@ if (class_exists(OffersLanding::class)) {
             if (currentPromotionPage > 1) {
                 currentPromotionPage -= 1;
                 renderPromotions();
-                scrollToPromotionGrid();
+                scrollToPromotionFilters();
             }
         });
 
@@ -1843,7 +1843,7 @@ if (class_exists(OffersLanding::class)) {
             if (currentPromotionPage < totalPages) {
                 currentPromotionPage += 1;
                 renderPromotions();
-                scrollToPromotionGrid();
+                scrollToPromotionFilters();
             }
         });
 
