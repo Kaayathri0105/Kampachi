@@ -19,6 +19,7 @@ final class Offers
     private const HERO = '_kampachi_offer_hero_ids';
     private const INTRO = '_kampachi_offer_introduction';
     private const DETAILS = '_kampachi_offer_details';
+    private const MENUS = '_kampachi_offer_menus';
     private const CTAS = '_kampachi_offer_ctas';
 
     public static function boot(): void
@@ -97,6 +98,7 @@ final class Offers
         self::renderSchedule($post->ID);
         echo '<section class="kc-offers-panel" data-offer-details-panel><h3>Offer Details</h3>';
         self::renderDetails($post->ID);
+        self::renderMenus($post->ID);
         self::renderCta($post->ID);
         echo '</section>';
 
@@ -174,6 +176,39 @@ final class Offers
             . 'data-offer-up aria-label="Move up">↑</button> ';
         echo '<button type="button" class="button" data-offer-down aria-label="Move down">↓</button> ';
         echo '<button type="button" class="button-link-delete" data-offer-remove>Remove</button></div>';
+    }
+
+    private static function renderMenus(int $postId): void
+    {
+        echo '<section class="kc-offers-subpanel"><h4>Menus</h4><p>Add a title and '
+            . 'upload a PDF or menu image, or enter a menu link. Add and reorder as many '
+            . 'menus as needed.</p>';
+        echo '<input type="hidden" name="kampachi_offer[menus_present]" value="1">';
+        echo '<div data-offer-menus>';
+        foreach (self::menus($postId) as $index => $menu) {
+            self::menuRow($menu, (string) $index);
+        }
+        echo '</div><p><button type="button" class="button" data-offer-add-menu>Add '
+            . 'Menu</button> <button type="button" class="button" '
+            . 'data-offer-add-menu-files>Add Multiple Menu Files</button></p>';
+        echo '<template data-offer-menu-template>';
+        self::menuRow(['title' => '', 'url' => '', 'attachment_id' => 0], '__INDEX__');
+        echo '</template></section>';
+    }
+
+    /** @param array{title: string, url: string, attachment_id: int} $menu */
+    private static function menuRow(array $menu, string $index): void
+    {
+        $prefix = 'kampachi_offer[menus][' . $index . ']';
+        echo '<div class="kc-offers-repeat" data-offer-menu><span class="dashicons '
+            . 'dashicons-move" aria-hidden="true"></span><div class="kc-offers-repeat-body">';
+        echo '<label><strong>Menu title</strong><input class="widefat" name="' . esc_attr($prefix . '[title]') . '" data-offer-menu-title value="' . esc_attr($menu['title']) . '"></label>';
+        echo '<label><strong>Menu file / link</strong><input class="widefat" type="url" '
+            . 'name="' . esc_attr($prefix . '[url]') . '" data-offer-menu-url value="' . esc_attr($menu['url']) . '"></label>';
+        echo '<input type="hidden" name="' . esc_attr($prefix . '[attachment_id]') . '" data-offer-menu-id value="' . esc_attr((string) $menu['attachment_id']) . '">';
+        echo '<button type="button" class="button" data-offer-pick-menu>Choose PDF / Image</button></div>';
+        self::rowActions();
+        echo '</div>';
     }
 
     private static function renderCta(int $postId): void
@@ -260,6 +295,9 @@ final class Offers
         self::saveThumbnail($postId, $raw);
         update_post_meta($postId, self::INTRO, wp_slash(wp_kses_post(self::string($raw['introduction'] ?? ''))));
         update_post_meta($postId, self::DETAILS, wp_slash(self::cleanDetails($raw['details'] ?? [])));
+        if (($raw['menus_present'] ?? '') === '1') {
+            update_post_meta($postId, self::MENUS, wp_slash(self::cleanMenus($raw['menus'] ?? [])));
+        }
         if (($raw['ctas_present'] ?? '') === '1') {
             update_post_meta($postId, self::CTAS, wp_slash(self::cleanCtas($raw['ctas'] ?? [])));
         }
@@ -465,6 +503,38 @@ final class Offers
         return in_array(wp_parse_url($legacy, PHP_URL_HOST), ['kampachi.com.my', 'www.kampachi.com.my'], true)
             ? $legacy
             : '';
+    }
+
+    /** @return array<int, array{title: string, url: string, attachment_id: int}> */
+    private static function cleanMenus(mixed $raw): array
+    {
+        $menus = [];
+        foreach (is_array($raw) ? $raw : [] as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $id = is_scalar($row['attachment_id'] ?? null) ? absint($row['attachment_id']) : 0;
+            $mime = $id > 0 ? get_post_mime_type($id) : false;
+            $id = $mime === 'application/pdf' || ($id > 0 && wp_attachment_is_image($id)) ? $id : 0;
+            $url = $id > 0 ? wp_get_attachment_url($id) : self::string($row['url'] ?? '');
+            $url = is_string($url) ? esc_url_raw($url, ['http', 'https']) : '';
+            if ($url === '') {
+                continue;
+            }
+            $title = sanitize_text_field(self::string($row['title'] ?? ''));
+            $menus[] = ['title' => $title !== '' ? $title : 'View Menu', 'url' => $url, 'attachment_id' => $id];
+        }
+        return $menus;
+    }
+
+    /** @return array<int, array{title: string, url: string, attachment_id: int}> */
+    public static function menus(int $postId): array
+    {
+        if (metadata_exists('post', $postId, self::MENUS)) {
+            return self::cleanMenus(get_post_meta($postId, self::MENUS, true));
+        }
+        $url = self::field($postId, 'menu_url');
+        return $url !== '' ? self::cleanMenus([['title' => 'View Menu', 'url' => $url, 'attachment_id' => 0]]) : [];
     }
 
     /** @return list<array{label: string, url: string}> */

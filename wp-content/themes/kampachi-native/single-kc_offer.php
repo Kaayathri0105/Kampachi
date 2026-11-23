@@ -31,6 +31,7 @@ while (have_posts()) :
     $times = Offers::timeRange($offerId);
     $hasSchedule = $dates !== '' || $times !== '';
     $details = Offers::details($offerId);
+    $menus = Offers::menus($offerId);
     $ctas = Offers::ctas($offerId);
     $neighbors = OffersLanding::adjacentOffers($offerId);
     ?>
@@ -55,7 +56,7 @@ while (have_posts()) :
                 <?php endif; ?>
             </header>
 
-            <?php if ($details !== [] || $hasSchedule) : ?>
+            <?php if ($details !== [] || $hasSchedule || $menus !== []) : ?>
                 <section class="kc-offer-details" aria-labelledby="kc-offer-details-title">
                     <div class="kc-offer-details-heading"><h2 id="kc-offer-details-title"><?php echo esc_html(kampachi_native_label('offer_details')); ?></h2></div>
                     <div class="kc-offer-detail-sections">
@@ -90,6 +91,16 @@ while (have_posts()) :
                                 <?php endif; ?>
                             </section>
                         <?php endforeach; ?>
+                        <?php if ($menus !== []) : ?>
+                            <section class="kc-offer-detail-section kc-offer-menus" aria-labelledby="kc-offer-menus-title">
+                                <h3 id="kc-offer-menus-title"><?php echo esc_html(kampachi_native_label('menus')); ?></h3>
+                                <div class="kc-offer-menu-links">
+                                    <?php foreach ($menus as $menu) : ?>
+                                        <a class="kc-offer-menu-link" href="<?php echo esc_url($menu['url']); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html($menu['title']); ?></a>
+                                    <?php endforeach; ?>
+                                </div>
+                            </section>
+                        <?php endif; ?>
                     </div>
                 </section>
             <?php endif; ?>

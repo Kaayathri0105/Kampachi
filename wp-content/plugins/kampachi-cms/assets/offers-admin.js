@@ -6,7 +6,7 @@
 
     const descriptionEditor = window.kampachiDescriptionEditor;
     let unique = Date.now();
-    const rowSelector = '[data-offer-hero], [data-offer-detail], [data-offer-cta]';
+    const rowSelector = '[data-offer-hero], [data-offer-detail], [data-offer-cta], [data-offer-menu]';
 
     function prepareEditors($scope) {
         $scope.find('textarea.kc-offers-rich').each(function () {
@@ -21,10 +21,10 @@
     }
 
     function renumber() {
-        $root.find('[data-offer-details], [data-offer-ctas]').children().each(function () {
+        $root.find('[data-offer-details], [data-offer-ctas], [data-offer-menus]').children().each(function () {
             const index = $(this).index();
             $(this).find('[name]').each(function () {
-                this.name = this.name.replace(/(kampachi_offer\[(?:details|ctas)\])\[[^\]]+\]/, '$1[' + index + ']');
+                this.name = this.name.replace(/(kampachi_offer\[(?:details|ctas|menus)\])\[[^\]]+\]/, '$1[' + index + ']');
             });
         });
     }
@@ -70,6 +70,13 @@
         frame.open();
     }
 
+    function fillMenu($row, item) {
+        if (item.mime !== 'application/pdf' && item.type !== 'image') return;
+        $row.find('[data-offer-menu-id]').val(item.id);
+        $row.find('[data-offer-menu-url]').val(item.url);
+        if (!$row.find('[data-offer-menu-title]').val()) $row.find('[data-offer-menu-title]').val(item.title || item.filename || 'View Menu');
+    }
+
     $root.on('click', '[data-offer-pick-thumbnail]', function () {
         mediaPicker('Choose Card Thumbnail Image', ['image'], false, function (items) {
             const item = items[0];
@@ -103,6 +110,23 @@
     $root.on('click', '[data-offer-add-cta]', function () {
         addRow('cta', '[data-offer-ctas]').find('input').first().trigger('focus');
     });
+    $root.on('click', '[data-offer-add-menu]', function () {
+        addRow('menu', '[data-offer-menus]').find('[data-offer-menu-title]').trigger('focus');
+    });
+    $root.on('click', '[data-offer-add-menu-files]', function () {
+        mediaPicker('Add Menu PDFs / Images', ['application/pdf', 'image'], true, function (items) {
+            items.forEach(function (item) {
+                if (item.mime === 'application/pdf' || item.type === 'image') fillMenu(addRow('menu', '[data-offer-menus]'), item);
+            });
+        });
+    });
+    $root.on('click', '[data-offer-pick-menu]', function () {
+        const $row = $(this).closest('[data-offer-menu]');
+        mediaPicker('Choose Menu PDF / Image', ['application/pdf', 'image'], false, function (items) {
+            if (items[0]) fillMenu($row, items[0]);
+        });
+    });
+    $root.on('input', '[data-offer-menu-url]', function () { $(this).closest('[data-offer-menu]').find('[data-offer-menu-id]').val('0'); });
     $root.on('click', '[data-offer-remove]', function () {
         const $row = $(this).closest(rowSelector);
         removeEditors($row);
@@ -123,7 +147,7 @@
         $row.find(up ? '[data-offer-up]' : '[data-offer-down]').trigger('focus');
     });
 
-    $root.find('[data-offer-hero-list], [data-offer-details], [data-offer-ctas]').sortable({
+    $root.find('[data-offer-hero-list], [data-offer-details], [data-offer-ctas], [data-offer-menus]').sortable({
         items: '> div',
         handle: '.dashicons-move',
         start: function (event, ui) { ui.placeholder.height(ui.item.outerHeight()); removeEditors(ui.item); },
