@@ -19,6 +19,7 @@ final class Offers
     private const HERO = '_kampachi_offer_hero_ids';
     private const INTRO = '_kampachi_offer_introduction';
     private const DETAILS = '_kampachi_offer_details';
+    private const CTAS = '_kampachi_offer_ctas';
 
     public static function boot(): void
     {
@@ -177,12 +178,35 @@ final class Offers
 
     private static function renderCta(int $postId): void
     {
-        echo '<section class="kc-offers-subpanel"><h4>CTA Button</h4>';
-        echo '<p>Enter both the label and the full link to show a button on this offer page.</p>';
-        echo '<div class="kc-offers-columns">';
-        self::input('offer_cta_label', 'Button label', self::field($postId, 'offer_cta_label'));
-        self::input('offer_cta_url', 'Button URL', self::field($postId, 'offer_cta_url'), 'url');
-        echo '</div></section>';
+        $empty = ['label' => '', 'url' => ''];
+        $rows = self::ctaRows($postId) ?: [$empty];
+
+        echo '<section class="kc-offers-subpanel"><h4>CTA Buttons</h4>';
+        echo '<p>Enter a label and full URL for each button. Drag or use the arrows to set the order.</p>';
+        echo '<input type="hidden" name="kampachi_offer[ctas_present]" value="1">';
+        echo '<div data-offer-ctas>';
+        foreach ($rows as $index => $row) {
+            self::ctaRow($row, (string) $index);
+        }
+        echo '</div><p><button type="button" class="button" data-offer-add-cta>Add CTA Button</button></p>';
+        echo '<template data-offer-cta-template>';
+        self::ctaRow($empty, '__INDEX__');
+        echo '</template></section>';
+    }
+
+    /** @param array{label: string, url: string} $cta */
+    private static function ctaRow(array $cta, string $index): void
+    {
+        $prefix = 'kampachi_offer[ctas][' . $index . ']';
+        echo '<div class="kc-offers-repeat" data-offer-cta><span class="dashicons '
+            . 'dashicons-move" aria-hidden="true"></span><div class="kc-offers-repeat-body kc-offers-columns">';
+        echo '<label><strong>Button label</strong><input class="widefat" type="text" name="'
+            . esc_attr($prefix . '[label]') . '" value="' . esc_attr($cta['label']) . '"></label>';
+        echo '<label><strong>Button URL</strong><input class="widefat" type="url" name="'
+            . esc_attr($prefix . '[url]') . '" value="' . esc_attr($cta['url']) . '"></label>';
+        echo '</div>';
+        self::rowActions();
+        echo '</div>';
     }
 
     private static function renderDetails(int $postId): void
@@ -236,7 +260,9 @@ final class Offers
         self::saveThumbnail($postId, $raw);
         update_post_meta($postId, self::INTRO, wp_slash(wp_kses_post(self::string($raw['introduction'] ?? ''))));
         update_post_meta($postId, self::DETAILS, wp_slash(self::cleanDetails($raw['details'] ?? [])));
-        self::saveCta($postId, $raw);
+        if (($raw['ctas_present'] ?? '') === '1') {
+            update_post_meta($postId, self::CTAS, wp_slash(self::cleanCtas($raw['ctas'] ?? [])));
+        }
         $hero = self::string($_POST['kampachi_offer_hero_ids'] ?? '');
         update_post_meta($postId, self::HERO, self::cleanMediaIds(explode(',', wp_unslash($hero))));
     }
@@ -441,18 +467,22 @@ final class Offers
             : '';
     }
 
-    /** @param array<string, mixed> $raw */
-    private static function saveCta(int $postId, array $raw): void
+    /** @return list<array{label: string, url: string}> */
+    private static function cleanCtas(mixed $raw): array
     {
-        if (isset($raw['offer_cta_label']) && is_string($raw['offer_cta_label'])) {
-            $label = sanitize_text_field($raw['offer_cta_label']);
-            update_post_meta($postId, '_kampachi_offer_cta_label', wp_slash($label));
+        $rows = [];
+        foreach (is_array($raw) ? $raw : [] as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $label = sanitize_text_field(self::string($row['label'] ?? ''));
+            $url = self::cleanCtaUrl(self::string($row['url'] ?? ''));
+            if ($label !== '' || $url !== '') {
+                $rows[] = ['label' => $label, 'url' => $url];
+            }
         }
 
-        if (isset($raw['offer_cta_url']) && is_string($raw['offer_cta_url'])) {
-            $url = self::cleanCtaUrl($raw['offer_cta_url']);
-            update_post_meta($postId, '_kampachi_offer_cta_url', $url);
-        }
+        return $rows;
     }
 
     private static function cleanCtaUrl(string $value): string
@@ -467,13 +497,26 @@ final class Offers
         return esc_url_raw($value, ['http', 'https']);
     }
 
-    /** @return array{label: string, url: string}|null */
-    public static function cta(int $postId): ?array
+    /** @return list<array{label: string, url: string}> */
+    private static function ctaRows(int $postId): array
     {
-        $label = trim(self::field($postId, 'offer_cta_label'));
-        $url = self::cleanCtaUrl(self::field($postId, 'offer_cta_url'));
+        if (metadata_exists('post', $postId, self::CTAS)) {
+            return self::cleanCtas(get_post_meta($postId, self::CTAS, true));
+        }
 
-        return $label !== '' && $url !== '' ? ['label' => $label, 'url' => $url] : null;
+        return self::cleanCtas([[
+            'label' => self::field($postId, 'offer_cta_label'),
+            'url' => self::field($postId, 'offer_cta_url'),
+        ]]);
+    }
+
+    /** @return list<array{label: string, url: string}> */
+    public static function ctas(int $postId): array
+    {
+        return array_values(array_filter(
+            self::ctaRows($postId),
+            static fn (array $cta): bool => $cta['label'] !== '' && $cta['url'] !== ''
+        ));
     }
 
     /** @return array<int, array{title: string, description: string}> */

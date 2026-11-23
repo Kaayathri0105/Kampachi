@@ -6,7 +6,7 @@
 
     const descriptionEditor = window.kampachiDescriptionEditor;
     let unique = Date.now();
-    const rowSelector = '[data-offer-hero], [data-offer-detail]';
+    const rowSelector = '[data-offer-hero], [data-offer-detail], [data-offer-cta]';
 
     function prepareEditors($scope) {
         $scope.find('textarea.kc-offers-rich').each(function () {
@@ -21,9 +21,10 @@
     }
 
     function renumber() {
-        $root.find('[data-offer-detail]').each(function (index) {
+        $root.find('[data-offer-details], [data-offer-ctas]').children().each(function () {
+            const index = $(this).index();
             $(this).find('[name]').each(function () {
-                this.name = this.name.replace(/kampachi_offer\[details\]\[[^\]]+\]/, 'kampachi_offer[details][' + index + ']');
+                this.name = this.name.replace(/(kampachi_offer\[(?:details|ctas)\])\[[^\]]+\]/, '$1[' + index + ']');
             });
         });
     }
@@ -33,12 +34,13 @@
         $root.find('[name="kampachi_offer_hero_ids"]').val(ids.join(',')).trigger('change');
     }
 
-    function addDetail() {
-        const template = $root.find('[data-offer-detail-template]').get(0);
+    function addRow(kind, list) {
+        const template = $root.find('[data-offer-' + kind + '-template]').get(0);
         const $row = $(template.innerHTML.replace(/__INDEX__/g, String(++unique)));
-        $root.find('[data-offer-details]').append($row);
+        $root.find(list).append($row);
         renumber();
         prepareEditors($row);
+        return $row;
     }
 
     function rowActions($row) {
@@ -95,7 +97,12 @@
             syncHero();
         });
     });
-    $root.on('click', '[data-offer-add-detail]', addDetail);
+    $root.on('click', '[data-offer-add-detail]', function () {
+        addRow('detail', '[data-offer-details]');
+    });
+    $root.on('click', '[data-offer-add-cta]', function () {
+        addRow('cta', '[data-offer-ctas]').find('input').first().trigger('focus');
+    });
     $root.on('click', '[data-offer-remove]', function () {
         const $row = $(this).closest(rowSelector);
         removeEditors($row);
@@ -116,7 +123,7 @@
         $row.find(up ? '[data-offer-up]' : '[data-offer-down]').trigger('focus');
     });
 
-    $root.find('[data-offer-hero-list], [data-offer-details]').sortable({
+    $root.find('[data-offer-hero-list], [data-offer-details], [data-offer-ctas]').sortable({
         items: '> div',
         handle: '.dashicons-move',
         start: function (event, ui) { ui.placeholder.height(ui.item.outerHeight()); removeEditors(ui.item); },

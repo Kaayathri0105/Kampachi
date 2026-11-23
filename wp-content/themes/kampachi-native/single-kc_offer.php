@@ -31,7 +31,7 @@ while (have_posts()) :
     $times = Offers::timeRange($offerId);
     $hasSchedule = $dates !== '' || $times !== '';
     $details = Offers::details($offerId);
-    $cta = Offers::cta($offerId);
+    $ctas = Offers::ctas($offerId);
     $neighbors = OffersLanding::adjacentOffers($offerId);
     ?>
     <main class="kc-offer-page<?php echo $hero === [] ? ' kc-offer-page--no-hero' : ''; ?>" id="main-content">
@@ -85,11 +85,13 @@ while (have_posts()) :
                     </div>
                 </section>
             <?php endif; ?>
-            <?php if ($cta !== null) : ?>
+            <?php if ($ctas !== []) : ?>
                 <div class="kc-offer-cta">
-                    <a class="kc-offer-cta-link" href="<?php echo esc_url($cta['url']); ?>">
-                        <?php echo esc_html($cta['label']); ?>
-                    </a>
+                    <?php foreach ($ctas as $cta) : ?>
+                        <a class="kc-offer-cta-link" href="<?php echo esc_url($cta['url']); ?>">
+                            <?php echo esc_html($cta['label']); ?>
+                        </a>
+                    <?php endforeach; ?>
                 </div>
             <?php endif; ?>
             <?php if (($neighbors['previous'] ?? null) !== null || ($neighbors['next'] ?? null) !== null) : ?>

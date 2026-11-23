@@ -279,6 +279,7 @@ final class Kampachi_Translations
             '_kampachi_sake_bottles' => ['name', 'drink_type', 'size', 'description'],
             '_kampachi_offer_menus' => ['title'],
             '_kampachi_offer_details' => ['title', 'description'],
+            '_kampachi_offer_ctas' => ['label'],
         ];
         $sourceValues = [];
         $pointers = [];

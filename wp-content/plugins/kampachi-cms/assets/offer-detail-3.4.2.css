@@ -88,6 +88,10 @@
 .kc-offer-rich-text table { display: block; max-width: 100%; overflow: auto; }
 .kc-offer-rich-text .kc-offer-facts > div { display: block; }
 .kc-offer-cta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
     margin-block-end: clamp(32px, 5vw, 65px);
     text-align: center;
 }
