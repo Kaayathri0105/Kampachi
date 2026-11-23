@@ -184,6 +184,14 @@
         --header-height: 76px !important;
     }
 
+    .offer-category-nav .nav-link {
+        padding-inline: 5px;
+    }
+
+    .offer-category-nav .nav-label-en {
+        font-size: 13px !important;
+    }
+
     .site-header .header-inner {
         width: calc(100% - 36px) !important;
     }
