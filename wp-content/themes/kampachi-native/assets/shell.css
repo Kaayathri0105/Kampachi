@@ -8,9 +8,11 @@ body:has(.offer-category-nav) {
 
 .site-header .offer-category-nav {
     display: flex;
+    box-sizing: border-box;
     block-size: var(--offer-category-nav-height);
     overflow-x: auto;
     padding-inline: clamp(12px, 3vw, 32px);
+    border-block-start: 1px solid rgb(244 240 235 / 24%);
     scrollbar-width: thin;
 }
 

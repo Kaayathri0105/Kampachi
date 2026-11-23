@@ -56,6 +56,10 @@
     white-space: nowrap !important;
 }
 
+.offer-category-nav .nav-label-en {
+    font-size: 14px !important;
+}
+
 #site-menu :is(.nav-link, .nav-sublink, .nav-list > li > a, .sub-menu a):is(:hover, :focus-visible),
 .offer-category-nav .nav-link:is(:hover, :focus-visible, [aria-current="true"]) {
     color: #e0c9aa !important;
@@ -165,12 +169,13 @@
     }
 
     .menu-overlay .nav-label-en {
+        font-size: 20px !important;
         white-space: normal !important;
         overflow-wrap: anywhere;
     }
 
-    :is(.menu-overlay, .offer-category-nav) .nav-label-en {
-        font-size: 20px !important;
+    .offer-category-nav .nav-label-en {
+        font-size: 17px !important;
     }
 }
 
