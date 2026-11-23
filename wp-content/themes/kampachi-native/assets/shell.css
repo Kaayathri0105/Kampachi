@@ -1,19 +1,16 @@
 /* Shared native header/footer on WordPress pages: one semantic instance only. */
 :root{--header-height:88px}
 .site-header {height:var(--header-height);position:fixed;top:0;right:0;left:0;z-index:50;background:#000!important;color:#fff}
-.site-header .header-inner {width:min(1450px,calc(100% - 64px));height:100%;display:flex;align-items:center;justify-content:space-between;margin:auto}
+.site-header .header-inner {width:min(1450px,calc(100% - 64px));height:var(--header-height);display:flex;align-items:center;justify-content:space-between;margin:auto}
 body:has(.offer-category-nav) {
     --offer-category-nav-height: 44px;
 }
 
 .site-header .offer-category-nav {
-    position: absolute;
-    inset: 100% 0 auto;
     display: flex;
     block-size: var(--offer-category-nav-height);
     overflow-x: auto;
     padding-inline: clamp(12px, 3vw, 32px);
-    background: #161210;
     scrollbar-width: thin;
 }
 
@@ -26,28 +23,16 @@ body:has(.offer-category-nav) {
     list-style: none;
 }
 
-.offer-category-nav a {
-    display: flex;
+.offer-category-nav .nav-link {
     box-sizing: border-box;
-    align-items: center;
     block-size: 100%;
     padding-inline: 8px;
-    border-block-end: 2px solid transparent;
-    color: #f5ebe0;
-    font: 400 clamp(11px, 1vw, 14px)/1.2 "Cormorant Garamond", Georgia, serif;
-    letter-spacing: 0.09em;
+    color: var(--kampachi-header-ink);
     text-decoration: none;
-    text-transform: uppercase;
-    white-space: nowrap;
+    transition: color 180ms ease;
 }
 
-.offer-category-nav a:hover,
-.offer-category-nav a[aria-current] {
-    border-block-end-color: #e0c9aa;
-    color: #e0c9aa;
-}
-
-.offer-category-nav a:focus-visible {
+.offer-category-nav .nav-link:focus-visible {
     outline: 2px solid #e0c9aa;
     outline-offset: -3px;
 }

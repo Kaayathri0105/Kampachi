@@ -140,10 +140,10 @@ if (! defined('ABSPATH')) {
                     <?php foreach ($offerCategories as $key => $label) : ?>
                         <?php $categoryUrl = $key === 'all' ? $offerUrl : add_query_arg('offer_category', $key, $offerUrl); ?>
                         <li>
-                            <a href="<?php echo esc_url($categoryUrl . '#offer-categories'); ?>"
+                            <a class="nav-link" href="<?php echo esc_url($categoryUrl . '#offer-categories'); ?>"
                                data-offer-category-link="<?php echo esc_attr($key); ?>"
                                 <?php if ($key === $currentCategory) : ?>aria-current="true"<?php endif; ?>>
-                                <?php echo esc_html($label); ?>
+                                <?php echo kampachi_native_nav_label($label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                             </a>
                         </li>
                     <?php endforeach; ?>
