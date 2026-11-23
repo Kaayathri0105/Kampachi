@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kampachi\CMS;
 
+use Kampachi_Landings;
 use WP_Post;
 
 if (! defined('ABSPATH')) {
@@ -17,7 +18,7 @@ final class FooterNavigation
 {
     private const POST_TYPES = [
         'page', 'post', 'kc_offer', 'kc_sake', 'kc_outlet',
-        'kc_event', 'kc_job', 'kc_prefecture',
+        'kc_event', 'kc_job', 'kc_prefecture', Kampachi_Landings::POST_TYPE,
     ];
 
     public static function isConfigured(): bool
