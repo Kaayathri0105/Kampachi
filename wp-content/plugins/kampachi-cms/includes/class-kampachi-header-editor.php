@@ -16,67 +16,7 @@ if (! defined('ABSPATH')) {
  */
 final class Kampachi_Header_Editor
 {
-    /**
-     * Preserve pre-upgrade Japanese captions in the CMS settings once.
-     * The frontend always reads the saved `japanese_title` field after this.
-     */
-    public static function migrate_japanese_labels(): void
-    {
-        if (get_option('kc_header_japanese_migrated', false) !== false) {
-            return;
-        }
-
-        $settings = get_option('kampachi_cms_settings', []);
-        if (! is_array($settings) || ! isset($settings['header_nav_items'])
-            || ! is_array($settings['header_nav_items'])) {
-            return;
-        }
-
-        $changed = false;
-        foreach ($settings['header_nav_items'] as &$item) {
-            if (! is_array($item) || array_key_exists('japanese_title', $item)) {
-                continue;
-            }
-
-            $item['japanese_title'] = self::legacy_japanese_label((string) ($item['title'] ?? ''));
-            $changed = true;
-        }
-        unset($item);
-
-        if ($changed) {
-            update_option('kampachi_cms_settings', $settings, false);
-        }
-        add_option('kc_header_japanese_migrated', '1', '', false);
-    }
-
-    /**
-     * Original captions, solely for upgrading old menu data and seeding the
-     * first edit screen. Not consulted by frontend rendering on each request.
-     */
-    private static function legacy_japanese_label(string $title): string
-    {
-        $normalized = strtolower(trim(preg_replace('/\s+/u', ' ', $title) ?? $title));
-        $captions = [
-            'home' => 'トップページ',
-            'promotions' => 'プロモーション',
-            'promotion' => 'プロモーション',
-            'offers & events' => 'プロモーション',
-            'offers and events' => 'プロモーション',
-            'sake' => '日本酒',
-            '47in27' => '47都道府県',
-            '47 in 27' => '47都道府県',
-            'catering & events' => 'ケータリング・イベント',
-            'catering and events' => 'ケータリング・イベント',
-            'outlets' => '店舗案内',
-            'contact us' => 'お問い合わせ',
-            'about us' => '私たちについて',
-            'careers' => '採用情報',
-        ];
-
-        return $captions[$normalized] ?? '';
-    }
-
-    /** @return array<int, array{title: string, japanese_title?: string, url: string, children: array<int, array{title: string, url: string}>}> */
+    /** @return array<int, array{title: string, url: string, children: array<int, array{title: string, url: string}>}> */
     public static function menu_items(): array
     {
         $settings = get_option('kampachi_cms_settings', []);
@@ -99,7 +39,6 @@ final class Kampachi_Header_Editor
                     }
                     $row = [
                         'title' => (string) $item->title,
-                        'japanese_title' => self::legacy_japanese_label((string) $item->title),
                         'url' => (string) $item->url,
                     ];
                     $parentId = (int) $item->menu_item_parent;
@@ -125,7 +64,6 @@ final class Kampachi_Header_Editor
             if ($page instanceof WP_Post && $page->post_status === 'publish') {
                 $result[] = [
                     'title' => get_the_title($page),
-                    'japanese_title' => '',
                     'url' => get_permalink($page),
                     'children' => $children,
                 ];
@@ -133,7 +71,6 @@ final class Kampachi_Header_Editor
                 $type = get_post_type_object('kc_outlet');
                 $result[] = [
                     'title' => $type !== null ? $type->labels->name : '',
-                    'japanese_title' => '',
                     'url' => '',
                     'children' => $children,
                 ];
@@ -182,7 +119,7 @@ final class Kampachi_Header_Editor
         $outlets = Outlets::publishedLocations();
 
         echo '<section class="kc-header-section"><div class="kc-header-section-heading">';
-        echo '<h2><span class="kc-section-number">02</span> Header Navigation</h2><p>Set an English menu title and its Japanese caption separately. Both labels appear in the header. Leave the Japanese field blank to show English only. Reorder links with the drag handle.</p></div>';
+        echo '<h2><span class="kc-section-number">02</span> Header Navigation</h2><p>Set the title and link for each menu item. Reorder links with the drag handle.</p></div>';
         echo '<div id="kc-header-nav-list" class="kc-header-sortlist">';
         foreach ($nav as $item) {
             if (is_array($item)) {
@@ -220,8 +157,7 @@ final class Kampachi_Header_Editor
     {
         echo '<div class="kc-header-nav-item kc-header-sortable">';
         echo '<div class="kc-header-row"><span class="dashicons dashicons-move kc-header-handle" title="Drag to reorder"></span>';
-        echo '<label>English menu title<input type="text" class="regular-text" data-field="title" value="' . esc_attr((string) ($item['title'] ?? '')) . '" placeholder="e.g. Outlets" required></label>';
-        echo '<label>Japanese translation<input type="text" class="regular-text" data-field="japanese_title" value="' . esc_attr((string) ($item['japanese_title'] ?? '')) . '" placeholder="e.g. 店舗案内" lang="ja"></label>';
+        echo '<label>Menu title<input type="text" class="regular-text" data-field="title" value="' . esc_attr((string) ($item['title'] ?? '')) . '" placeholder="e.g. Outlets" required></label>';
         echo '<label>Link (leave blank for dropdown only)<input type="text" class="regular-text" data-field="url" value="' . esc_attr((string) ($item['url'] ?? '')) . '" placeholder="https://..."></label>';
         echo '<button type="button" class="button-link-delete kc-header-remove" aria-label="Remove menu">Remove</button></div>';
         echo '<div class="kc-header-subitems"><strong>Dropdown items</strong><div class="kc-header-child-list kc-header-sortlist">';
@@ -260,7 +196,7 @@ final class Kampachi_Header_Editor
     private static function templates(array $outlets): void
     {
         echo '<template id="kc-header-menu-template">';
-        self::render_nav_item(['title' => '', 'japanese_title' => '', 'url' => '', 'children' => []]);
+        self::render_nav_item(['title' => '', 'url' => '', 'children' => []]);
         echo '</template><template id="kc-header-child-template">';
         self::render_child_item(['title' => '', 'url' => '']);
         echo '</template><template id="kc-header-booking-template">';
@@ -268,7 +204,7 @@ final class Kampachi_Header_Editor
         echo '</template>';
     }
 
-    /** @param mixed $raw @return array<int, array{title: string, japanese_title: string, url: string, children: array<int, array{title: string, url: string}>}> */
+    /** @param mixed $raw @return array<int, array{title: string, url: string, children: array<int, array{title: string, url: string}>}> */
     public static function sanitize_nav(mixed $raw): array
     {
         if (! is_array($raw)) {
@@ -282,13 +218,6 @@ final class Kampachi_Header_Editor
             $title = isset($entry['title']) && is_string($entry['title']) ? sanitize_text_field($entry['title']) : '';
             if ($title === '') {
                 continue;
-            }
-            $japanese = isset($entry['japanese_title']) && is_string($entry['japanese_title'])
-                ? sanitize_text_field($entry['japanese_title']) : '';
-            if (function_exists('mb_substr')) {
-                $japanese = mb_substr($japanese, 0, 120);
-            } elseif (preg_match('/\A(.{0,120})/us', $japanese, $matches)) {
-                $japanese = $matches[1];
             }
             $url = isset($entry['url']) && is_string($entry['url']) ? self::safe_url($entry['url']) : '';
             $children = [];
@@ -305,7 +234,7 @@ final class Kampachi_Header_Editor
                 }
             }
             if ($url !== '' || $children !== []) {
-                $output[] = ['title' => $title, 'japanese_title' => $japanese, 'url' => $url, 'children' => $children];
+                $output[] = ['title' => $title, 'url' => $url, 'children' => $children];
             }
         }
         return $output;

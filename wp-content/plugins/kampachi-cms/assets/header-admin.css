@@ -50,7 +50,3 @@
     .kc-header-subitems { margin-left: 4px; }
     .kc-header-handle { align-self: start; }
 }
-
-/* Side-by-side editable bilingual menu labels. */
-.kc-header-nav-item .kc-header-row label:has([data-field="japanese_title"]) { min-width: 180px; }
-.kc-header-nav-item [data-field="japanese_title"] { font-family: "Yu Gothic", "Meiryo", sans-serif; }

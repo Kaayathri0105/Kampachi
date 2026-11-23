@@ -18,7 +18,6 @@ final class Kampachi_Shell_Settings
         'header' => [
             'header_logo_id' => ['Header logo', 'image'],
             'reservation_label' => ['CTA button title (Reservation)', 'text'],
-            'reservation_japanese' => ['CTA Japanese caption (optional)', 'text'],
             'reservation_enabled' => ['Show CTA button', 'checkbox'],
         ],
         'footer' => [
@@ -49,7 +48,6 @@ final class Kampachi_Shell_Settings
         add_action('admin_menu', [self::class, 'menus'], 45);
         add_action('admin_post_kc_save_shell_settings', [self::class, 'save']);
         add_action('admin_enqueue_scripts', [self::class, 'assets']);
-        add_action('init', [Kampachi_Header_Editor::class, 'migrate_japanese_labels'], 20);
         add_action('admin_post_kc_send_enquiry', [self::class, 'send_enquiry']);
         add_action('admin_post_nopriv_kc_send_enquiry', [self::class, 'send_enquiry']);
     }
