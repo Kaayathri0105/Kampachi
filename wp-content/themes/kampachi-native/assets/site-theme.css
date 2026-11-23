@@ -210,22 +210,24 @@ body {
     }
 }
 
+#site-header .reservation-trigger,
 .site-footer .footer-cta > a,
 .site-footer .kc-footer-enquiry-toggle {
     box-sizing: border-box;
     display: inline-flex;
-    width: min(100%, 230px);
-    min-height: 48px;
+    min-height: 48px !important;
     align-items: center;
     justify-content: space-between;
     gap: 18px;
-    border: 1px solid rgba(245, 235, 224, 0.72);
-    padding: 10px 21px;
+    border: 1px solid rgba(245, 235, 224, 0.72) !important;
+    border-radius: 0;
+    padding: 10px 21px !important;
+    background: transparent !important;
     color: #f5ebe0 !important;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.13em;
-    line-height: 1.3;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.13em !important;
+    line-height: 1.3 !important;
     text-decoration: none;
     text-transform: uppercase;
     text-align: start;
@@ -233,9 +235,34 @@ body {
     transition: background-color 180ms ease, color 180ms ease;
 }
 
+.site-footer .footer-cta > a {
+    width: min(100%, 230px);
+}
+
+#site-header .reservation-trigger {
+    min-width: 0 !important;
+    box-shadow: none;
+}
+
+#site-header .reservation-trigger .nav-label-jp:empty {
+    display: none;
+}
+
+#site-header .reservation-trigger .nav-label-jp {
+    display: block;
+}
+
+@media (max-width: 600px) {
+    #site-header .reservation-trigger {
+        gap: 10px;
+        padding-inline: 10px !important;
+        white-space: normal;
+    }
+}
+
 .site-footer .footer-cta > a:hover,
 .site-footer .footer-cta > a:focus-visible {
-    background: #f5ebe0;
+    background: #f5ebe0 !important;
     color: #000000 !important;
 }
 
@@ -256,7 +283,8 @@ body {
     display: none;
 }
 
-.site-footer .kc-footer-enquiry-chevron {
+.site-footer .kc-footer-enquiry-chevron,
+#site-header .reservation-chevron {
     flex: none;
     width: 9px;
     height: 9px;
@@ -265,16 +293,19 @@ body {
     transform: translateY(-2px) rotate(45deg);
 }
 
-.site-footer .kc-footer-enquiry[open] .kc-footer-enquiry-chevron {
+.site-footer .kc-footer-enquiry[open] .kc-footer-enquiry-chevron,
+#site-header .reservation-trigger[aria-expanded="true"] .reservation-chevron {
     transform: translateY(2px) rotate(225deg);
 }
 
+#site-header .reservation-trigger:is(:hover, :focus-visible, [aria-expanded="true"]),
 .site-footer .kc-footer-enquiry[open] .kc-footer-enquiry-toggle,
 .site-footer .kc-footer-enquiry-toggle:hover {
-    border-color: #f5ebe0;
-    background: #f5ebe0;
+    border-color: #f5ebe0 !important;
+    background: #f5ebe0 !important;
 }
 
+#site-header .reservation-trigger:is(:hover, :focus-visible, [aria-expanded="true"]),
 .site-footer .kc-footer-enquiry[open] .kc-footer-enquiry-toggle > span,
 .site-footer .kc-footer-enquiry-toggle:hover > span {
     color: #1c0e0e !important;

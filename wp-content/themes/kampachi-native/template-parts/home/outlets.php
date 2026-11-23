@@ -41,7 +41,7 @@ if ($outlets === []) {
                 </div>
             <?php endif; ?>
             <div class="outlets-grid<?php echo $hasCarousel ? ' outlets-grid--carousel' : ''; ?>" id="outlets-track"<?php if ($hasCarousel) : ?> tabindex="0" role="region" aria-label="Restaurants - scroll horizontally"<?php endif; ?>>
-                <?php foreach ($outlets as $index => $outlet) : ?>
+                <?php foreach ($outlets as $outlet) : ?>
                     <?php
                     $imageUrl = Homepage_Content::image($outlet->ID, 'outlet');
                     $excerpt = get_the_excerpt($outlet);
@@ -52,7 +52,6 @@ if ($outlets === []) {
                             <?php if ($imageUrl !== '') : ?>
                                 <img class="outlet-card__image" src="<?php echo esc_url($imageUrl); ?>" alt="<?php echo esc_attr($name); ?>" loading="lazy" decoding="async">
                             <?php endif; ?>
-                            <span class="outlet-card__number" aria-hidden="true"><?php echo esc_html(sprintf('%02d', $index + 1)); ?></span>
                         </div>
                         <div class="outlet-card__content">
                             <h3><?php echo esc_html($name); ?></h3>

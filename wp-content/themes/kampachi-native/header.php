@@ -82,10 +82,13 @@ if (! defined('ABSPATH')) {
             ?>
             <?php if (kampachi_setting('reservation_enabled', '1') !== '0' && $bookingLinks !== []) : ?>
                 <div class="reservation-wrap">
-                    <button class="reservation-link reservation-trigger" type="button" aria-controls="reservation-menu" aria-expanded="false"><?php echo kampachi_native_nav_label(
-                        kampachi_setting('reservation_label', 'RESERVATION'),
-                        kampachi_setting('reservation_japanese')
-                    ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
+                    <button class="reservation-link reservation-trigger" type="button" aria-controls="reservation-menu" aria-expanded="false">
+                        <span class="reservation-label"><?php echo kampachi_native_nav_label(
+                            kampachi_setting('reservation_label', 'RESERVATION'),
+                            kampachi_setting('reservation_japanese')
+                        ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+                        <span class="reservation-chevron" aria-hidden="true"></span>
+                    </button>
                     <div class="reservation-menu" id="reservation-menu" aria-label="Choose a Kampachi outlet" aria-hidden="true" inert hidden>
                         <?php foreach ($bookingLinks as $bookingLink) : ?>
                             <a class="reservation-option" href="<?php echo esc_url($bookingLink['url']); ?>"><?php echo esc_html($bookingLink['title']); ?></a>
