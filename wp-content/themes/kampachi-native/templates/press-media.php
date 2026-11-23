@@ -74,7 +74,18 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
         <section class="kc-press-section" aria-labelledby="press-highlights-title">
             <h2 id="press-highlights-title"><?php esc_html_e('Highlights', 'kampachi-native'); ?></h2>
             <div class="kc-press-carousel" data-press-carousel>
-                <div class="kc-press-track" id="press-highlights-track" tabindex="0"
+                <div class="kc-press-controls" data-press-controls hidden>
+                    <button type="button" data-press-previous aria-controls="press-highlights-track"
+                        aria-label="<?php esc_attr_e('Previous highlights', 'kampachi-native'); ?>">
+                        <span aria-hidden="true">&#8592;</span>
+                    </button>
+                    <button type="button" data-press-next aria-controls="press-highlights-track"
+                        aria-label="<?php esc_attr_e('Next highlights', 'kampachi-native'); ?>">
+                        <span aria-hidden="true">&#8594;</span>
+                    </button>
+                </div>
+                <div class="kc-press-track" id="press-highlights-track" tabindex="0" role="region"
+                    aria-roledescription="carousel"
                     aria-label="<?php esc_attr_e('Highlighted press articles', 'kampachi-native'); ?>">
                     <?php foreach ($highlights as $article) : ?>
                         <?php
@@ -85,7 +96,9 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                         ?>
                         <article class="kc-press-card">
                             <?php if ($image !== '') : ?>
-                                <img src="<?php echo esc_url($image); ?>" alt="" loading="lazy" decoding="async">
+                                <div class="kc-press-card-media">
+                                    <img src="<?php echo esc_url($image); ?>" alt="" loading="lazy" decoding="async">
+                                </div>
                             <?php endif; ?>
                             <div class="kc-press-card-body">
                                 <h3><?php echo esc_html($title); ?></h3>
@@ -93,7 +106,7 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                                     <p><?php echo esc_html($excerpt); ?></p>
                                 <?php endif; ?>
                                 <?php if ($url !== '') : ?>
-                                    <a class="kc-discover" href="<?php echo esc_url($url); ?>" target="_blank"
+                                    <a class="kc-discover kc-discover--card" href="<?php echo esc_url($url); ?>" target="_blank"
                                         rel="noopener noreferrer"
                                         aria-label="<?php echo esc_attr(sprintf(__('Discover %s', 'kampachi-native'), $title)); ?>">
                                         <?php echo esc_html(kampachi_native_label('discover')); ?>
@@ -102,12 +115,6 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                             </div>
                         </article>
                     <?php endforeach; ?>
-                </div>
-                <div class="kc-press-controls" data-press-controls hidden>
-                    <button type="button" data-press-previous aria-controls="press-highlights-track"
-                        aria-label="<?php esc_attr_e('Previous highlights', 'kampachi-native'); ?>">←</button>
-                    <button type="button" data-press-next aria-controls="press-highlights-track"
-                        aria-label="<?php esc_attr_e('Next highlights', 'kampachi-native'); ?>">→</button>
                 </div>
             </div>
         </section>

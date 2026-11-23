@@ -361,10 +361,6 @@ function kampachi_native_module_assets(): void
         'kampachi-modules' => 'assets/native-pages.js',
     ];
 
-    if ($slug === 'press-media') {
-        $scripts['kampachi-press-carousel'] = 'assets/press-media.js';
-    }
-
     if ($isCateringPage || is_singular('kc_event') || $isSakePage || is_singular('kc_sake') || is_singular('kc_outlet')) {
         $scripts['kampachi-catering-pages'] = 'assets/catering-pages.js';
     }

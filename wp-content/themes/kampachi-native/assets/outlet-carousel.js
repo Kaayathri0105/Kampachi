@@ -1,13 +1,13 @@
 (() => {
     'use strict';
 
-    document.querySelectorAll('.outlets-grid--carousel').forEach((track) => {
-        const section = track.closest('.outlets-section');
-        const controls = section?.querySelector('.outlets-carousel-controls');
-        const previous = controls?.querySelector('.outlets-carousel-prev');
-        const next = controls?.querySelector('.outlets-carousel-next');
+    document.querySelectorAll('.outlets-grid--carousel, .kc-press-track').forEach((track) => {
+        const container = track.closest('.kc-home-side-carousel, [data-press-carousel]');
+        const controls = container?.querySelector('.outlets-carousel-controls, [data-press-controls]');
+        const previous = controls?.querySelector('.outlets-carousel-prev, [data-press-previous]');
+        const next = controls?.querySelector('.outlets-carousel-next, [data-press-next]');
 
-        if (!previous || !next || track.children.length <= 3) {
+        if (!previous || !next || track.children.length < 2) {
             return;
         }
 
