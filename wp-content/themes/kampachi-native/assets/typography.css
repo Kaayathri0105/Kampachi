@@ -4,6 +4,7 @@
     --kampachi-font-family: "Libre Baskerville", "Noto Serif JP", Georgia, serif;
     --kampachi-font-body: 16px;
     --kampachi-font-paragraph: clamp(14px, 1vw, 16px);
+    --kampachi-font-link: 0.875rem;
     --kampachi-font-h1: clamp(24px, 2.2vw, 30px);
     --kampachi-font-h2: clamp(20px, 2vw, 28px);
     --kampachi-font-h3: clamp(17px, 1.7vw, 22px);
@@ -76,6 +77,16 @@ nav a,
 .reservation-trigger {
     font-size: 13px !important;
     line-height: 1.4 !important;
+}
+
+/* Use one size for content links across the module and legacy templates. */
+main a[href],
+main .page-numbers {
+    font-size: var(--kampachi-font-link) !important;
+}
+
+main :is(h1, h2, h3, h4, h5, h6) a[href] {
+    font-size: inherit !important;
 }
 
 button,

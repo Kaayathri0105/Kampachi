@@ -67,7 +67,7 @@ final class Kampachi_Master_Settings
         'h5_size' => '16',
         'paragraph_size' => '16',
         'span_size' => '16',
-        'link_size' => '16',
+        'link_size' => '14',
         'link_color' => '#7b2629',
         'link_underline' => '1',
         'smtp_enabled' => '0',
@@ -275,6 +275,7 @@ final class Kampachi_Master_Settings
         foreach (['h1' => 'H1', 'h2' => 'H2', 'h3' => 'H3', 'h4' => 'H4', 'h5' => 'H5', 'paragraph' => 'Paragraph', 'span' => 'Text span', 'link' => 'Hyperlink'] as $key => $label) {
             self::number_field($values, $key . '_size', $label . ' size (px)', 8, 100);
         }
+        echo '<tr><td colspan="2"><p class="description">Hyperlink size applies to content and footer links, card actions, and dropdown links on desktop and mobile.</p></td></tr>';
         self::color_field($values, 'link_color', 'Hyperlink text and underline colour');
         self::checkbox_field($values, 'link_underline', 'Underline hyperlinks');
         echo '</tbody></table>';
@@ -621,13 +622,14 @@ final class Kampachi_Master_Settings
             '--kampachi-font-family:' . $font . ';--kampachi-font-h1:' . $sizes['h1'] . 'px;--kampachi-font-h2:' . $sizes['h2'] . 'px;' .
             '--kampachi-font-h3:' . $sizes['h3'] . 'px;--kampachi-font-h4:' . $sizes['h4'] . 'px;--kampachi-font-h5:' . $sizes['h5'] . 'px;' .
             '--kampachi-font-paragraph:' . $sizes['paragraph'] . 'px;--kampachi-font-body:' . $sizes['paragraph'] . 'px;' .
+            '--kampachi-font-link:' . $sizes['link'] . 'px;' .
             '--kc-menu-gap:' . $menuGap . 'px;--kc-menu-font:' . $menuFont . ';--kc-menu-size:' . $menuSize . 'px;--kc-menu-color:' . $menuColor . ';}' .
             'html body,html body *:not(.dashicons):not(.ab-icon):not(.fa):not(.fas):not(.far):not(.fab):not(svg):not(svg *){font-family:var(--kampachi-font-family)!important;}' .
             'html body h1{font-size:var(--kampachi-font-h1)!important;}html body h2{font-size:var(--kampachi-font-h2)!important;}' .
             'html body h3{font-size:var(--kampachi-font-h3)!important;}html body h4{font-size:var(--kampachi-font-h4)!important;}' .
             'html body h5{font-size:var(--kampachi-font-h5)!important;}html body p{font-size:var(--kampachi-font-paragraph)!important;}' .
-            'html body main span:not([class]),html body .kampachi-editor-content span:not([class]){font-size:' . $sizes['span'] . 'px!important;}' .
-            'html body main a:not(.button):not(.btn):not([class]),html body .kampachi-editor-content a{font-size:' . $sizes['link'] . 'px!important;color:' . $linkColor . '!important;text-decoration:' . $underline . '!important;text-decoration-color:' . $linkColor . '!important;}' .
+            'html body main span:not([class],a *),html body .kampachi-editor-content span:not([class],a *){font-size:' . $sizes['span'] . 'px!important;}' .
+            'html body main a:not(.button):not(.btn):not([class]),html body .kampachi-editor-content a{color:' . $linkColor . '!important;text-decoration:' . $underline . '!important;text-decoration-color:' . $linkColor . '!important;}' .
             '.site-header,.site-header:not(.is-scrolled){background:' . $before . '!important;backdrop-filter:blur(' . $beforeBlur . 'px)!important;-webkit-backdrop-filter:blur(' . $beforeBlur . 'px)!important;}' .
             '.site-header.is-scrolled{background:' . $after . '!important;backdrop-filter:blur(' . $afterBlur . 'px)!important;-webkit-backdrop-filter:blur(' . $afterBlur . 'px)!important;}' .
             '.menu-overlay .nav-list{gap:var(--kc-menu-gap)!important;}' .

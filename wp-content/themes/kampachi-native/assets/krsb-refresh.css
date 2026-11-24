@@ -78,7 +78,11 @@ body:has(.header-section-nav) .kc-catering-page:not(:has(> .kc-shared-hero))
 .site-header .reservation-option {
     color: #fff !important;
     font-family: var(--kampachi-krsb-type) !important;
-    font-size: 16px !important;
+}
+
+#site-header :is(.reservation-option, .language-option),
+#site-menu :is(.nav-sublink, .sub-menu a) {
+    font-size: var(--kampachi-font-link) !important;
 }
 
 .site-header .reservation-option:hover,
@@ -98,7 +102,6 @@ body:has(.header-section-nav) .kc-catering-page:not(:has(> .kc-shared-hero))
 .menu-overlay.is-scrolled .nav-sublink {
     color: #f5f0ea !important;
     font-family: var(--kampachi-krsb-type) !important;
-    font-size: 16px !important;
 }
 
 .site-footer,

@@ -31,7 +31,7 @@ body {
     border: 1px solid #241d19;
     border-radius: 0;
     color: #241d19;
-    font-size: 0.8125rem;
+    font-size: var(--kampachi-font-link);
     letter-spacing: 0.12em;
     overflow-wrap: anywhere;
     text-decoration: none;
@@ -139,12 +139,21 @@ body {
 .site-footer .footer-address address,
 .site-footer .footer-contact > a {
     color: rgba(245, 235, 224, 0.86) !important;
-    font-size: 13px !important;
     font-style: normal !important;
     font-weight: 400 !important;
     letter-spacing: 0.015em !important;
     line-height: 1.75 !important;
     text-decoration: none !important;
+}
+
+.site-footer .footer-brand,
+.site-footer .footer-links a,
+.site-footer .footer-contact > a {
+    font-size: var(--kampachi-font-link) !important;
+}
+
+.site-footer .footer-address address {
+    font-size: 13px !important;
 }
 
 .site-footer .footer-links a:hover,
@@ -483,6 +492,7 @@ body .site-footer .footer-bottom {
 
 .site-footer .footer-privacy {
     flex: none;
+    font-size: var(--kampachi-font-link) !important;
     margin-inline-start: auto !important;
     text-align: end !important;
     white-space: nowrap;
@@ -541,9 +551,12 @@ body .site-footer .footer-bottom {
     .site-footer .footer-links a,
     .site-footer .footer-address address,
     .site-footer .footer-contact > a {
-        font-size: 12px !important;
         line-height: 1.65 !important;
         overflow-wrap: anywhere;
+    }
+
+    .site-footer .footer-address address {
+        font-size: 12px !important;
     }
 
     .site-footer .footer-contact {
