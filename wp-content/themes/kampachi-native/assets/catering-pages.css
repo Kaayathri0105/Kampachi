@@ -25,7 +25,7 @@
 .kc-catering-card h2{font-family:"Cormorant Garamond","Noto Serif JP",Georgia,serif;font-weight:400;line-height:1.17;font-size:clamp(22px,2.3vw,30px);margin:0 0 15px}
 .kc-catering-card-description{font-size:15px;line-height:1.8;color:#60554d;margin:0 0 24px}
 .kc-catering-available-outlets{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;margin-top:auto;padding:0 0 19px;font:11px/1.7 Arial,sans-serif}
-.kc-catering-available-outlets span{font-weight:600;color:#55483d}
+.kc-catering-available-outlets>span{flex-basis:100%;font-weight:600;color:#55483d}
 .kc-catering-available-outlets a{color:#77463c;text-decoration:underline;text-underline-offset:3px}
 .kc-catering-empty{padding:35px;color:#65574e;text-align:center}
 .kc-catering-values{padding:clamp(15px,2vw,30px) 0 clamp(95px,12vw,180px)}
