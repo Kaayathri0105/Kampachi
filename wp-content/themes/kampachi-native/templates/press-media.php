@@ -23,7 +23,7 @@ $postType = $isAwards ? Awards::class : Press::class;
 $landingUrl = get_permalink($pageId) ?: home_url('/' . $postType::PAGE_SLUG . '/');
 $prefix = $isAwards ? 'award' : 'press';
 $searchKey = $prefix . '_search';
-$sortKey = $prefix . '_order';
+$yearKey = $prefix . '_year';
 $pageKey = $prefix . '_page';
 $issuerKey = $isAwards ? 'award_organisation' : 'press_publication';
 $dateKey = $isAwards ? 'award_year' : 'press_original_date';
@@ -31,12 +31,19 @@ $moduleClass = $isAwards ? 'kc-module-awards-accolades kc-awards-page' : 'kc-mod
 $search = $_GET[$searchKey] ?? '';
 $search = is_string($search) ? sanitize_text_field(wp_unslash($search)) : '';
 $normalizedSearch = str_replace('’', "'", $search);
-$sort = ($_GET[$sortKey] ?? '') === 'oldest' ? 'oldest' : 'newest';
+$requestedYear = $_GET[$yearKey] ?? '';
+$selectedYear = is_string($requestedYear) && preg_match('/\A[1-9]\d{3}\z/', $requestedYear)
+    ? (int) $requestedYear
+    : 0;
 $requestedPage = $_GET[$pageKey] ?? 1;
 $pageNumber = is_scalar($requestedPage) ? max(1, (int) $requestedPage) : 1;
 $perPage = 12;
 $highlights = [];
 $archive = [];
+$availableYears = [];
+$yearPattern = $isAwards
+    ? '/(?<!\d)([1-9]\d{3})(?!\d)(?:\s*[-–—]\s*([1-9]\d{3})(?!\d))?/u'
+    : '/(?<!\d)([1-9]\d{3})(?!\d)/';
 
 foreach ($landingEditor::posts($pageId) as $article) {
     if ($landingEditor::isHighlight($article->ID)) {
@@ -47,9 +54,20 @@ foreach ($landingEditor::posts($pageId) as $article) {
     $title = html_entity_decode(wp_strip_all_tags($article->post_title), ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $publication = kampachi_native_meta($article->ID, $issuerKey);
     $date = kampachi_native_meta($article->ID, $dateKey);
-    $sortYear = preg_match_all('/\b[1-9]\d{3}\b/', $date, $years)
-        ? (int) max($years[0])
-        : (int) get_the_date('Y', $article);
+    preg_match_all($yearPattern, $date, $matches, PREG_SET_ORDER);
+    $years = [];
+    foreach ($matches as $match) {
+        $start = (int) $match[1];
+        $end = (int) ($match[2] ?? $start);
+        $years += array_fill_keys(range($start, $end), true);
+    }
+
+    if ($years === []) {
+        $fallbackYear = (int) get_the_date('Y', $article);
+        $years = $fallbackYear > 0 ? [$fallbackYear => true] : [];
+    }
+
+    $availableYears += $years;
 
     if ($date === '') {
         $date = get_the_date($isAwards ? 'Y' : '', $article);
@@ -64,18 +82,24 @@ foreach ($landingEditor::posts($pageId) as $article) {
         'post' => $article,
         'publication' => $publication,
         'date' => $date,
-        'sortYear' => $sortYear,
+        'years' => $years,
+        'sortYear' => max([0, ...array_keys($years)]),
     ];
 }
 
-usort($archive, static function (array $left, array $right) use ($sort): int {
+krsort($availableYears, SORT_NUMERIC);
+$selectedYear = isset($availableYears[$selectedYear]) ? $selectedYear : 0;
+if ($selectedYear !== 0) {
+    $archive = array_filter($archive, static fn (array $entry): bool => isset($entry['years'][$selectedYear]));
+}
+
+usort($archive, static function (array $left, array $right): int {
     $a = $left['post'];
     $b = $right['post'];
-    $order = ($left['sortYear'] <=> $right['sortYear'])
-        ?: strcmp($a->post_date, $b->post_date)
-        ?: ($a->ID <=> $b->ID);
 
-    return $sort === 'oldest' ? $order : -$order;
+    return ($right['sortYear'] <=> $left['sortYear'])
+        ?: strcmp($b->post_date, $a->post_date)
+        ?: ($b->ID <=> $a->ID);
 });
 
 $resultCount = count($archive);
@@ -87,7 +111,7 @@ $pagination = $pageCount > 1 ? paginate_links([
     'format' => '',
     'current' => $pageNumber,
     'total' => $pageCount,
-    'add_args' => array_filter([$searchKey => $search, $sortKey => $sort]),
+    'add_args' => array_filter([$searchKey => $search, $yearKey => $selectedYear]),
     'add_fragment' => '#press-archive',
     'prev_text' => __('Previous', 'kampachi-native'),
     'next_text' => __('Next', 'kampachi-native'),
@@ -166,14 +190,14 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                     value="<?php echo esc_attr($search); ?>">
             </div>
             <div>
-                <label for="press-order"><?php esc_html_e('Sort by year', 'kampachi-native'); ?></label>
-                <select id="press-order" name="<?php echo esc_attr($sortKey); ?>">
-                    <option value="newest"<?php selected($sort, 'newest'); ?>>
-                        <?php esc_html_e('Newest to oldest', 'kampachi-native'); ?>
-                    </option>
-                    <option value="oldest"<?php selected($sort, 'oldest'); ?>>
-                        <?php esc_html_e('Oldest to newest', 'kampachi-native'); ?>
-                    </option>
+                <label for="press-year"><?php esc_html_e('Year', 'kampachi-native'); ?></label>
+                <select id="press-year" name="<?php echo esc_attr($yearKey); ?>">
+                    <option value=""><?php esc_html_e('All years', 'kampachi-native'); ?></option>
+                    <?php foreach (array_keys($availableYears) as $year) : ?>
+                        <option value="<?php echo esc_attr((string) $year); ?>"<?php selected($selectedYear, $year); ?>>
+                            <?php echo esc_html((string) $year); ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
         </form>

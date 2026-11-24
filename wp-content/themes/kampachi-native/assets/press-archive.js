@@ -61,7 +61,7 @@
     const search = form.querySelector('#press-search');
     search.addEventListener('input', queueSearch);
     search.addEventListener('compositionend', queueSearch);
-    form.querySelector('#press-order').addEventListener('change', updateResults);
+    form.querySelector('select')?.addEventListener('change', updateResults);
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         updateResults();
