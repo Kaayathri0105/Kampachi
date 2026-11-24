@@ -1331,6 +1331,18 @@ $selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selected
             display: none !important;
         }
 
+        .promotion-card-link {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .promotion-card-link:focus-visible {
+            outline-offset: -3px;
+        }
+
         .promotion-pagination[hidden],
         .promotion-empty-state[hidden] {
             display: none;
@@ -1734,20 +1746,26 @@ $selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selected
                                 data-promotion-date="<?php echo esc_attr($promotionCard['date']); ?>"
                                 data-promotion-title="<?php echo esc_attr($promotionCard['title']); ?>"
                             >
-                                <div class="promotion-card-image">
-                                    <?php if ($promotionCard['image'] !== '') : ?>
-                                        <img src="<?php echo esc_url($promotionCard['image']); ?>" alt="<?php echo esc_attr($promotionCard['title']); ?>" loading="lazy" decoding="async">
-                                    <?php else : ?>
-                                        <span class="promotion-card-placeholder" aria-hidden="true"></span>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="promotion-card-body">
-                                    <h2><?php echo esc_html($promotionCard['title']); ?></h2>
-                                    <?php if ($promotionCard['description'] !== '') : ?>
-                                        <p class="promotion-card-description"><?php echo esc_html($promotionCard['description']); ?></p>
-                                    <?php endif; ?>
-                                    <a class="kc-discover kc-discover--card" href="<?php echo esc_url($promotionCard['url']); ?>" aria-label="<?php echo esc_attr('Discover ' . $promotionCard['title']); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?></a>
-                                </div>
+                                <a
+                                    class="promotion-card-link"
+                                    href="<?php echo esc_url($promotionCard['url']); ?>"
+                                    aria-label="<?php echo esc_attr(kampachi_native_label('discover') . ' ' . $promotionCard['title']); ?>"
+                                >
+                                    <div class="promotion-card-image">
+                                        <?php if ($promotionCard['image'] !== '') : ?>
+                                            <img src="<?php echo esc_url($promotionCard['image']); ?>" alt="<?php echo esc_attr($promotionCard['title']); ?>" loading="lazy" decoding="async">
+                                        <?php else : ?>
+                                            <span class="promotion-card-placeholder" aria-hidden="true"></span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="promotion-card-body">
+                                        <h2><?php echo esc_html($promotionCard['title']); ?></h2>
+                                        <?php if ($promotionCard['description'] !== '') : ?>
+                                            <p class="promotion-card-description"><?php echo esc_html($promotionCard['description']); ?></p>
+                                        <?php endif; ?>
+                                        <span class="kc-discover kc-discover--card"><?php echo esc_html(kampachi_native_label('discover')); ?></span>
+                                    </div>
+                                </a>
                             </article>
                         <?php endforeach; ?>
                     </div>
