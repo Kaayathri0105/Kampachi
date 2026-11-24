@@ -232,7 +232,7 @@ abstract class CollectionLanding
         static::renderHero($page);
         echo '</section>';
 
-        self::renderIntroduction($page->ID);
+        self::renderIntroduction($page);
         self::renderItems($page->ID);
         self::renderSeo($page);
         echo '<div class="kc-save-bar"><strong>' . esc_html(static::TITLE) . '</strong>';
@@ -310,8 +310,9 @@ abstract class CollectionLanding
         return static::ITEMS_LABEL !== '' ? static::ITEMS_LABEL : static::KEY;
     }
 
-    private static function renderIntroduction(int $pageId): void
+    private static function renderIntroduction(WP_Post $page): void
     {
+        $pageId = $page->ID;
         $title = (string) get_post_meta($pageId, '_kampachi_intro_title', true);
         $subtitle = (string) get_post_meta($pageId, '_kampachi_intro_subtitle', true);
         $body = (string) get_post_meta($pageId, '_kampachi_intro_description', true);
@@ -322,13 +323,39 @@ abstract class CollectionLanding
         echo '<div class="kc-field"><label class="kc-label" for="kc-collection-subheading">Subheading</label>';
         echo '<textarea class="widefat" id="kc-collection-subheading" name="kampachi_landing[intro_subtitle]" rows="2">'
             . esc_textarea($subtitle) . '</textarea></div>';
-        echo '<div class="kc-field"><label class="kc-label" for="kc_collection_intro_body">Introduction Body</label>';
-        wp_editor($body, 'kc_collection_intro_body', [
-            'textarea_name' => 'kampachi_landing[intro_description]',
+
+        if (static::HAS_BODY_EDITOR) {
+            if (trim($body) !== '') {
+                self::renderIntroEditor(
+                    $body,
+                    'kc_collection_intro_summary',
+                    'intro_description',
+                    __('Introduction Summary', 'kampachi-cms')
+                );
+            }
+            echo '<input type="hidden" name="kampachi_landing[page_content_version]" value="'
+                . esc_attr(hash('sha256', $page->post_content)) . '">';
+        }
+
+        self::renderIntroEditor(
+            static::HAS_BODY_EDITOR ? $page->post_content : $body,
+            'kc_collection_intro_body',
+            static::HAS_BODY_EDITOR ? 'page_content' : 'intro_description',
+            __('Introduction Body', 'kampachi-cms')
+        );
+        echo '</section>';
+    }
+
+    private static function renderIntroEditor(string $body, string $id, string $field, string $label): void
+    {
+        echo '<div class="kc-field"><label class="kc-label" for="' . esc_attr($id) . '">'
+            . esc_html($label) . '</label>';
+        wp_editor($body, $id, [
+            'textarea_name' => 'kampachi_landing[' . $field . ']',
             'textarea_rows' => 7,
             'media_buttons' => current_user_can('upload_files'),
         ]);
-        echo '</div></section>';
+        echo '</div>';
     }
 
     private static function renderItems(int $pageId): void
@@ -473,6 +500,9 @@ abstract class CollectionLanding
         $landing = isset($_POST['kampachi_landing']) && is_array($_POST['kampachi_landing'])
             ? wp_unslash($_POST['kampachi_landing'])
             : [];
+        if (static::HAS_BODY_EDITOR) {
+            self::savePageContent($page, $landing);
+        }
         static::saveLandingFields($page, $landing);
         Seo::savePost($page->ID, $page);
 
@@ -484,6 +514,28 @@ abstract class CollectionLanding
 
         wp_safe_redirect(add_query_arg('updated', '1', static::adminUrl()));
         exit;
+    }
+
+    private static function savePageContent(WP_Post $page, array $landing): void
+    {
+        $content = $landing['page_content'] ?? null;
+        $version = $landing['page_content_version'] ?? null;
+        if (! is_string($content) || $content === $page->post_content || hash('sha256', $content) === $version) {
+            return;
+        }
+
+        if (hash('sha256', $page->post_content) !== $version) {
+            wp_die(
+                esc_html__('The page content has changed. Reload the landing editor before saving it again.', 'kampachi-cms'),
+                '',
+                ['response' => 409]
+            );
+        }
+
+        $updated = wp_update_post(wp_slash(['ID' => $page->ID, 'post_content' => $content]), true);
+        if (is_wp_error($updated)) {
+            wp_die(esc_html($updated->get_error_message()));
+        }
     }
 
     protected static function saveLandingFields(WP_Post $page, array $landing): void
