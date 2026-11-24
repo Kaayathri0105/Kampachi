@@ -47,12 +47,9 @@ foreach ($landingEditor::posts($pageId) as $article) {
     $title = html_entity_decode(wp_strip_all_tags($article->post_title), ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $publication = kampachi_native_meta($article->ID, $issuerKey);
     $date = kampachi_native_meta($article->ID, $dateKey);
-    $sortYear = 0;
-    if ($isAwards) {
-        $sortYear = preg_match_all('/\b[1-9]\d{3}\b/', $date, $years)
-            ? (int) max($years[0])
-            : (int) get_the_date('Y', $article);
-    }
+    $sortYear = preg_match_all('/\b[1-9]\d{3}\b/', $date, $years)
+        ? (int) max($years[0])
+        : (int) get_the_date('Y', $article);
 
     if ($date === '') {
         $date = get_the_date($isAwards ? 'Y' : '', $article);
@@ -169,7 +166,7 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                     value="<?php echo esc_attr($search); ?>">
             </div>
             <div>
-                <label for="press-order"><?php echo esc_html($isAwards ? __('Sort by year', 'kampachi-native') : __('Sort by date', 'kampachi-native')); ?></label>
+                <label for="press-order"><?php esc_html_e('Sort by year', 'kampachi-native'); ?></label>
                 <select id="press-order" name="<?php echo esc_attr($sortKey); ?>">
                     <option value="newest"<?php selected($sort, 'newest'); ?>>
                         <?php esc_html_e('Newest to oldest', 'kampachi-native'); ?>
