@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 use Kampachi\CMS\Awards;
+use Kampachi\CMS\CareersLanding;
 use Kampachi\CMS\Press;
 
 if (! defined('ABSPATH')) {
@@ -214,18 +215,17 @@ final class Kampachi_CMS
             13
         );
 
-        // Careers is provided by the kc_job post type, while its landing
-        // page remains editable from the Careers module submenu.
-        add_submenu_page(
+        $careersHook = add_submenu_page(
             'edit.php?post_type=kc_job',
             'Careers Landing Page',
-            'Careers Page',
+            'Landing Page',
             'edit_pages',
             'kampachi-careers-landing',
-            static function (): void {
-                self::render_page_module('Careers', 'careers');
-            }
+            [CareersLanding::class, 'render']
         );
+        if ($careersHook !== false) {
+            add_action('load-' . $careersHook, [CareersLanding::class, 'load']);
+        }
 
         add_menu_page(
             'About Kampachi',
@@ -420,6 +420,7 @@ require_once __DIR__ . '/includes/class-kampachi-homepage.php';
 require_once __DIR__ . '/includes/class-kampachi-47in27.php';
 require_once __DIR__ . '/includes/class-kampachi-landings.php';
 require_once __DIR__ . '/includes/class-kampachi-collection-landing.php';
+require_once __DIR__ . '/includes/class-kampachi-careers-landing.php';
 require_once __DIR__ . '/includes/class-kampachi-offers-landing.php';
 require_once __DIR__ . '/includes/class-kampachi-outlets-landing.php';
 require_once __DIR__ . '/includes/class-kampachi-press-landing.php';
@@ -526,6 +527,7 @@ Awards::boot();
 \Kampachi\CMS\OutletsLanding::boot();
 \Kampachi\CMS\PressLanding::boot();
 \Kampachi\CMS\AwardsLanding::boot();
+CareersLanding::boot();
 Kampachi_Master_Settings::boot();
 \Kampachi\CMS\WPConfigManager::boot();
 Kampachi_GitHub_Sync::boot();

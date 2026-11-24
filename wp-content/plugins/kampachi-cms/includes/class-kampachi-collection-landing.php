@@ -25,6 +25,7 @@ abstract class CollectionLanding
     protected const TAXONOMY = '';
     protected const HAS_ARCHIVE = false;
     protected const HIGHLIGHT_META = '';
+    protected const HAS_BODY_EDITOR = false;
 
     private static function action(): string
     {
@@ -190,6 +191,10 @@ abstract class CollectionLanding
             echo '<a class="button kc-view-site" href="' . esc_url($url) . '" target="_blank" rel="noopener">';
             echo $page->post_status === 'publish' ? 'View landing page' : 'Preview landing page';
             echo '</a>';
+            if (static::HAS_BODY_EDITOR) {
+                echo '<a class="button" href="' . esc_url(get_edit_post_link($page->ID, 'raw') ?: '') . '">'
+                    . esc_html__('Edit full page content', 'kampachi-cms') . '</a>';
+            }
         }
         echo '</header>';
 
@@ -296,7 +301,7 @@ abstract class CollectionLanding
             }
         }
 
-        wp_safe_redirect(self::adminUrl());
+        wp_safe_redirect(static::adminUrl());
         exit;
     }
 
@@ -477,7 +482,7 @@ abstract class CollectionLanding
             self::saveItems($page->ID, $raw);
         }
 
-        wp_safe_redirect(add_query_arg('updated', '1', self::adminUrl()));
+        wp_safe_redirect(add_query_arg('updated', '1', static::adminUrl()));
         exit;
     }
 
