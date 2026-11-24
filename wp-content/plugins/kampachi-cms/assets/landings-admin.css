@@ -1,0 +1,29 @@
+.kc-landing-image-thumbnails {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 8px 0 16px;
+    padding: 0;
+    list-style: none;
+}
+
+.kc-landing-image-thumbnails:empty {
+    display: none;
+}
+
+.kc-landing-image-thumbnails li {
+    width: 144px;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.kc-landing-image-thumbnails img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    background: #f0f0f1;
+    object-fit: contain;
+}

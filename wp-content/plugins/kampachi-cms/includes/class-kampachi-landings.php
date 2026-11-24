@@ -273,6 +273,12 @@ final class Kampachi_Landings
     public static function enqueue_media(): void
     {
         wp_enqueue_media();
+        wp_enqueue_style(
+            'kampachi-landings-admin',
+            plugins_url('../assets/landings-admin.css', __FILE__),
+            [],
+            (string) filemtime(dirname(__DIR__) . '/assets/landings-admin.css')
+        );
         wp_enqueue_script(
             'kampachi-landings-admin',
             plugins_url('../assets/landings-admin.js', __FILE__),
@@ -341,6 +347,21 @@ final class Kampachi_Landings
         echo '<button class="button kc-landing-media-picker" type="button" data-field="kc-landing-images" data-type="image" data-multiple="1">Choose hero images</button> ';
         echo '<button class="button kc-landing-media-clear" type="button" data-field="kc-landing-images">Clear</button>';
         echo '<p id="kc-landing-images-preview" class="description">' . esc_html($slideIds ? count($slideIds) . ' selected images' : 'No hero images selected') . '</p>';
+        echo '<ul id="kc-landing-images-thumbnails" class="kc-landing-image-thumbnails" role="list" aria-label="'
+            . esc_attr__('Selected hero images', 'kampachi-cms') . '">';
+        foreach ($slideIds as $slideId) {
+            $image = wp_get_attachment_image($slideId, 'medium', false, ['alt' => '']);
+            if ($image === '') {
+                continue;
+            }
+
+            /* translators: %d is the attachment ID. */
+            $title = get_the_title($slideId) ?: sprintf(__('Image #%d', 'kampachi-cms'), $slideId);
+            echo '<li>';
+            echo $image; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by WordPress.
+            echo '<span>' . esc_html($title) . '</span></li>';
+        }
+        echo '</ul>';
         HeroMotion::editor($post->ID, 'kampachi_landing[hero_image_ids]');
         echo '</div>';
     }
