@@ -78,7 +78,7 @@ $total = $sakes->post_count;
                                                 $summary = get_the_excerpt($sakeId);
 
                         ?>
-                        <article class="kc-catering-card kc-sake-card">
+                        <article class="kc-catering-card kc-sake-card kc-linked-card">
                             <div class="kc-catering-card-image" data-kc-carousel>
                                 <?php foreach ($images as $index => $image) : ?>
                                     <img class="kc-catering-card-photo<?php echo $index === 0 ? ' is-active' : ''; ?>" data-kc-image src="<?php echo esc_url($image['url']); ?>" alt="<?php echo esc_attr($image['alt'] ?: $name); ?>" loading="lazy" <?php if ($index > 0) : ?>aria-hidden="true"<?php endif; ?>>
@@ -97,7 +97,7 @@ $total = $sakes->post_count;
                                 <h2><?php echo esc_html($name); ?></h2>
                                 <?php if ($summary !== '') : ?><p class="kc-catering-card-description"><?php echo esc_html($summary); ?></p><?php endif; ?>
 
-                                <a class="kc-discover kc-discover--card" href="<?php echo esc_url(get_permalink($sakeId)); ?>" aria-label="<?php echo esc_attr(sprintf('Discover bottles from %s', $name)); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?></a>
+                                <a class="kc-discover kc-discover--card kc-linked-card-link" href="<?php echo esc_url(get_permalink($sakeId)); ?>" aria-label="<?php echo esc_attr(sprintf('Discover bottles from %s', $name)); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?></a>
                             </div>
                         </article>
                     <?php endwhile; ?>

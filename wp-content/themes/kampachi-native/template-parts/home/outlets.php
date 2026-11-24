@@ -47,7 +47,7 @@ if ($outlets === []) {
                     $excerpt = get_the_excerpt($outlet);
                     $name = Outlets::locationName($outlet);
                     ?>
-                    <article class="outlet-card">
+                    <article class="outlet-card kc-linked-card">
                         <div class="outlet-card__media">
                             <?php if ($imageUrl !== '') : ?>
                                 <img class="outlet-card__image" src="<?php echo esc_url($imageUrl); ?>" alt="<?php echo esc_attr($name); ?>" loading="lazy" decoding="async">
@@ -56,7 +56,7 @@ if ($outlets === []) {
                         <div class="outlet-card__content">
                             <h3><?php echo esc_html($name); ?></h3>
                             <?php if ($excerpt !== '') : ?><p class="outlet-card__description"><?php echo esc_html($excerpt); ?></p><?php endif; ?>
-                            <a class="kc-discover kc-discover--card" href="<?php echo esc_url(get_permalink($outlet)); ?>" aria-label="<?php echo esc_attr('Discover Kampachi at ' . $name); ?>">
+                            <a class="kc-discover kc-discover--card kc-linked-card-link" href="<?php echo esc_url(get_permalink($outlet)); ?>" aria-label="<?php echo esc_attr('Discover Kampachi at ' . $name); ?>">
                                 <?php echo esc_html(kampachi_native_label('discover')); ?>
                             </a>
                         </div>

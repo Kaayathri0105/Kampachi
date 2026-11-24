@@ -43,14 +43,18 @@ $perView = Homepage_Content::items_per_view(
                     <?php
                     $imageUrl = Homepage_Content::image($offer->ID, 'offer');
                     $description = get_the_excerpt($offer);
+                    $discover = kampachi_native_label('discover');
                     ?>
-                    <article class="experience-card"<?php echo $index >= $perView ? ' hidden' : ''; ?>>
+                    <article class="experience-card kc-linked-card"<?php echo $index >= $perView ? ' hidden' : ''; ?>>
                         <?php if ($imageUrl !== '') : ?>
                             <img src="<?php echo esc_url($imageUrl); ?>" alt="<?php echo esc_attr($offer->post_title); ?>" loading="lazy" decoding="async">
                         <?php endif; ?>
                         <h3><?php echo esc_html($offer->post_title); ?></h3>
                         <p><?php echo esc_html(wp_strip_all_tags($description)); ?></p>
-                        <a class="kc-discover" href="<?php echo esc_url(get_permalink($offer)); ?>"><?php echo esc_html(kampachi_native_label('discover')); ?></a>
+                        <a class="kc-discover kc-linked-card-link" href="<?php echo esc_url(get_permalink($offer)); ?>"
+                            aria-label="<?php echo esc_attr($discover . ' ' . get_the_title($offer)); ?>">
+                            <?php echo esc_html($discover); ?>
+                        </a>
                     </article>
                 <?php endforeach; ?>
             </div>

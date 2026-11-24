@@ -31,8 +31,7 @@ body:not(.home){background:var(--kc-paper)!important;color:var(--kc-ink)}
 .kc-card-placeholder{display:grid;place-items:center;width:100%;height:100%;font-size:24px;letter-spacing:.17em;color:#7d7069}
 .kc-module-badge{position:absolute;bottom:16px;left:16px;padding:9px 14px;background:#f5ebe0;color:#3c302a;font:11px Arial,sans-serif;letter-spacing:.04em}
 .kc-module-card-content{display:flex;flex:1;flex-direction:column;align-items:start;padding:23px 2px 15px}
-.kc-module-card h2{font-size:clamp(20px,2vw,25px);line-height:1.4;font-weight:400;margin:10px 0 12px}
-.kc-module-card h2 a{text-decoration:none;color:var(--kc-ink)}
+.kc-module-card h2{font-size:clamp(20px,2vw,25px);line-height:1.4;font-weight:400;margin:10px 0 12px;color:var(--kc-ink)}
 .kc-module-card-content>p:not(.kc-card-kicker){font-size:14px;line-height:1.85;color:#71645c;margin:0 0 22px}
 .kc-card-kicker{margin:0;color:#9d794f;font-size:10px}
 .kc-filter-nav{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:-12px auto 44px}

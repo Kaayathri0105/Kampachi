@@ -94,8 +94,9 @@ foreach (Catering::hero_media_ids($heroOwnerId) as $mediaId) {
                         $eventSubtitle = Catering::event_field($eventId, 'subtitle');
                         $eventBadge = Catering::event_field($eventId, 'label');
                         $ctaLabel = Catering::event_field($eventId, 'cta_label') ?: kampachi_native_label('discover');
-                        $ctaCustom = Catering::event_field($eventId, 'cta_url');
-                        $ctaUrl = $ctaCustom !== '' ? $ctaCustom : get_permalink($eventId);
+                        $eventUrl = get_permalink($eventId);
+                        $ctaUrl = Catering::event_field($eventId, 'cta_url') ?: $eventUrl;
+                        $hasCustomCta = $ctaUrl !== $eventUrl;
                         $summary = get_the_excerpt($eventId);
                         $eventImages = [];
                         foreach (Catering::image_ids(get_post_meta($eventId, '_kampachi_event_image_ids', true)) as $imageId) {
@@ -115,7 +116,7 @@ foreach (Catering::hero_media_ids($heroOwnerId) as $mediaId) {
                         }
                         $outletIds = Catering::outlet_ids($eventId);
                         ?>
-                        <article class="kc-catering-card">
+                        <article class="kc-catering-card kc-linked-card">
                             <div class="kc-catering-card-image" data-kc-carousel>
                                 <?php foreach ($eventImages as $index => $image) : ?>
                                     <img
@@ -138,17 +139,27 @@ foreach (Catering::hero_media_ids($heroOwnerId) as $mediaId) {
                             </div>
                             <div class="kc-catering-card-body">
 
-                                <h2><?php echo esc_html($eventTitle); ?></h2>
+                                <h2>
+                                    <?php if ($hasCustomCta) : ?>
+                                        <a class="kc-linked-card-link" href="<?php echo esc_url($eventUrl); ?>">
+                                            <?php echo esc_html($eventTitle); ?>
+                                        </a>
+                                    <?php else : ?>
+                                        <?php echo esc_html($eventTitle); ?>
+                                    <?php endif; ?>
+                                </h2>
                                 <?php if ($summary !== '') : ?><p class="kc-catering-card-description"><?php echo esc_html($summary); ?></p><?php endif; ?>
                                 <?php if ($outletIds !== []) : ?>
                                     <div class="kc-catering-available-outlets" aria-label="<?php echo esc_attr(kampachi_native_label('locations')); ?>">
                                         <span><?php echo esc_html(kampachi_native_label('locations')); ?>:</span>
                                         <?php foreach ($outletIds as $outletId) : ?>
-                                            <a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?></a>
+                                            <a class="kc-linked-card-action" href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?></a>
                                         <?php endforeach; ?>
                                     </div>
                                 <?php endif; ?>
-                                <a class="kc-discover kc-discover--card" href="<?php echo esc_url($ctaUrl); ?>">
+                                <a class="kc-discover kc-discover--card <?php echo $hasCustomCta ? 'kc-linked-card-action' : 'kc-linked-card-link'; ?>"
+                                    href="<?php echo esc_url($ctaUrl); ?>"
+                                    aria-label="<?php echo esc_attr($ctaLabel . ' ' . $eventTitle); ?>">
                                     <?php echo esc_html($ctaLabel); ?>
                                 </a>
                             </div>

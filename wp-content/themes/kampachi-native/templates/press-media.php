@@ -146,11 +146,12 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                     <?php foreach ($highlights as $article) : ?>
                         <?php
                         $image = kampachi_native_post_image($article->ID);
-                        $url = $postType::originalUrl($article->ID);
+                        $sourceUrl = $postType::originalUrl($article->ID);
+                        $url = $sourceUrl !== '' || ! $isAwards ? $sourceUrl : (string) get_permalink($article);
                         $title = get_the_title($article);
                         $excerpt = wp_strip_all_tags(get_the_excerpt($article));
                         ?>
-                        <article class="kc-press-card">
+                        <article class="kc-press-card<?php echo $url !== '' ? ' kc-linked-card' : ''; ?>">
                             <?php if ($image !== '') : ?>
                                 <div class="kc-press-card-media">
                                     <img src="<?php echo esc_url($image); ?>" alt="" loading="lazy" decoding="async">
@@ -162,8 +163,8 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                                     <p><?php echo esc_html($excerpt); ?></p>
                                 <?php endif; ?>
                                 <?php if ($url !== '') : ?>
-                                    <a class="kc-discover kc-discover--card" href="<?php echo esc_url($url); ?>" target="_blank"
-                                        rel="noopener noreferrer"
+                                    <a class="kc-discover kc-discover--card kc-linked-card-link" href="<?php echo esc_url($url); ?>"
+                                        <?php if ($sourceUrl !== '') : ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>
                                         aria-label="<?php echo esc_attr(sprintf(__('Discover %s', 'kampachi-native'), $title)); ?>">
                                         <?php echo esc_html(kampachi_native_label('discover')); ?>
                                     </a>
@@ -213,12 +214,13 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                     <?php foreach ($archive as $entry) : ?>
                         <?php
                         $title = get_the_title($entry['post']);
-                        $url = $postType::originalUrl($entry['post']->ID);
+                        $sourceUrl = $postType::originalUrl($entry['post']->ID);
+                        $url = $sourceUrl !== '' || ! $isAwards ? $sourceUrl : (string) get_permalink($entry['post']);
                         $logo = $isAwards ? kampachi_native_post_image($entry['post']->ID, 'medium') : '';
                         $excerpt = $isAwards ? wp_strip_all_tags(get_the_excerpt($entry['post'])) : '';
                         $meta = implode(' · ', array_filter([$entry['publication'], $entry['date']]));
                         ?>
-                        <li>
+                        <li<?php echo $url !== '' ? ' class="kc-linked-card"' : ''; ?>>
                             <div class="kc-press-entry">
                                 <?php if ($logo !== '') : ?>
                                     <img class="kc-award-logo" src="<?php echo esc_url($logo); ?>" alt=""
@@ -233,8 +235,8 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                                 </div>
                             </div>
                             <?php if ($url !== '') : ?>
-                                <a class="kc-discover" href="<?php echo esc_url($url); ?>" target="_blank"
-                                    rel="noopener noreferrer"
+                                <a class="kc-discover kc-linked-card-link" href="<?php echo esc_url($url); ?>"
+                                    <?php if ($sourceUrl !== '') : ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>
                                     aria-label="<?php echo esc_attr(sprintf(__('Discover %s', 'kampachi-native'), $title)); ?>">
                                     <?php echo esc_html(kampachi_native_label('discover')); ?>
                                 </a>

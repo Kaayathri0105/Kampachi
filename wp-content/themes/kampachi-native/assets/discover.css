@@ -24,7 +24,7 @@
     margin-block-start: 14px;
 }
 
-a.kc-discover:hover,
+a.kc-discover:not(.kc-linked-card-link):hover,
 a:hover .kc-discover {
     opacity: 0.72;
 }
@@ -32,4 +32,37 @@ a:hover .kc-discover {
 a.kc-discover:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 4px;
+}
+
+.kc-linked-card {
+    position: relative;
+    isolation: isolate;
+}
+
+.kc-linked-card-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Keep the native link and extend its hit area across the card. */
+.kc-linked-card-link::after {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    content: "";
+}
+
+.kc-linked-card-link:focus-visible,
+a.kc-discover.kc-linked-card-link:focus-visible {
+    outline: none;
+}
+
+.kc-linked-card-link:focus-visible::after {
+    outline: 2px solid currentColor;
+    outline-offset: -3px;
+}
+
+.kc-linked-card-action {
+    position: relative;
+    z-index: 3;
 }

@@ -35,13 +35,14 @@ $perView = Homepage_Content::items_per_view($kampachiHome, 'sake', 1, count($kam
             <div class="kc-home-post-track" id="home-sake-track" data-kc-carousel-track
                 style="--kc-carousel-columns:<?php echo esc_attr((string) min($perView, 3)); ?>">
                 <?php foreach ($kampachiSakeSlides as $slide) : ?>
-                    <article class="home-sake-layout<?php echo $slide['src'] === '' ? ' home-sake-layout--text-only' : ''; ?>">
+                    <article class="home-sake-layout kc-linked-card<?php echo $slide['src'] === '' ? ' home-sake-layout--text-only' : ''; ?>">
                         <div class="home-sake-copy">
                             <h3><?php echo esc_html($slide['title']); ?></h3>
                             <?php if ($slide['description'] !== '') : ?>
                                 <p><?php echo esc_html($slide['description']); ?></p>
                             <?php endif; ?>
-                            <a class="kc-discover" href="<?php echo esc_url($slide['href']); ?>">
+                            <a class="kc-discover kc-linked-card-link" href="<?php echo esc_url($slide['href']); ?>"
+                                aria-label="<?php echo esc_attr($slide['link'] . ' ' . $slide['title']); ?>">
                                 <?php echo esc_html($slide['link']); ?>
                             </a>
                         </div>

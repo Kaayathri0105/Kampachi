@@ -554,8 +554,9 @@ function kampachi_native_render_post_card(int $postId): void
         $label = $badge;
     }
 
-    echo '<article class="kc-module-card">';
-    echo '<a class="kc-module-card-image" href="' . esc_url(get_permalink($postId)) . '">';
+    $discover = kampachi_native_label('discover');
+    echo '<article class="kc-module-card kc-linked-card">';
+    echo '<div class="kc-module-card-image">';
 
     if ($image !== '') {
         echo '<img src="' . esc_url($image) . '" alt="' . esc_attr($title) . '" loading="lazy">';
@@ -564,19 +565,19 @@ function kampachi_native_render_post_card(int $postId): void
     }
 
 
-    echo '</a><div class="kc-module-card-content">';
+    echo '</div><div class="kc-module-card-content">';
     $subtitle = kampachi_native_meta($postId, 'subtitle');
 
 
-    echo '<h2><a href="' . esc_url(get_permalink($postId)) . '">' . esc_html($title) . '</a></h2>';
+    echo '<h2>' . esc_html($title) . '</h2>';
     $excerpt = get_the_excerpt($postId);
 
     if ($excerpt !== '') {
         echo '<p>' . esc_html($excerpt) . '</p>';
     }
 
-    echo '<a class="kc-discover kc-discover--card" href="' . esc_url(get_permalink($postId)) . '">';
-    echo esc_html(kampachi_native_label('discover')) . '</a>';
+    echo '<a class="kc-discover kc-discover--card kc-linked-card-link" href="' . esc_url(get_permalink($postId))
+        . '" aria-label="' . esc_attr($discover . ' ' . $title) . '">' . esc_html($discover) . '</a>';
     echo '</div></article>';
 }
 
