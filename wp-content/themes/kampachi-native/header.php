@@ -28,7 +28,7 @@ if (! defined('ABSPATH')) {
 <script>window.kampachiNativeShell = true;</script>
 <header class="site-header" id="site-header">
     <div class="header-inner">
-        <a class="brand" href="<?php echo esc_url(Site_Language::url(home_url('/')) ?: home_url('/')); ?>" aria-label="<?php esc_attr_e('Kampachi home', 'kampachi-native'); ?>">
+        <a class="brand" href="<?php echo esc_url(Site_Language::navigation_url(home_url('/'))); ?>" aria-label="<?php esc_attr_e('Kampachi home', 'kampachi-native'); ?>">
             <?php
             $headerLogoId = absint(kampachi_setting('header_logo_id'));
             if ($headerLogoId <= 0) {
@@ -168,7 +168,7 @@ if (! defined('ABSPATH')) {
         $offerUrl = $offerLanding?->post_status === 'publish'
             ? get_permalink($offerLanding)
             : get_post_type_archive_link('kc_offer');
-        $offerUrl = Site_Language::url((string) $offerUrl);
+        $offerUrl = Site_Language::navigation_url((string) $offerUrl);
         if (count($offerCategories) > 1 && is_string($offerUrl) && $offerUrl !== '') {
             $hasOfferCategories = true;
             $sectionNav = ['label' => __('Offer categories', 'kampachi-native'), 'links' => []];
@@ -232,7 +232,7 @@ if (! defined('ABSPATH')) {
                     }
 
                     $navTitle = Site_Language::shell_text('header', 'navigation', $navTitle);
-                    $navUrl = Site_Language::url($navUrl);
+                    $navUrl = Site_Language::navigation_url($navUrl);
                     $hasChildren = $navChildren !== [];
                     ?>
                     <li class="nav-item<?php echo $hasChildren ? ' nav-item--dropdown' : ''; ?>">
@@ -248,7 +248,7 @@ if (! defined('ABSPATH')) {
                             <ul class="nav-sublist" id="header-submenu-<?php echo esc_attr((string) $navIndex); ?>" hidden>
                                 <?php foreach ($navChildren as $navChild) : ?>
                                     <?php if (is_array($navChild) && ! empty($navChild['title']) && ! empty($navChild['url'])) : ?>
-                                        <?php $childUrl = Site_Language::url((string) $navChild['url']); ?>
+                                        <?php $childUrl = Site_Language::navigation_url((string) $navChild['url']); ?>
                                         <?php if ($childUrl !== '') : ?>
                                             <li><a class="nav-sublink" href="<?php echo esc_url($childUrl); ?>"><?php echo esc_html(Site_Language::shell_text('header', 'navigation', (string) $navChild['title'])); ?></a></li>
                                         <?php endif; ?>

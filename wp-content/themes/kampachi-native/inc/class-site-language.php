@@ -188,16 +188,23 @@ final class Site_Language
         return $links;
     }
 
+    public static function navigation_url(string $url): string
+    {
+        return self::url($url) ?: $url;
+    }
+
     public static function menu_items(array $items, stdClass $args): array
     {
+        $location = $args->theme_location ?? '';
         foreach ($items as $item) {
             $title = (string) $item->title;
-            $item->title = match ($args->theme_location ?? '') {
+            $item->title = match ($location) {
                 'primary' => self::shell_text('header', 'navigation', $title),
                 'footer' => self::shell_text('footer', 'links', $title),
                 default => self::text($title),
             };
-            $item->url = self::url((string) $item->url);
+            $url = (string) $item->url;
+            $item->url = $location === 'primary' ? self::navigation_url($url) : self::url($url);
         }
 
         return $items;

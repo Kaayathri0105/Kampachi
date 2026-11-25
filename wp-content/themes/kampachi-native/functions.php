@@ -303,7 +303,7 @@ function kampachi_native_header_post_navigation(): ?array
 
         $links = [];
         if ($landing instanceof WP_Post && $landing->post_status === 'publish') {
-            $url = Site_Language::url((string) get_permalink($landing));
+            $url = Site_Language::navigation_url((string) get_permalink($landing));
             if (is_string($url) && $url !== '') {
                 $links[] = ['label' => $landingLabel, 'url' => $url, 'current' => $onLanding ? 'page' : ''];
             }
