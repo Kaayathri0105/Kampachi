@@ -197,21 +197,21 @@ final class Kampachi_Translations
         }
     }
 
-    public static function render_tabs(WP_Post $post, string $dashboard = ''): void
+    public static function render_tabs(?WP_Post $post, string $dashboard = '', bool $homepage = false): void
     {
         $languages = Kampachi_Master_Settings::languages();
-        if (count($languages) < 2 || ! current_user_can('edit_post', $post->ID)) {
+        $canEdit = $post === null ? $homepage && current_user_can('edit_pages') : current_user_can('edit_post', $post->ID);
+        if (count($languages) < 2 || ! $canEdit) {
             return;
         }
 
-        $origin = absint(get_post_meta($post->ID, '_kc_translation_of', true)) ?: $post->ID;
-        $source = get_post($origin);
-        $canTranslate = $source instanceof WP_Post
-            && self::is_source($source)
-            && current_user_can('edit_post', $origin)
-            && self::provider() !== '';
-        $language = self::post_language($post);
-        $automatic = $language === 'en' && Kampachi_Master_Settings::get('auto_translate') === '1';
+        $origin = $post !== null ? (absint(get_post_meta($post->ID, '_kc_translation_of', true)) ?: $post->ID) : 0;
+        $source = $origin > 0 ? get_post($origin) : null;
+        $canTranslate = self::provider() !== '' && ($post === null || (
+            $source instanceof WP_Post && self::is_source($source) && current_user_can('edit_post', $origin)
+        ));
+        $language = $post !== null ? self::post_language($post) : 'en';
+        $automatic = $origin > 0 && $language === 'en' && self::automatic_enabled();
         $currentLabel = self::tab_label($language, $languages[$language]);
 
         echo '<section class="kc-post-translations" data-kc-translations data-source="' . esc_attr((string) $origin) . '"';
@@ -221,7 +221,7 @@ final class Kampachi_Translations
 
         foreach ($languages as $code => $name) {
             $label = self::tab_label($code, $name);
-            $target = $code === 'en' ? $origin : self::translated_post_id($origin, $code);
+            $target = $code === 'en' || $origin === 0 ? $origin : self::translated_post_id($origin, $code);
             $editorUrl = $target > 0 ? get_edit_post_link($target, 'raw') : '';
             $tabUrl = $dashboard !== '' ? add_query_arg('kc_language', $code, $dashboard) : '';
             echo '<div class="kc-language-tab-item">';
@@ -240,17 +240,17 @@ final class Kampachi_Translations
 
         echo '</nav><div class="kc-language-notice">';
         echo '<strong>Editing language:</strong> ' . esc_html($currentLabel) . '. ';
-        echo $post->post_status === 'auto-draft'
+        echo $post?->post_status === 'auto-draft'
             ? 'Save the English content to start translating.'
             : 'Each language saves separately. Select an available language tab to edit or create its version.';
 
-        if ($dashboard !== '' && $language !== 'en') {
+        if ($post !== null && $dashboard !== '' && $language !== 'en') {
             $postUrl = get_edit_post_link($post->ID, 'raw');
             $postLabel = $post->post_status === 'publish' ? 'Open WordPress post' : 'Review and publish draft';
             echo '<p><a href="' . esc_url($postUrl ?: '') . '">' . esc_html($postLabel) . '</a></p>';
         }
 
-        if ($canTranslate && $language !== 'en') {
+        if ($post !== null && $canTranslate && $language !== 'en') {
             echo '<p>';
             self::render_action($origin, $language, $currentLabel, $post->ID, false, '', 'button button-small');
             echo '</p>';
@@ -296,6 +296,13 @@ final class Kampachi_Translations
         return in_array($provider, ['azure', 'deepl'], true) ? $provider : '';
     }
 
+    public static function automatic_enabled(): bool
+    {
+        return Kampachi_Master_Settings::get('auto_translate') === '1'
+            && self::provider() !== ''
+            && count(Kampachi_Master_Settings::languages()) > 1;
+    }
+
     private static function is_source(WP_Post $post): bool
     {
         return in_array($post->post_type, self::TYPES, true)
@@ -326,8 +333,21 @@ final class Kampachi_Translations
     {
         $origin = absint(get_post_meta($currentId, '_kc_translation_of', true));
         $master = $origin > 0 ? $origin : $currentId;
+        $homepage = Kampachi_Homepage::master_page();
+        $isHomepage = is_front_page() || ($homepage !== null && $homepage->ID === $master);
+        if ($isHomepage) {
+            $master = $homepage?->ID ?? 0;
+        }
+
         $links = [];
         foreach (Kampachi_Master_Settings::languages() as $code => $name) {
+            if ($code === 'en' && $isHomepage) {
+                $links[$code] = ['label' => $name, 'url' => home_url('/')];
+                continue;
+            }
+            if ($master <= 0) {
+                continue;
+            }
             $id = $code === 'en' ? $master : self::translated_post_id($master, $code);
             if ($id <= 0 || get_post_status($id) !== 'publish') {
                 continue;
@@ -351,7 +371,7 @@ final class Kampachi_Translations
 
         self::sync_images($postId);
 
-        if (Kampachi_Master_Settings::get('auto_translate') !== '1' || self::provider() === '') {
+        if (! self::automatic_enabled()) {
             return;
         }
 
@@ -382,6 +402,22 @@ final class Kampachi_Translations
         $rawLanguage = $_POST['language'] ?? '';
         $language = is_string($rawLanguage) ? sanitize_key(wp_unslash($rawLanguage)) : '';
         check_ajax_referer(self::JOB . '_' . $postId, 'nonce');
+
+        if ($postId === 0) {
+            if ($targetId > 0 || ! current_user_can('edit_pages')) {
+                wp_send_json_error(['message' => 'You do not have permission to run this translation.'], 403);
+            }
+            if ($language === 'en' || ! isset(Kampachi_Master_Settings::languages()[$language])
+                || self::provider() === '') {
+                wp_send_json_error(['message' => 'Enable this language and its translation provider first.'], 409);
+            }
+
+            $source = Kampachi_Homepage::create_translation_source();
+            if (is_wp_error($source)) {
+                wp_send_json_error(['message' => $source->get_error_message()], 409);
+            }
+            $postId = $source->ID;
+        }
 
         if (! current_user_can('edit_post', $postId)
             || ($targetId > 0 && (
@@ -497,7 +533,7 @@ final class Kampachi_Translations
                 $result = wp_insert_post(wp_slash($content + [
                     'post_type' => $source->post_type,
                     'post_status' => 'draft',
-                    'post_name' => sanitize_title($source->post_name . '-' . $language),
+                    'post_name' => sanitize_title(($home !== null ? 'home' : $source->post_name) . '-' . $language),
                     'post_author' => $source->post_author,
                     'menu_order' => $source->menu_order,
                     'meta_input' => ['_kc_translation_of' => $source->ID, '_kc_language' => $language],

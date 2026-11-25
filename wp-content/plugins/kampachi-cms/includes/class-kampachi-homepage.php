@@ -14,6 +14,8 @@ final class Kampachi_Homepage
 {
     private const OPTION = 'kampachi_homepage_sections';
 
+    private const TRANSLATION_SOURCE = 'kampachi_homepage_translation_source';
+
     private const OFFERS_PER_VIEW_MAX = 3;
 
     private const HERO_MODES = [
@@ -90,12 +92,78 @@ final class Kampachi_Homepage
 
     public static function master_page(): ?WP_Post
     {
-        $pageId = absint(get_option('page_on_front'));
-        $page = $pageId > 0 ? get_post($pageId) : get_page_by_path('home', OBJECT, 'page');
+        foreach ([self::TRANSLATION_SOURCE, 'page_on_front'] as $option) {
+            $pageId = absint(get_option($option));
+            $page = $pageId > 0 ? get_post($pageId) : null;
+            if (self::is_translation_source($page)) {
+                return $page;
+            }
+        }
 
-        return $page instanceof WP_Post && $page->post_type === 'page' && $page->post_status !== 'trash'
-            ? $page
-            : null;
+        $page = get_page_by_path('home', OBJECT, 'page');
+
+        return self::is_translation_source($page) ? $page : null;
+    }
+
+    private static function is_translation_source(?WP_Post $page): bool
+    {
+        return $page !== null
+            && $page->post_type === 'page'
+            && in_array($page->post_status, ['publish', 'draft', 'pending', 'private', 'future'], true)
+            && ! get_post_meta($page->ID, '_kc_translation_of', true);
+    }
+
+    public static function create_translation_source(): WP_Post|WP_Error
+    {
+        $page = self::master_page();
+        if ($page !== null) {
+            return $page;
+        }
+
+        if (! current_user_can('edit_pages')) {
+            return new WP_Error('kc_home_source_permission', 'You do not have permission to edit the Homepage.');
+        }
+
+        $lock = self::TRANSLATION_SOURCE . '_lock';
+        $started = (string) time();
+        $lockedAt = (int) get_option($lock, 0);
+        if ($lockedAt > 0 && $lockedAt + 60 < (int) $started) {
+            delete_option($lock);
+        }
+        if (! add_option($lock, $started, '', false)) {
+            return new WP_Error('kc_home_source_busy', 'Homepage translation is being set up. Try again in a moment.');
+        }
+
+        try {
+            $page = self::master_page();
+            if ($page !== null) {
+                return $page;
+            }
+
+            // A draft provides a translation ID without changing WordPress's front-page settings.
+            $id = wp_insert_post([
+                'post_type' => 'page',
+                'post_status' => 'draft',
+                'post_title' => 'Homepage',
+                'post_name' => 'kampachi-homepage-translation-source',
+            ], true, false);
+            if (is_wp_error($id)) {
+                return $id;
+            }
+
+            $page = $id > 0 ? get_post($id) : null;
+            if (! $page instanceof WP_Post) {
+                return new WP_Error('kc_home_source_failed', 'Could not set up the Homepage translation source.');
+            }
+
+            update_option(self::TRANSLATION_SOURCE, $page->ID, false);
+
+            return $page;
+        } finally {
+            if (get_option($lock) === $started) {
+                delete_option($lock);
+            }
+        }
     }
 
     private static function option_name(string $language): string
@@ -406,11 +474,11 @@ final class Kampachi_Homepage
         }
         echo '<div class="wrap kc-home-admin">';
         echo '<header class="kc-page-header"><div><p class="kc-eyebrow">KAMPACHI / CONTENT MANAGEMENT</p><h1>Homepage editor</h1></div><a class="button kc-view-site" href="' . esc_url($preview) . '" target="_blank" rel="noopener noreferrer">View website ↗</a></header>';
-        if ($page !== null) {
-            Kampachi_Translations::render_tabs($page, admin_url('admin.php?page=kampachi-homepage-module'));
-        }
+        Kampachi_Translations::render_tabs($page, admin_url('admin.php?page=kampachi-homepage-module'), true);
         echo '<nav class="kc-section-nav" aria-label="Homepage sections"><a href="#kc-section-layout"><span>00</span> Layout</a><a href="#kc-section-hero"><span>01</span> Hero</a><a href="#kc-section-introduction"><span>02</span> Introduction</a><a href="#kc-section-promotions"><span>03</span> Offers &amp; Events</a><a href="#kc-section-dishes"><span>04</span> Signature dishes</a><a href="#kc-section-sake"><span>05</span> Artisanal Sake</a><a href="#kc-section-outlets"><span>06</span> Restaurants</a></nav>';
-        if (isset($_GET['updated']) && $_GET['updated'] === '1') {
+        if (($_GET['translation_setup'] ?? '') === 'failed') {
+            echo '<div class="notice notice-warning"><p>Homepage saved. Choose a language tab to retry translation setup.</p></div>';
+        } elseif (isset($_GET['updated']) && $_GET['updated'] === '1') {
             echo '<div class="notice notice-success is-dismissible"><p>Homepage saved.</p></div>';
         }
         echo '<form id="kc-home-form" action="' . esc_url(admin_url('admin-post.php')) . '" method="post">';
@@ -750,6 +818,14 @@ final class Kampachi_Homepage
         self::save_translation($language, $clean);
 
         $url = admin_url('admin.php?page=kampachi-homepage-module&updated=1');
+        if ($page === null && Kampachi_Translations::automatic_enabled()) {
+            $source = self::create_translation_source();
+            if (is_wp_error($source)) {
+                $url = add_query_arg('translation_setup', 'failed', $url);
+            } else {
+                $page = $source;
+            }
+        }
         if ($page !== null) {
             Kampachi_Translations::on_save($page->ID, $page);
             $url = Kampachi_Translations::dashboard_url($page, $url);

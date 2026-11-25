@@ -123,6 +123,8 @@ function kampachi_native_assets(): void
         || get_post_field('post_name', get_queried_object_id()) === 'home'
         || ($languageSource > 0 && (
             get_post_field('post_name', $languageSource) === 'home' || $languageSource === absint(get_option('page_on_front'))
+            || (is_callable([\Kampachi_Homepage::class, 'master_page'])
+                && $languageSource === \Kampachi_Homepage::master_page()?->ID)
         ))
     ) {
         $homeCss = get_theme_file_path('assets/home-cms.css');
