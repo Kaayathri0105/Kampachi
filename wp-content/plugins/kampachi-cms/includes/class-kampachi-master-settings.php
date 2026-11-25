@@ -634,10 +634,6 @@ final class Kampachi_Master_Settings
             '.site-header,.site-header:not(.is-scrolled){background:' . $before . '!important;backdrop-filter:blur(' . $beforeBlur . 'px)!important;-webkit-backdrop-filter:blur(' . $beforeBlur . 'px)!important;}' .
             '.site-header.is-scrolled{background:' . $after . '!important;backdrop-filter:blur(' . $afterBlur . 'px)!important;-webkit-backdrop-filter:blur(' . $afterBlur . 'px)!important;}' .
             '.menu-overlay .nav-list{gap:var(--kc-menu-gap)!important;}' .
-            'body.kc-has-translations .site-header .language-wrap{display:block!important;margin-right:12px;}' .
-            'body.kc-has-translations .language-button{display:flex;align-items:center;gap:4px;border:0;background:transparent;color:white;cursor:pointer;padding:10px;font-size:13px;}' .
-            'body.kc-has-translations .language-popover{background:#fff;box-shadow:0 10px 28px rgba(0,0,0,.25);z-index:90;}' .
-            'body.kc-has-translations .language-popover a{display:block;padding:9px 12px;color:#222;text-decoration:none;white-space:nowrap;font-size:13px;}' .
             '.menu-overlay .nav-link,.menu-overlay .nav-list>li>a,.menu-overlay .nav-dropdown-toggle{font-family:var(--kc-menu-font)!important;font-size:var(--kc-menu-size)!important;color:var(--kc-menu-color)!important;}' .
             '.menu-overlay.is-scrolled .nav-link,.menu-overlay.is-scrolled .nav-list>li>a,.menu-overlay.is-scrolled .nav-dropdown-toggle{color:var(--kc-menu-color)!important;}' .
             '@media(max-width:1199px){.menu-overlay .nav-list{gap:var(--kc-menu-gap)!important;}}' .

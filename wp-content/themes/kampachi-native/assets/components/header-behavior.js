@@ -9,8 +9,7 @@
     const dropdownToggles = document.querySelectorAll('.nav-dropdown-toggle');
     const languageWrap = document.querySelector('.language-wrap');
     const languageButton = document.querySelector('.language-button');
-    const languageFlag = document.querySelector('.language-flag');
-    const languageOptions = document.querySelectorAll('.language-option');
+    const languageMenu = document.querySelector('.language-popover');
     const reservationWrap = document.querySelector('.reservation-wrap');
     const reservationTrigger = document.querySelector('.reservation-trigger');
     const reservationMenu = document.querySelector('.reservation-menu');
@@ -69,28 +68,22 @@
         }
     };
 
-    const closeLanguageMenu = () => {
-        if (!languageWrap || !languageButton) {
-            return;
-        }
-
-        languageWrap.classList.remove('is-open');
-        languageButton.setAttribute('aria-expanded', 'false');
-    };
-
     const setLanguageMenuOpen = (isOpen) => {
-        if (!languageWrap || !languageButton) {
+        if (!languageWrap || !languageButton || !languageMenu) {
             return;
         }
 
         languageWrap.classList.toggle('is-open', isOpen);
         languageButton.setAttribute('aria-expanded', String(isOpen));
+        languageMenu.hidden = !isOpen;
 
         if (isOpen) {
             closeReservationMenu();
             setMenuOpen(false);
         }
     };
+
+    const closeLanguageMenu = () => setLanguageMenuOpen(false);
 
     const closeReservationMenu = () => {
         if (!reservationWrap || !reservationTrigger || !reservationMenu) {
@@ -144,20 +137,7 @@
     });
 
     languageButton?.addEventListener('click', () => {
-        setLanguageMenuOpen(!languageWrap.classList.contains('is-open'));
-    });
-
-    languageOptions.forEach((option) => {
-        option.addEventListener('click', () => {
-            if (languageFlag) {
-                languageFlag.textContent = option.dataset.flag || '🇲🇾';
-            }
-
-            languageButton?.setAttribute('aria-label', `Language: ${option.textContent.trim()}`);
-            languageOptions.forEach((item) => item.removeAttribute('aria-current'));
-            option.setAttribute('aria-current', 'true');
-            closeLanguageMenu();
-        });
+        setLanguageMenuOpen(languageButton.getAttribute('aria-expanded') !== 'true');
     });
 
     reservationTrigger?.addEventListener('click', () => {
@@ -178,9 +158,14 @@
 
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
+            const restoreLanguageFocus = languageButton?.getAttribute('aria-expanded') === 'true'
+                && languageWrap?.contains(document.activeElement);
             setMenuOpen(false);
             closeLanguageMenu();
             closeReservationMenu();
+            if (restoreLanguageFocus) {
+                languageButton.focus();
+            }
         }
     });
 })();

@@ -241,7 +241,7 @@ body {
     }
 }
 
-#site-header .reservation-trigger,
+#site-header :is(.reservation-trigger, .language-button),
 .site-footer .footer-cta > a,
 .site-footer .kc-footer-enquiry-toggle {
     box-sizing: border-box;
@@ -280,11 +280,113 @@ body {
     text-align: center;
 }
 
+#site-header .header-actions:has(.language-wrap) {
+    gap: 10px !important;
+}
+
+#site-header .language-wrap {
+    position: relative;
+    display: block !important;
+    flex: none;
+}
+
+#site-header .language-button {
+    width: auto;
+    min-width: 44px;
+    height: auto;
+    gap: 7px;
+    justify-content: center;
+    padding-inline: 10px !important;
+    overflow: visible;
+    cursor: pointer;
+}
+
+.kc-language-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.kc-language-chevron {
+    width: 7px;
+    height: 7px;
+    border-right: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+}
+
+#site-header .language-popover {
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 90;
+    display: grid;
+    min-width: 175px;
+    padding: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.23);
+    background: #090909;
+    box-shadow: 0 16px 28px rgb(0 0 0 / 25%);
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+}
+
+#site-header .language-popover[hidden] {
+    display: none !important;
+}
+
+#site-header .language-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 10px;
+    color: #f5ebe0;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+#site-header .language-option[aria-current="page"] {
+    color: #e0c9aa;
+}
+
+#site-header .language-option[aria-disabled="true"] {
+    color: #b8b0a7;
+}
+
+#site-header a.language-option:is(:hover, :focus-visible) {
+    background: #292322;
+}
+
+@media (min-width: 1200px) and (max-width: 1440px) {
+    body:has(#site-header .language-wrap) #site-menu {
+        padding-inline: 100px 218px !important;
+    }
+
+    body:has(#site-header .language-wrap) #site-menu .nav-list {
+        gap: clamp(10px, 0.95vw, 16px) !important;
+    }
+}
+
 @media (max-width: 600px) {
     #site-header .reservation-trigger {
         gap: 10px;
         padding-inline: 10px !important;
         white-space: normal;
+    }
+
+    #site-header .header-actions:has(.language-wrap) {
+        gap: 7px !important;
+    }
+
+    #site-header .kc-language-icon {
+        display: none;
+    }
+}
+
+@media (max-width: 360px) {
+    #site-header:has(.language-wrap) :is(.brand, .brand-logo) {
+        width: 65px !important;
+        max-width: 65px !important;
+        flex-basis: 65px !important;
     }
 }
 
