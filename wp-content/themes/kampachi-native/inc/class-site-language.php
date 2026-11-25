@@ -6,8 +6,10 @@ namespace Kampachi\Native;
 
 use Kampachi_Homepage;
 use Kampachi_Landings;
+use Kampachi_Shell_Translations;
 use WP_HTML_Tag_Processor;
 use WP_Post;
+use stdClass;
 
 final class Site_Language
 {
@@ -35,10 +37,10 @@ final class Site_Language
         return self::language() !== '';
     }
 
-    public static function text(string $value): string
+    public static function text(string $value, ?string $language = null): string
     {
-        $language = self::language();
-        if ($value === '' || $language === '') {
+        $language ??= self::language();
+        if ($value === '' || ! in_array($language, self::LANGUAGES, true)) {
             return $value;
         }
 
@@ -46,6 +48,19 @@ final class Site_Language
         $key = strtolower(trim(html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
 
         return self::$labels[$language][$key] ?? $value;
+    }
+
+    public static function shell_text(string $group, string $field, string $value): string
+    {
+        if (! is_admin() && did_action('wp') > 0 && class_exists(Kampachi_Shell_Translations::class)) {
+            $language = (string) get_post_meta(get_queried_object_id(), '_kc_language', true);
+            $translation = Kampachi_Shell_Translations::text($group, $field, $value, $language);
+            if ($translation !== null) {
+                return $translation;
+            }
+        }
+
+        return self::text($value);
     }
 
     public static function gettext(string $translation, string $original, string $domain): string
@@ -160,10 +175,6 @@ final class Site_Language
 
     public static function links(array $links): array
     {
-        if (! self::active()) {
-            return $links;
-        }
-
         foreach ($links as $key => $link) {
             $url = self::url($link['url']);
             if ($url === '') {
@@ -171,20 +182,21 @@ final class Site_Language
                 continue;
             }
             $links[$key]['url'] = $url;
-            $links[$key]['title'] = self::text($link['title']);
+            $links[$key]['title'] = self::shell_text('footer', 'links', $link['title']);
         }
 
         return $links;
     }
 
-    public static function menu_items(array $items): array
+    public static function menu_items(array $items, stdClass $args): array
     {
-        if (! self::active()) {
-            return $items;
-        }
-
         foreach ($items as $item) {
-            $item->title = self::text((string) $item->title);
+            $title = (string) $item->title;
+            $item->title = match ($args->theme_location ?? '') {
+                'primary' => self::shell_text('header', 'navigation', $title),
+                'footer' => self::shell_text('footer', 'links', $title),
+                default => self::text($title),
+            };
             $item->url = self::url((string) $item->url);
         }
 

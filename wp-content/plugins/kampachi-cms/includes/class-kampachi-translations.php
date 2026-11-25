@@ -258,7 +258,7 @@ final class Kampachi_Translations
         echo '</div></section>';
     }
 
-    private static function tab_label(string $language, string $label): string
+    public static function tab_label(string $language, string $label): string
     {
         return match ($language) {
             'en' => '🇬🇧 English',

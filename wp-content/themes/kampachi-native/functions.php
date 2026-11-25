@@ -17,8 +17,9 @@ if (! defined('ABSPATH')) {
 require_once get_theme_file_path('inc/class-site-language.php');
 
 add_filter('gettext', [Site_Language::class, 'gettext'], 10, 3);
-add_filter('wp_nav_menu_objects', [Site_Language::class, 'menu_items'], 20);
+add_filter('wp_nav_menu_objects', [Site_Language::class, 'menu_items'], 20, 2);
 add_filter('kampachi_footer_links', [Site_Language::class, 'links']);
+add_filter('kampachi_shell_translation_default', [Site_Language::class, 'text'], 10, 2);
 add_filter('the_content', [Site_Language::class, 'rich_links'], 20);
 
 function kampachi_native_setup(): void
@@ -37,7 +38,7 @@ add_action('after_setup_theme', 'kampachi_native_setup');
 
 function kampachi_native_nav_label(string $title): string
 {
-    return '<span class="nav-label-en">' . esc_html(Site_Language::text($title)) . '</span>';
+    return '<span class="nav-label-en">' . esc_html($title) . '</span>';
 }
 
 /**

@@ -8,6 +8,7 @@ if (! defined('ABSPATH')) {
 
 require_once __DIR__ . '/class-kampachi-header-editor.php';
 require_once __DIR__ . '/class-kampachi-footer-navigation.php';
+require_once __DIR__ . '/class-kampachi-shell-translations.php';
 
 /**
  * Editable header, footer and enquiry delivery settings.
@@ -73,6 +74,13 @@ final class Kampachi_Shell_Settings
             return;
         }
         wp_enqueue_media();
+        $languageStyles = dirname(__DIR__) . '/assets/post-translation-tabs.css';
+        wp_enqueue_style(
+            'kc-post-translation-tabs',
+            plugins_url('../assets/post-translation-tabs.css', __FILE__),
+            [],
+            (string) filemtime($languageStyles)
+        );
         if (str_contains($hook, 'kampachi-header')) {
             wp_enqueue_script('jquery-ui-sortable');
             wp_enqueue_style('kc-header-admin', plugins_url('../assets/header-admin.css', __FILE__), [], (string) filemtime(dirname(__DIR__) . '/assets/header-admin.css'));
@@ -99,22 +107,38 @@ final class Kampachi_Shell_Settings
             wp_die(esc_html__('You do not have permission to edit these settings.'), '', ['response' => 403]);
         }
         $headings = ['header' => 'Header', 'footer' => 'Footer', 'enquiry' => 'Enquiry Email'];
+        $language = Kampachi_Shell_Translations::language($group, $_GET['kc_language'] ?? 'en') ?? 'en';
+        $url = self::admin_url_for($group);
         echo '<div class="wrap kc-home-admin kc-shared-admin kc-settings-admin"><h1>Kampachi ' . esc_html($headings[$group]) . ' Settings</h1>';
         if (isset($_GET['updated']) && $_GET['updated'] === '1') {
             echo '<div class="notice notice-success is-dismissible"><p>Settings saved.</p></div>';
         }
-        if ($group === 'header') {
+        Kampachi_Shell_Translations::render_tabs($group, $language, $url);
+        if ($language === 'en' && $group === 'header') {
             echo '<p>Manage all header content here. The navigation and reservation outlet links below replace the old menu and automatic booking dropdown after saving.</p>';
-        } elseif ($group === 'footer') {
+        } elseif ($language === 'en' && $group === 'footer') {
             echo '<p>Manage the footer content and page links here. Add pages and arrange them in Footer Pages &amp; Links below. Changes apply to every page using the shared footer.</p>';
-        } else {
+        } elseif ($group === 'enquiry') {
             echo '<p>Enquiries from the footer and Contact Us forms will be emailed to these addresses. This setting does not control job application emails.</p>';
             echo '<p>WordPress email delivery requires a functioning mail service (for example, configured SMTP). Form submissions are not stored by this module.</p>';
         }
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="kc_save_shell_settings">';
         echo '<input type="hidden" name="group" value="' . esc_attr($group) . '">';
-        wp_nonce_field('kc_save_shell_' . $group, 'kc_shell_nonce');
+        echo '<input type="hidden" name="kc_language" value="' . esc_attr($language) . '">';
+        wp_nonce_field(self::nonce_action($group, $language), 'kc_shell_nonce');
+        if ($language === 'en') {
+            self::render_settings($group);
+        } else {
+            Kampachi_Shell_Translations::render_fields($group, $language);
+        }
+        echo '<div class="kc-save-bar"><span><strong>' . esc_html($headings[$group]) . ' settings</strong><small>Save to publish your changes.</small></span>';
+        submit_button('Save ' . $headings[$group] . ' Settings');
+        echo '</div></form></div>';
+    }
+
+    private static function render_settings(string $group): void
+    {
         if ($group === 'header') {
             echo '<section class="kc-header-section"><h2><span class="kc-section-number">01</span> Header Logo</h2>';
         }
@@ -157,9 +181,6 @@ final class Kampachi_Shell_Settings
         } elseif ($group === 'footer') {
             \Kampachi\CMS\FooterNavigation::renderEditor();
         }
-        echo '<div class="kc-save-bar"><span><strong>' . esc_html($headings[$group]) . ' settings</strong><small>Save to publish your changes.</small></span>';
-        submit_button('Save ' . $headings[$group] . ' Settings');
-        echo '</div></form></div>';
     }
 
     public static function save(): void
@@ -172,8 +193,17 @@ final class Kampachi_Shell_Settings
         if (! isset(self::GROUPS[$group])) {
             wp_die('Unknown settings group.', '', ['response' => 400]);
         }
-        check_admin_referer('kc_save_shell_' . $group, 'kc_shell_nonce');
+        $language = Kampachi_Shell_Translations::language($group, $_POST['kc_language'] ?? 'en');
+        if ($language === null) {
+            wp_die('Unknown settings language.', '', ['response' => 400]);
+        }
+        check_admin_referer(self::nonce_action($group, $language), 'kc_shell_nonce');
         $raw = isset($_POST['settings']) && is_array($_POST['settings']) ? wp_unslash($_POST['settings']) : [];
+        if ($language !== 'en') {
+            Kampachi_Shell_Translations::save($group, $language, $raw);
+            wp_safe_redirect(add_query_arg(['updated' => '1', 'kc_language' => $language], self::admin_url_for($group)));
+            exit;
+        }
         $settings = get_option('kampachi_cms_settings', []);
         $settings = is_array($settings) ? $settings : [];
         foreach (self::GROUPS[$group] as $key => [, $type]) {
@@ -200,13 +230,24 @@ final class Kampachi_Shell_Settings
             $settings['footer_nav_items'] = \Kampachi\CMS\FooterNavigation::sanitizeItems(wp_unslash($links));
         }
         update_option('kampachi_cms_settings', $settings, false);
-        $url = match ($group) {
+        wp_safe_redirect(add_query_arg('updated', '1', self::admin_url_for($group)));
+        exit;
+    }
+
+    private static function admin_url_for(string $group): string
+    {
+        $page = match ($group) {
             'header' => 'kampachi-header',
             'footer' => 'kampachi-footer',
             default => 'kampachi-enquiries',
         };
-        wp_safe_redirect(admin_url('admin.php?page=' . $url . '&updated=1'));
-        exit;
+
+        return admin_url('admin.php?page=' . $page);
+    }
+
+    private static function nonce_action(string $group, string $language): string
+    {
+        return 'kc_save_shell_' . $group . ($language === 'en' ? '' : '_' . $language);
     }
 
     private static function verified_image(string $value): string

@@ -86,12 +86,12 @@ if (! defined('ABSPATH')) {
             <?php if (kampachi_setting('reservation_enabled', '1') !== '0' && $bookingLinks !== []) : ?>
                 <div class="reservation-wrap">
                     <button class="reservation-link reservation-trigger" type="button" aria-controls="reservation-menu" aria-expanded="false">
-                        <span class="reservation-label"><?php echo esc_html(Site_Language::text(kampachi_setting('reservation_label', 'RESERVATION'))); ?></span>
+                        <span class="reservation-label"><?php echo esc_html(Site_Language::shell_text('header', 'reservation_label', kampachi_setting('reservation_label', 'RESERVATION'))); ?></span>
                         <span class="reservation-chevron" aria-hidden="true"></span>
                     </button>
                     <div class="reservation-menu" id="reservation-menu" aria-label="Choose a Kampachi outlet" aria-hidden="true" inert hidden>
                         <?php foreach ($bookingLinks as $bookingLink) : ?>
-                            <a class="reservation-option" href="<?php echo esc_url($bookingLink['url']); ?>"><?php echo esc_html(Site_Language::text($bookingLink['title'])); ?></a>
+                            <a class="reservation-option" href="<?php echo esc_url($bookingLink['url']); ?>"><?php echo esc_html(Site_Language::shell_text('header', 'booking', $bookingLink['title'])); ?></a>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -197,7 +197,7 @@ if (! defined('ABSPATH')) {
                             <?php if ($link['current'] !== '') : ?>
                                 aria-current="<?php echo esc_attr($link['current']); ?>"
                             <?php endif; ?>>
-                            <?php echo kampachi_native_nav_label($link['label']); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                            <?php echo kampachi_native_nav_label(Site_Language::text($link['label'])); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                         </a>
                     </li>
                 <?php endforeach; ?>
@@ -231,7 +231,7 @@ if (! defined('ABSPATH')) {
                         $navChildren = Kampachi_Header_Editor::location_children();
                     }
 
-                    $navTitle = Site_Language::text($navTitle);
+                    $navTitle = Site_Language::shell_text('header', 'navigation', $navTitle);
                     $navUrl = Site_Language::url($navUrl);
                     $hasChildren = $navChildren !== [];
                     ?>
@@ -250,7 +250,7 @@ if (! defined('ABSPATH')) {
                                     <?php if (is_array($navChild) && ! empty($navChild['title']) && ! empty($navChild['url'])) : ?>
                                         <?php $childUrl = Site_Language::url((string) $navChild['url']); ?>
                                         <?php if ($childUrl !== '') : ?>
-                                            <li><a class="nav-sublink" href="<?php echo esc_url($childUrl); ?>"><?php echo esc_html(Site_Language::text((string) $navChild['title'])); ?></a></li>
+                                            <li><a class="nav-sublink" href="<?php echo esc_url($childUrl); ?>"><?php echo esc_html(Site_Language::shell_text('header', 'navigation', (string) $navChild['title'])); ?></a></li>
                                         <?php endif; ?>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
