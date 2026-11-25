@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-use Kampachi\Native\Simplified_Chinese;
+use Kampachi\Native\Site_Language;
 
 use Kampachi\CMS\CareersLanding;
 
@@ -28,7 +28,7 @@ $jobs = class_exists(CareersLanding::class)
         'orderby' => ['menu_order' => 'ASC', 'date' => 'DESC'],
         'suppress_filters' => false,
     ]);
-$jobs = Simplified_Chinese::posts($jobs);
+$jobs = Site_Language::posts($jobs);
 ?>
 <main id="main-content" class="kc-editorial-page kc-careers-page">
     <?php kampachi_native_render_page_hero($pageId); ?>

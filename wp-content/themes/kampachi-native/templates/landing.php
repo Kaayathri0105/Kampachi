@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-use Kampachi\Native\Simplified_Chinese;
+use Kampachi\Native\Site_Language;
 
 use Kampachi\CMS\AwardsLanding;
 use Kampachi\CMS\OutletsLanding;
@@ -80,7 +80,7 @@ $landingEditor = match ($collectionType) {
                 'orderby' => ['menu_order' => 'ASC', 'date' => 'DESC'],
                 'no_found_rows' => true,
             ]))->posts;
-        $entries = Simplified_Chinese::posts($entries);
+        $entries = Site_Language::posts($entries);
         ?>
         <?php if ($entries !== []) : ?>
             <section class="kc-section" id="collection">

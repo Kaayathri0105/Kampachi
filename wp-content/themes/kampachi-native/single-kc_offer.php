@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-use Kampachi\Native\Simplified_Chinese;
+use Kampachi\Native\Site_Language;
 
 use Kampachi\CMS\Offers;
 use Kampachi\CMS\OffersLanding;
@@ -41,7 +41,7 @@ while (have_posts()) :
         <?php kampachi_native_render_hero($hero, '', get_the_title() . ' hero'); ?>
 
         <div class="kc-offer-inner">
-            <nav class="kc-offer-breadcrumb" aria-label="Breadcrumb"><?php $offersUrl = Simplified_Chinese::url(home_url('/promotion/')); ?>
+            <nav class="kc-offer-breadcrumb" aria-label="Breadcrumb"><?php $offersUrl = Site_Language::url(home_url('/promotion/')); ?>
                 <?php if ($offersUrl !== '') : ?><a href="<?php echo esc_url($offersUrl); ?>"><?php echo esc_html(kampachi_native_label('offers')); ?></a><?php endif; ?><span aria-hidden="true">/</span><span aria-current="page"><?php echo esc_html(get_the_title()); ?></span></nav>
             <header class="kc-offer-introduction" id="offer-content">
                 <h1><?php echo esc_html(get_the_title()); ?></h1>
@@ -51,7 +51,7 @@ while (have_posts()) :
                 <?php if ($ctas !== []) : ?>
                     <div class="kc-offer-cta">
                         <?php foreach ($ctas as $cta) : ?>
-                            <?php $url = Simplified_Chinese::url($cta['url']); ?>
+                            <?php $url = Site_Language::url($cta['url']); ?>
                             <?php if ($url === '') { continue; } ?>
                             <a class="view-all-button kc-offer-cta-link" href="<?php echo esc_url($url); ?>">
                                 <?php echo esc_html($cta['label']); ?>
@@ -117,7 +117,7 @@ while (have_posts()) :
                     ] as $direction => [$label, $relation]) : ?>
                         <?php
                         $neighbor = $neighbors[$direction];
-                        $neighborUrl = $neighbor !== null ? Simplified_Chinese::url((string) get_permalink($neighbor)) : '';
+                        $neighborUrl = $neighbor !== null ? Site_Language::url((string) get_permalink($neighbor)) : '';
                         ?>
                         <?php if ($neighborUrl !== '') : ?>
                             <a class="kc-offer-pagination-link" href="<?php echo esc_url($neighborUrl); ?>"

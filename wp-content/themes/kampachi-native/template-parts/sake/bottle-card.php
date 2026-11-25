@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Kampachi\Native\Simplified_Chinese;
+use Kampachi\Native\Site_Language;
 
 use Kampachi\CMS\Outlets;
 use Kampachi\CMS\SakeBottles;
@@ -61,14 +61,14 @@ $image = $bottle['image_id'] > 0 ? wp_get_attachment_image($bottle['image_id'], 
                 <h4><?php echo esc_html(kampachi_native_label('locations')); ?></h4>
                 <ul>
                     <?php foreach ($outlets as $outletId) :
-                        $outletUrl = Simplified_Chinese::url((string) get_permalink($outletId));
+                        $outletUrl = Site_Language::url((string) get_permalink($outletId));
                         if ($outletUrl === '') {
                             continue;
                         }
                         ?>
                         <li>
                             <a href="<?php echo esc_url($outletUrl); ?>">
-                                <?php echo esc_html(Simplified_Chinese::text(Outlets::locationName($outletId))); ?>
+                                <?php echo esc_html(Site_Language::text(Outlets::locationName($outletId))); ?>
                             </a>
                         </li>
                     <?php endforeach; ?>

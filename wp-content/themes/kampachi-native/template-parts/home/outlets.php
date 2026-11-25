@@ -3,12 +3,12 @@
 
 declare(strict_types=1);
 
-use Kampachi\Native\Simplified_Chinese;
+use Kampachi\Native\Site_Language;
 
 use Kampachi\CMS\Outlets;
 use Kampachi\Native\Homepage_Content;
 
-$outlets = class_exists(Outlets::class) ? Simplified_Chinese::posts(Outlets::publishedLocations()) : [];
+$outlets = class_exists(Outlets::class) ? Site_Language::posts(Outlets::publishedLocations()) : [];
 $hasCarousel = count($outlets) > 3;
 
 if ($outlets === []) {
@@ -47,7 +47,7 @@ if ($outlets === []) {
                     <?php
                     $imageUrl = Homepage_Content::image($outlet->ID, 'outlet');
                     $excerpt = get_the_excerpt($outlet);
-                    $name = Simplified_Chinese::text(Outlets::locationName($outlet));
+                    $name = Site_Language::text(Outlets::locationName($outlet));
                     ?>
                     <article class="outlet-card kc-linked-card">
                         <div class="outlet-card__media">

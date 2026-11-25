@@ -181,7 +181,7 @@ final class Kampachi_Homepage
 
         $localized = get_option(self::option_name($language), []);
         $localized = is_array($localized) ? $localized : [];
-        if ($language === 'zh') {
+        if (in_array($language, ['zh', 'zh-hant', 'ja'], true)) {
             foreach (array_keys($english) as $key) {
                 if (preg_match('/_(title|subtitle|description)$/', $key)) {
                     unset($english[$key]);

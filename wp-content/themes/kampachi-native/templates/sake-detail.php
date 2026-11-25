@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-use Kampachi\Native\Simplified_Chinese;
+use Kampachi\Native\Site_Language;
 
 use Kampachi\CMS\Sake;
 use Kampachi\CMS\SakeBottles;
@@ -31,14 +31,14 @@ while (have_posts()) :
     $description = Sake::field($id, 'description');
     $ctaText = Sake::field($id, 'enquiry_label') ?: kampachi_native_label('enquire');
     $ctaUrl = Sake::field($id, 'enquiry_url') ?: home_url('/contact-us/');
-    $ctaUrl = Simplified_Chinese::url($ctaUrl);
+    $ctaUrl = Site_Language::url($ctaUrl);
     ?>
     <main class="kc-catering-page kc-sake-page kc-sake-detail<?php echo $images === [] ? ' kc-sake-detail--without-gallery' : ''; ?>" id="main-content">
         <?php kampachi_native_render_hero($images, '', get_the_title() . ' hero'); ?>
         <section class="kc-catering-detail-content">
             <div class="kc-catering-container">
                 <div class="kc-sake-brand-intro">
-                    <?php $landingUrl = Simplified_Chinese::url(home_url('/sake/')); ?>
+                    <?php $landingUrl = Site_Language::url(home_url('/sake/')); ?>
                     <?php if ($landingUrl !== '') : ?>
                         <a class="kc-catering-detail-back" href="<?php echo esc_url($landingUrl); ?>">← <?php echo esc_html(kampachi_native_label('back_sake')); ?></a>
                     <?php endif; ?>

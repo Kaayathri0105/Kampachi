@@ -8,18 +8,18 @@
 declare(strict_types=1);
 
 use Kampachi\CMS\Outlets;
-use Kampachi\Native\Simplified_Chinese;
+use Kampachi\Native\Site_Language;
 
 if (! defined('ABSPATH')) {
     exit;
 }
 
-require_once get_theme_file_path('inc/class-simplified-chinese.php');
+require_once get_theme_file_path('inc/class-site-language.php');
 
-add_filter('gettext', [Simplified_Chinese::class, 'gettext'], 10, 3);
-add_filter('wp_nav_menu_objects', [Simplified_Chinese::class, 'menu_items'], 20);
-add_filter('kampachi_footer_links', [Simplified_Chinese::class, 'links']);
-add_filter('the_content', [Simplified_Chinese::class, 'rich_links'], 20);
+add_filter('gettext', [Site_Language::class, 'gettext'], 10, 3);
+add_filter('wp_nav_menu_objects', [Site_Language::class, 'menu_items'], 20);
+add_filter('kampachi_footer_links', [Site_Language::class, 'links']);
+add_filter('the_content', [Site_Language::class, 'rich_links'], 20);
 
 function kampachi_native_setup(): void
 {
@@ -37,7 +37,7 @@ add_action('after_setup_theme', 'kampachi_native_setup');
 
 function kampachi_native_nav_label(string $title): string
 {
-    return '<span class="nav-label-en">' . esc_html(Simplified_Chinese::text($title)) . '</span>';
+    return '<span class="nav-label-en">' . esc_html(Site_Language::text($title)) . '</span>';
 }
 
 /**
@@ -237,7 +237,7 @@ function kampachi_setting(string $key, string $default = ''): string
 function kampachi_native_label(string $key): string
 {
     return class_exists(\Kampachi\CMS\Content::class)
-        ? Simplified_Chinese::text(\Kampachi\CMS\Content::label($key))
+        ? Site_Language::text(\Kampachi\CMS\Content::label($key))
         : '';
 }
 
@@ -263,7 +263,7 @@ function kampachi_native_collection_query(string $postType): WP_Query
         'no_found_rows' => true,
         'ignore_sticky_posts' => true,
     ]);
-    $query->posts = Simplified_Chinese::posts($query->posts);
+    $query->posts = Site_Language::posts($query->posts);
     $query->post_count = count($query->posts);
 
     return $query;
@@ -302,7 +302,7 @@ function kampachi_native_header_post_navigation(): ?array
 
         $links = [];
         if ($landing instanceof WP_Post && $landing->post_status === 'publish') {
-            $url = Simplified_Chinese::url((string) get_permalink($landing));
+            $url = Site_Language::url((string) get_permalink($landing));
             if (is_string($url) && $url !== '') {
                 $links[] = ['label' => $landingLabel, 'url' => $url, 'current' => $onLanding ? 'page' : ''];
             }
@@ -547,7 +547,7 @@ function kampachi_native_render_intro(string $title, string $subtitle = '', stri
 
     if ($description !== '') {
         echo '<div class="kc-intro-description">'
-            . Simplified_Chinese::rich_links(wp_kses_post(wpautop($description))) . '</div>';
+            . Site_Language::rich_links(wp_kses_post(wpautop($description))) . '</div>';
     }
 
     echo '</div></section>';
@@ -557,7 +557,7 @@ function kampachi_native_render_post_card(int $postId): void
 {
     $title = get_the_title($postId);
     if (class_exists(Outlets::class) && get_post_type($postId) === Outlets::POST_TYPE) {
-        $title = Simplified_Chinese::text(Outlets::locationName($postId));
+        $title = Site_Language::text(Outlets::locationName($postId));
         if ($title === '') {
             return;
         }

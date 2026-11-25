@@ -50,7 +50,7 @@ $promotionPosts = class_exists(OffersLanding::class) ? OffersLanding::posts($pro
 $promotionCards = [];
 $promotionCategories = [];
 
-foreach (Simplified_Chinese::posts($promotionPosts) as $promotion) {
+foreach (Site_Language::posts($promotionPosts) as $promotion) {
     if (! $promotion instanceof WP_Post) {
         continue;
     }
@@ -1722,7 +1722,7 @@ $selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selected
                         <div class="promotion-filters" role="group" aria-label="Filter promotions">
                             <?php foreach ($promotionCategories as $categoryKey => $categoryName) : ?>
                                 <?php $isSelected = $categoryKey === $selectedCategory; ?>
-                                <button class="promotion-filter<?php echo $isSelected ? ' is-active' : ''; ?>" type="button" data-promotion-filter="<?php echo esc_attr($categoryKey); ?>" aria-pressed="<?php echo $isSelected ? 'true' : 'false'; ?>"><?php echo esc_html(Simplified_Chinese::text($categoryName)); ?></button>
+                                <button class="promotion-filter<?php echo $isSelected ? ' is-active' : ''; ?>" type="button" data-promotion-filter="<?php echo esc_attr($categoryKey); ?>" aria-pressed="<?php echo $isSelected ? 'true' : 'false'; ?>"><?php echo esc_html(Site_Language::text($categoryName)); ?></button>
                             <?php endforeach; ?>
                         </div>
 

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-use Kampachi\Native\Simplified_Chinese;
+use Kampachi\Native\Site_Language;
 
 use Kampachi\CMS\Catering;
 use Kampachi\CMS\Outlets;
@@ -30,7 +30,7 @@ while (have_posts()) {
         $ctaUrl = home_url('/contact-us/');
     }
 
-    $ctaUrl = Simplified_Chinese::url($ctaUrl);
+    $ctaUrl = Site_Language::url($ctaUrl);
     $images = [];
     foreach (Catering::image_ids(get_post_meta($postId, '_kampachi_event_image_ids', true)) as $imageId) {
         $url = wp_get_attachment_image_url($imageId, 'full');
@@ -55,7 +55,7 @@ while (have_posts()) {
         <?php kampachi_native_render_hero($images, '', get_the_title() . ' hero'); ?>
         <section class="kc-catering-detail-content">
             <div class="kc-catering-container">
-                <?php $landingUrl = Simplified_Chinese::url(home_url('/catering-events/')); ?>
+                <?php $landingUrl = Site_Language::url(home_url('/catering-events/')); ?>
                 <?php if ($landingUrl !== '') : ?>
                     <a class="kc-catering-detail-back" href="<?php echo esc_url($landingUrl); ?>">← <?php echo esc_html(kampachi_native_label('back_events')); ?></a>
                 <?php endif; ?>
@@ -67,12 +67,12 @@ while (have_posts()) {
                 <?php if ($outletIds !== []) : ?>
                     <div class="kc-catering-detail-outlets"><h2><?php echo esc_html(kampachi_native_label('locations')); ?></h2>
                         <?php foreach ($outletIds as $outletId) :
-                            $outletUrl = Simplified_Chinese::url((string) get_permalink($outletId));
+                            $outletUrl = Site_Language::url((string) get_permalink($outletId));
                             if ($outletUrl === '') {
                                 continue;
                             }
                             ?>
-                            <a href="<?php echo esc_url($outletUrl); ?>"><?php echo esc_html(Simplified_Chinese::text(Outlets::locationName($outletId))); ?></a>
+                            <a href="<?php echo esc_url($outletUrl); ?>"><?php echo esc_html(Site_Language::text(Outlets::locationName($outletId))); ?></a>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
