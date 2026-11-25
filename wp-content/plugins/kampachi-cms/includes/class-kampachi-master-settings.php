@@ -37,6 +37,7 @@ final class Kampachi_Master_Settings
         'en' => 'English',
         'ms' => 'Bahasa Melayu',
         'zh' => 'Chinese (Simplified)',
+        'zh-hant' => 'Chinese (Traditional)',
         'ja' => 'Japanese',
         'ta' => 'Tamil',
         'vi' => 'Vietnamese',
@@ -307,7 +308,7 @@ final class Kampachi_Master_Settings
             'azure' => 'Microsoft Azure Translator',
             'deepl' => 'DeepL API',
         ]);
-        self::checkbox_field($values, 'auto_translate', 'Automatically create translations for new English content');
+        self::checkbox_field($values, 'auto_translate', 'Automatically create missing language drafts after saving English');
         echo '<tr><th scope="row">Available languages</th><td><div class="kc-master-checkgrid">';
         $selected = is_array($values['languages']) ? $values['languages'] : ['en'];
         foreach (self::LANGUAGES as $code => $label) {
@@ -315,7 +316,7 @@ final class Kampachi_Master_Settings
             echo '<label><input type="checkbox" name="values[languages][]" value="' . esc_attr($code) . '" ' . checked($checked, true, false) . ($code === 'en' ? ' disabled' : '') . '> ' . esc_html($label) . ' (' . esc_html($code) . ')</label>';
         }
         echo '</div><p class="description">English is always enabled. Create language-specific content before adding public language links.</p></td></tr>';
-        echo '<tr><th>Translator credentials</th><td><p>Azure: <code>KC_AZURE_TRANSLATOR_KEY</code>, <code>KC_AZURE_TRANSLATOR_REGION</code>. DeepL: <code>KC_DEEPL_AUTH_KEY</code>. Define secrets in wp-config.php.</p><p class="description">API selection is stored here for translation integrations. Automatic translation creates separate posts when English drafts are saved; previously created translations keep their independently edited text. Verify translations before publishing. Existing pages are not retroactively translated.</p></td></tr>';
+        echo '<tr><th>Translator credentials</th><td><p>Azure: <code>KC_AZURE_TRANSLATOR_KEY</code>, <code>KC_AZURE_TRANSLATOR_REGION</code>. DeepL: <code>KC_DEEPL_AUTH_KEY</code>. Define secrets in wp-config.php.</p><p class="description">API selection is stored here for translation integrations. Save the English post to queue missing language drafts. Open the Translate to Other Languages panel to create or edit a copy. Retranslating from a language copy replaces its saved text after confirmation. Review drafts before publishing.</p></td></tr>';
         echo '</tbody></table>';
         echo '<p class="description">Translation credentials can also be maintained from the protected WP Config tab.</p>';
     }

@@ -15,6 +15,8 @@ if (! defined('ABSPATH')) {
  */
 final class Kampachi_Translations
 {
+    private const JOB = 'kc_translate_post_language';
+
     private static bool $creating = false;
 
     private const TYPES = [
@@ -44,7 +46,10 @@ final class Kampachi_Translations
     public static function boot(): void
     {
         add_action('add_meta_boxes', [self::class, 'metabox']);
-        add_action('save_post', [self::class, 'on_save'], 999, 2);
+        add_action('wp_after_insert_post', [self::class, 'on_save'], 999, 2);
+        add_action('admin_enqueue_scripts', [self::class, 'admin_assets']);
+        add_action('wp_ajax_' . self::JOB, [self::class, 'translate_ajax']);
+        add_action(self::JOB, [self::class, 'translate_job'], 10, 2);
         add_filter('body_class', [self::class, 'body_class']);
         add_filter('language_attributes', [self::class, 'html_language']);
         add_action('wp_head', [self::class, 'hreflang'], 5);
@@ -66,7 +71,7 @@ final class Kampachi_Translations
         if ($language === '' || ! isset(Kampachi_Master_Settings::languages()[$language])) {
             return $attributes;
         }
-        $locales = ['en' => 'en-US', 'ms' => 'ms-MY', 'zh' => 'zh-CN', 'ja' => 'ja-JP', 'ta' => 'ta-IN', 'vi' => 'vi-VN', 'fr' => 'fr-FR', 'de' => 'de-DE'];
+        $locales = ['en' => 'en-US', 'ms' => 'ms-MY', 'zh' => 'zh-Hans', 'zh-hant' => 'zh-Hant', 'ja' => 'ja-JP', 'ta' => 'ta-IN', 'vi' => 'vi-VN', 'fr' => 'fr-FR', 'de' => 'de-DE'];
         $replacement = 'lang="' . esc_attr($locales[$language] ?? $language) . '"';
         if (preg_match('/lang="[^"]+"/', $attributes)) {
             return (string) preg_replace('/lang="[^"]+"/', $replacement, $attributes, 1);
@@ -77,7 +82,8 @@ final class Kampachi_Translations
     public static function hreflang(): void
     {
         foreach (self::links(get_queried_object_id()) as $code => $entry) {
-            echo '<link rel="alternate" hreflang="' . esc_attr($code) . '" href="' . esc_url($entry['url']) . '">' . "\n";
+            $tag = match ($code) { 'zh' => 'zh-Hans', 'zh-hant' => 'zh-Hant', default => $code };
+            echo '<link rel="alternate" hreflang="' . esc_attr($tag) . '" href="' . esc_url($entry['url']) . '">' . "\n";
         }
     }
 
@@ -100,44 +106,91 @@ final class Kampachi_Translations
     public static function metabox(): void
     {
         foreach (self::TYPES as $type) {
-            add_meta_box('kc-translations', 'Kampachi Language', [self::class, 'render_metabox'], $type, 'side', 'default');
+            add_meta_box('kc-translations', 'Translate to Other Languages', [self::class, 'render_metabox'], $type, 'side', 'default');
         }
+    }
+
+    public static function admin_assets(): void
+    {
+        $screen = get_current_screen();
+        if ($screen === null || $screen->base !== 'post' || ! in_array($screen->post_type, self::TYPES, true)) {
+            return;
+        }
+
+        $file = dirname(__DIR__) . '/assets/post-translations.js';
+        if (! is_file($file)) {
+            return;
+        }
+
+        wp_enqueue_script(
+            'kc-post-translations',
+            plugins_url('../assets/post-translations.js', __FILE__),
+            [],
+            (string) filemtime($file),
+            true
+        );
     }
 
     public static function render_metabox(WP_Post $post): void
     {
-        $lang = (string) get_post_meta($post->ID, '_kc_language', true);
-        $source = absint(get_post_meta($post->ID, '_kc_translation_of', true));
-        echo '<p><strong>Post language:</strong> ' . esc_html(self::language_name($lang !== '' ? $lang : 'en')) . '</p>';
-        if ($source > 0) {
-            echo '<p><strong>English master:</strong> <a href="' . esc_url(get_edit_post_link($source, 'raw') ?: '') . '">#' . $source . '</a></p>';
-            echo '<p>Text is independently editable. Images inherit from the English master.</p>';
-            return;
-        }
-        echo '<p>English master. Saving can create translations automatically if enabled in Master Settings.</p>';
-        $links = self::links($post->ID);
-        foreach (Kampachi_Master_Settings::languages() as $code => $name) {
-            if ($code === 'en') {
-                continue;
+        $origin = absint(get_post_meta($post->ID, '_kc_translation_of', true)) ?: $post->ID;
+        $source = get_post($origin);
+        $languages = Kampachi_Master_Settings::languages();
+        $canTranslate = $source instanceof WP_Post
+            && self::is_source($source)
+            && current_user_can('edit_post', $origin)
+            && self::provider() !== '';
+        $showPending = $origin === $post->ID && Kampachi_Master_Settings::get('auto_translate') === '1';
+
+        echo '<div data-kc-translations data-source="' . esc_attr((string) $origin) . '"';
+        echo ' data-url="' . esc_url(admin_url('admin-ajax.php')) . '"';
+        echo ' data-nonce="' . esc_attr(wp_create_nonce(self::JOB . '_' . $origin)) . '">';
+        echo '<p>Translate saved English content. Each language has its own WordPress post.</p>';
+
+        foreach ($languages as $code => $label) {
+            $targetId = $code === 'en' ? $origin : self::translated_post_id($origin, $code);
+            $current = $targetId === $post->ID;
+            $editUrl = $targetId > 0 ? get_edit_post_link($targetId, 'raw') : null;
+            $pending = $code !== 'en' && $showPending && $targetId === 0
+                && wp_next_scheduled(self::JOB, [$origin, $code]) !== false;
+
+            echo '<p><strong>' . esc_html($label) . '</strong> ';
+            if ($current) {
+                echo '<span aria-current="page">Current</span>';
+            } elseif ($editUrl) {
+                echo '<a href="' . esc_url($editUrl) . '">Edit translation</a>';
             }
-            echo '<p>' . esc_html($name) . ': ';
-            if (self::translated_post_id($post->ID, $code) > 0) {
-                $translation = self::translated_post_id($post->ID, $code);
-                echo '<a href="' . esc_url(get_edit_post_link($translation, 'raw') ?: '') . '">Edit translation</a>';
-            } else {
-                echo 'Not created';
+
+            if ($code !== 'en' && $canTranslate && ($targetId === 0 || $current)) {
+                $button = $targetId === 0 ? 'Translate from English' : 'Retranslate from English';
+                $error = (string) get_post_meta($origin, '_kc_translation_error_' . $code, true);
+                echo '<br><button type="button" class="button button-small"';
+                echo ' data-kc-language="' . esc_attr($code) . '" data-label="' . esc_attr($label) . '"';
+                echo ' data-target="' . esc_attr((string) $targetId) . '"';
+                echo $pending ? ' data-pending="1">' : '>';
+                echo esc_html($button) . '</button>';
+                echo '<br><span data-kc-translation-status role="status">' . esc_html($error) . '</span>';
             }
+
             echo '</p>';
         }
-        $error = (string) get_post_meta($post->ID, '_kc_translation_error', true);
-        if ($error !== '') {
-            echo '<p style="color:#b32d2e">' . esc_html($error) . '</p>';
-        }
+
+        echo '</div>';
     }
 
-    private static function language_name(string $code): string
+    private static function provider(): string
     {
-        return Kampachi_Master_Settings::languages()[$code] ?? strtoupper($code);
+        $provider = (string) Kampachi_Master_Settings::get('language_provider');
+
+        return in_array($provider, ['azure', 'deepl'], true) ? $provider : '';
+    }
+
+    private static function is_source(WP_Post $post): bool
+    {
+        return in_array($post->post_type, self::TYPES, true)
+            && in_array($post->post_status, ['draft', 'pending', 'publish', 'private', 'future'], true)
+            && absint(get_post_meta($post->ID, '_kc_translation_of', true)) === 0
+            && in_array((string) get_post_meta($post->ID, '_kc_language', true), ['', 'en'], true);
     }
 
     public static function translated_post_id(int $masterId, string $lang): int
@@ -179,63 +232,171 @@ final class Kampachi_Translations
 
     public static function on_save(int $postId, WP_Post $post): void
     {
-        if (self::$creating || ! in_array($post->post_type, self::TYPES, true)
+        if (self::$creating || ! self::is_source($post)
             || wp_is_post_revision($postId) || wp_is_post_autosave($postId)
-            || ! in_array($post->post_status, ['draft', 'pending', 'publish', 'private'], true)) {
-            return;
-        }
-        if (absint(get_post_meta($postId, '_kc_translation_of', true)) > 0
-            || (string) get_post_meta($postId, '_kc_language', true) !== ''
-                && (string) get_post_meta($postId, '_kc_language', true) !== 'en') {
+            || (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)) {
             return;
         }
 
         self::sync_images($postId);
-        if (Kampachi_Master_Settings::get('auto_translate') !== '1') {
+
+        if (Kampachi_Master_Settings::get('auto_translate') !== '1' || self::provider() === '') {
             return;
         }
-        $provider = (string) Kampachi_Master_Settings::get('language_provider');
-        if (! in_array($provider, ['azure', 'deepl'], true)) {
-            return;
+
+        foreach (Kampachi_Master_Settings::languages() as $language => $label) {
+            if ($language === 'en' || self::translated_post_id($postId, $language) > 0) {
+                continue;
+            }
+
+            $args = [$postId, $language];
+            if (wp_next_scheduled(self::JOB, $args) === false) {
+                wp_schedule_single_event(time() + 15, self::JOB, $args);
+            }
         }
-        foreach (Kampachi_Master_Settings::languages() as $lang => $name) {
-            if ($lang === 'en' || self::translated_post_id($postId, $lang) > 0) {
-                continue;
-            }
-            $translated = self::translate_fields($post, $lang, $provider);
-            if (is_wp_error($translated)) {
-                update_post_meta($postId, '_kc_translation_error', $name . ': ' . $translated->get_error_message());
-                continue;
-            }
-            self::$creating = true;
-            try {
-                $newId = wp_insert_post([
-                    'post_type' => $post->post_type,
-                    'post_status' => $post->post_status === 'publish' ? 'draft' : $post->post_status,
-                    'post_title' => $translated['title'],
-                    'post_content' => $translated['content'],
-                    'post_excerpt' => $translated['excerpt'],
-                    'post_name' => sanitize_title($post->post_name . '-' . $lang),
-                    'post_author' => $post->post_author,
-                    'menu_order' => $post->menu_order,
-                ], true);
-                if (is_wp_error($newId)) {
-                    update_post_meta($postId, '_kc_translation_error', $name . ': ' . $newId->get_error_message());
-                    continue;
+    }
+
+    public static function translate_job(int $postId, string $language): void
+    {
+        if (Kampachi_Master_Settings::get('auto_translate') === '1'
+            && self::translated_post_id($postId, $language) === 0) {
+            self::run_translation($postId, $language, 0);
+        }
+    }
+
+    public static function translate_ajax(): void
+    {
+        $postId = absint($_POST['source'] ?? 0);
+        $targetId = absint($_POST['target'] ?? 0);
+        $rawLanguage = $_POST['language'] ?? '';
+        $language = is_string($rawLanguage) ? sanitize_key(wp_unslash($rawLanguage)) : '';
+        check_ajax_referer(self::JOB . '_' . $postId, 'nonce');
+
+        if (! current_user_can('edit_post', $postId)
+            || ($targetId > 0 && (
+                ! current_user_can('edit_post', $targetId) || ($_POST['replace'] ?? '') !== '1'
+            ))) {
+            wp_send_json_error(['message' => 'You do not have permission to run this translation.'], 403);
+        }
+
+        $result = self::run_translation($postId, $language, $targetId);
+        if (is_wp_error($result)) {
+            wp_send_json_error([
+                'code' => $result->get_error_code(),
+                'message' => $result->get_error_message(),
+            ], 409);
+        }
+
+        wp_send_json_success(['url' => get_edit_post_link($result, 'raw')]);
+    }
+
+    private static function run_translation(int $postId, string $language, int $targetId): int|WP_Error
+    {
+        $post = get_post($postId, OBJECT, 'raw');
+        $provider = self::provider();
+        if (! $post instanceof WP_Post || ! self::is_source($post) || $provider === '' || $language === 'en'
+            || ! isset(Kampachi_Master_Settings::languages()[$language])) {
+            return new WP_Error('kc_translation_unavailable', 'Save the English post and enable this language and provider.');
+        }
+
+        $lock = 'kc_translation_lock_' . $postId . '_' . $language;
+        $started = (string) time();
+        $previous = (int) get_option($lock, 0);
+        if ($previous > 0 && $previous + 600 < (int) $started) {
+            delete_option($lock);
+        }
+        if (! add_option($lock, $started, '', false)) {
+            return new WP_Error('kc_translation_busy', 'This language is already translating. Wait a moment and try again.');
+        }
+
+        try {
+            $existing = self::translated_post_id($postId, $language);
+            if ($existing !== $targetId) {
+                if ($targetId === 0 && $existing > 0) {
+                    return $existing;
                 }
-                update_post_meta($newId, '_kc_translation_of', $postId);
-                update_post_meta($newId, '_kc_language', $lang);
-                self::copy_custom_metadata($postId, $newId);
-                $metaResult = self::translate_custom_metadata($postId, $newId, $lang, $provider);
-                if (is_wp_error($metaResult)) {
-                    update_post_meta($postId, '_kc_translation_error', $name . ' custom fields: ' . $metaResult->get_error_message());
-                } else {
-                    delete_post_meta($postId, '_kc_translation_error');
-                }
-                self::sync_images($postId);
-            } finally {
-                self::$creating = false;
+                return new WP_Error('kc_translation_changed', 'The language post changed. Reopen the editor and try again.');
             }
+
+            $result = self::write_translation($post, $language, $provider, $targetId);
+            $errorKey = '_kc_translation_error_' . $language;
+            if (is_wp_error($result)) {
+                update_post_meta($postId, $errorKey, $result->get_error_message());
+            } else {
+                delete_post_meta($postId, $errorKey);
+                wp_clear_scheduled_hook(self::JOB, [$postId, $language]);
+            }
+
+            return $result;
+        } finally {
+            if (get_option($lock) === $started) {
+                delete_option($lock);
+            }
+        }
+    }
+
+    private static function write_translation(
+        WP_Post $source,
+        string $language,
+        string $provider,
+        int $targetId
+    ): int|WP_Error {
+        $target = $targetId > 0 ? get_post($targetId, OBJECT, 'raw') : null;
+        if ($targetId > 0 && (! $target instanceof WP_Post || $target->post_type !== $source->post_type)) {
+            return new WP_Error('kc_translation_changed', 'This language post is unavailable.');
+        }
+
+        $fields = self::translate_fields($source, $language, $provider);
+        if (is_wp_error($fields)) {
+            return $fields;
+        }
+        $metadata = self::translated_metadata($source->ID, $language, $provider);
+        if (is_wp_error($metadata)) {
+            return $metadata;
+        }
+
+        $savedSource = get_post($source->ID, OBJECT, 'raw');
+        $savedTarget = $targetId > 0 ? get_post($targetId, OBJECT, 'raw') : null;
+        if (! $savedSource instanceof WP_Post || ! self::is_source($savedSource) || $savedSource != $source
+            || $savedTarget != $target || self::translated_post_id($source->ID, $language) !== $targetId) {
+            return new WP_Error('kc_translation_changed', 'The source or language post changed. Save and try again.');
+        }
+
+        $content = [
+            'post_title' => $fields['title'],
+            'post_content' => $fields['content'],
+            'post_excerpt' => $fields['excerpt'],
+        ];
+
+        self::$creating = true;
+        try {
+            if ($targetId === 0) {
+                $result = wp_insert_post(wp_slash($content + [
+                    'post_type' => $source->post_type,
+                    'post_status' => 'draft',
+                    'post_name' => sanitize_title($source->post_name . '-' . $language),
+                    'post_author' => $source->post_author,
+                    'menu_order' => $source->menu_order,
+                    'meta_input' => ['_kc_translation_of' => $source->ID, '_kc_language' => $language],
+                ]), true);
+            } else {
+                $result = wp_update_post(wp_slash($content + ['ID' => $targetId]), true);
+            }
+            if (is_wp_error($result) || $result === 0) {
+                return is_wp_error($result) ? $result : new WP_Error('kc_translation_save', 'Could not save translation.');
+            }
+            if ($targetId === 0) {
+                self::copy_custom_metadata($source->ID, $result);
+            }
+            foreach ($metadata as $key => $value) {
+                update_post_meta($result, $key, wp_slash($value));
+            }
+
+            self::sync_images($source->ID);
+
+            return $result;
+        } finally {
+            self::$creating = false;
         }
     }
 
@@ -247,18 +408,14 @@ final class Kampachi_Translations
                 continue;
             }
             foreach ($values as $value) {
-                add_post_meta($translatedId, $key, maybe_unserialize($value));
+                add_post_meta($translatedId, $key, wp_slash(maybe_unserialize($value)));
             }
         }
         set_post_thumbnail($translatedId, get_post_thumbnail_id($originalId));
     }
 
-    /**
-     * Translate text-based CMS fields when FIRST creating the language copy.
-     * Media identifiers, URLs, dates and prices are never sent for translation.
-     * Subsequent English saves synchronize media only, preserving text edits.
-     */
-    private static function translate_custom_metadata(int $sourceId, int $targetId, string $lang, string $provider): true|WP_Error
+    /** @return array<string, string|array>|WP_Error */
+    private static function translated_metadata(int $sourceId, string $lang, string $provider): array|WP_Error
     {
         $simpleNames = [
             'subtitle', 'badge', 'terms', 'address', 'hours',
@@ -287,7 +444,11 @@ final class Kampachi_Translations
         foreach ($simpleNames as $key) {
             $metaKey = '_kampachi_' . $key;
             $value = get_post_meta($sourceId, $metaKey, true);
-            if (! is_string($value) || trim($value) === '') {
+            if (! is_string($value) || ! metadata_exists('post', $sourceId, $metaKey)) {
+                continue;
+            }
+            if (trim($value) === '') {
+                $sourceValues[$metaKey] = $value;
                 continue;
             }
             $texts[] = $value;
@@ -313,7 +474,7 @@ final class Kampachi_Translations
             }
         }
         if ($texts === []) {
-            return true;
+            return $sourceValues;
         }
         $translated = [];
         foreach (array_chunk($texts, 20) as $chunk) {
@@ -329,16 +490,12 @@ final class Kampachi_Translations
                 return new WP_Error('kc_translation_meta', 'Translation result missing CMS field.');
             }
             if ($pointer['index'] === null) {
-                update_post_meta($targetId, $pointer['key'], $text);
+                $sourceValues[$pointer['key']] = $text;
             } else {
                 $sourceValues[$pointer['key']][$pointer['index']][$pointer['field']] = $text;
             }
         }
-        foreach ($sourceValues as $key => $value) {
-            update_post_meta($targetId, $key, wp_slash($value));
-        }
-
-        return true;
+        return $sourceValues;
     }
 
     private static function sync_images(int $masterId): void
@@ -415,7 +572,11 @@ final class Kampachi_Translations
         if (! defined('KC_AZURE_TRANSLATOR_KEY') || ! defined('KC_AZURE_TRANSLATOR_REGION')) {
             return new WP_Error('kc_azure_key', 'Azure Translator key and region are missing in wp-config.php.');
         }
-        $target = $to === 'zh' ? 'zh-Hans' : $to;
+        $target = match ($to) {
+            'zh' => 'zh-Hans',
+            'zh-hant' => 'zh-Hant',
+            default => $to,
+        };
         $url = 'https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=en&to=' . rawurlencode($target) . '&textType=html';
         $response = wp_safe_remote_post($url, [
             'headers' => [
