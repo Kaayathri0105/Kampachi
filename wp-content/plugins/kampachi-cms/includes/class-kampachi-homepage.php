@@ -88,11 +88,97 @@ final class Kampachi_Homepage
         );
     }
 
-    private static function options(): array
+    public static function master_page(): ?WP_Post
     {
-        $options = get_option(self::OPTION, []);
+        $pageId = absint(get_option('page_on_front'));
+        $page = $pageId > 0 ? get_post($pageId) : get_page_by_path('home', OBJECT, 'page');
 
-        return is_array($options) ? $options : [];
+        return $page instanceof WP_Post && $page->post_type === 'page' && $page->post_status !== 'trash'
+            ? $page
+            : null;
+    }
+
+    private static function option_name(string $language): string
+    {
+        return $language === 'en' ? self::OPTION : self::OPTION . '_' . $language;
+    }
+
+    private static function options(string $language = 'en'): array
+    {
+        $english = get_option(self::OPTION, []);
+        $english = is_array($english) ? $english : [];
+        if ($language === 'en') {
+            return $english;
+        }
+
+        $localized = get_option(self::option_name($language), []);
+
+        return is_array($localized) ? array_replace($english, $localized) : $english;
+    }
+
+    public static function options_for_post(int $postId): array
+    {
+        $source = absint(get_post_meta($postId, '_kc_translation_of', true));
+        $post = $source > 0 && $source === self::master_page()?->ID ? get_post($postId) : null;
+
+        return self::options($post instanceof WP_Post ? Kampachi_Translations::post_language($post) : 'en');
+    }
+
+    /**
+     * @param callable(list<string>): (list<string>|WP_Error) $translate
+     * @return array<string, mixed>|WP_Error
+     */
+    public static function prepare_translation(callable $translate): array|WP_Error
+    {
+        $settings = self::options();
+        $strings = [];
+        $locations = [];
+
+        foreach (['intro', 'offers', 'dishes', 'sake', 'outlets'] as $section) {
+            foreach (['title', 'subtitle', 'description'] as $field) {
+                $key = $section . '_' . $field;
+                if (is_string($settings[$key] ?? null) && trim($settings[$key]) !== '') {
+                    $locations[] = [$key, null, null];
+                    $strings[] = $settings[$key];
+                }
+            }
+        }
+        foreach (['hero_slides' => ['title', 'text'], 'dishes' => ['title', 'description']] as $key => $fields) {
+            foreach ((array) ($settings[$key] ?? []) as $index => $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                foreach ($fields as $field) {
+                    if (is_string($row[$field] ?? null) && trim($row[$field]) !== '') {
+                        $locations[] = [$key, $index, $field];
+                        $strings[] = $row[$field];
+                    }
+                }
+            }
+        }
+
+        $offset = 0;
+        foreach (array_chunk($strings, 20) as $chunk) {
+            $result = $translate($chunk);
+            if (is_wp_error($result)) {
+                return $result;
+            }
+            foreach ($result as $value) {
+                [$key, $index, $field] = $locations[$offset++];
+                if ($index === null) {
+                    $settings[$key] = wp_kses_post($value);
+                } else {
+                    $settings[$key][$index][$field] = wp_kses_post($value);
+                }
+            }
+        }
+
+        return $settings;
+    }
+
+    public static function save_translation(string $language, array $settings): void
+    {
+        update_option(self::option_name($language), $settings, false);
     }
 
     public static function text_format(mixed $input): array
@@ -306,14 +392,23 @@ final class Kampachi_Homepage
             wp_die(esc_html__('You do not have permission to edit this homepage.', 'kampachi-homepage'));
         }
 
-        $settings = self::options();
+        $page = Kampachi_Translations::dashboard_page(self::master_page(), $_GET['kc_language'] ?? null);
+        $language = $page !== null ? Kampachi_Translations::post_language($page) : 'en';
+        $settings = self::options($language);
         $offers = get_posts(['post_type' => 'kc_offer', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC']);
         $sakes = get_posts(['post_type' => 'kc_sake', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC']);
         $dishes = is_array($settings['dishes'] ?? null) ? $settings['dishes'] : [];
         $selectedOffers = array_map('intval', (array) ($settings['offer_ids'] ?? []));
         $selectedSakes = array_map('intval', (array) ($settings['sake_ids'] ?? []));
+        $preview = home_url('/');
+        if ($page !== null && $language !== 'en') {
+            $preview = $page->post_status === 'publish' ? get_permalink($page) : get_preview_post_link($page);
+        }
         echo '<div class="wrap kc-home-admin">';
-        echo '<header class="kc-page-header"><div><p class="kc-eyebrow">KAMPACHI / CONTENT MANAGEMENT</p><h1>Homepage editor</h1></div><a class="button kc-view-site" href="' . esc_url(home_url('/')) . '" target="_blank" rel="noopener noreferrer">View website ↗</a></header>';
+        echo '<header class="kc-page-header"><div><p class="kc-eyebrow">KAMPACHI / CONTENT MANAGEMENT</p><h1>Homepage editor</h1></div><a class="button kc-view-site" href="' . esc_url($preview) . '" target="_blank" rel="noopener noreferrer">View website ↗</a></header>';
+        if ($page !== null) {
+            Kampachi_Translations::render_tabs($page, admin_url('admin.php?page=kampachi-homepage-module'));
+        }
         echo '<nav class="kc-section-nav" aria-label="Homepage sections"><a href="#kc-section-layout"><span>00</span> Layout</a><a href="#kc-section-hero"><span>01</span> Hero</a><a href="#kc-section-introduction"><span>02</span> Introduction</a><a href="#kc-section-promotions"><span>03</span> Offers &amp; Events</a><a href="#kc-section-dishes"><span>04</span> Signature dishes</a><a href="#kc-section-sake"><span>05</span> Artisanal Sake</a><a href="#kc-section-outlets"><span>06</span> Restaurants</a></nav>';
         if (isset($_GET['updated']) && $_GET['updated'] === '1') {
             echo '<div class="notice notice-success is-dismissible"><p>Homepage saved.</p></div>';
@@ -321,7 +416,14 @@ final class Kampachi_Homepage
         echo '<form id="kc-home-form" action="' . esc_url(admin_url('admin-post.php')) . '" method="post">';
         echo '<input type="hidden" name="action" value="kampachi_homepage_save">';
         wp_nonce_field('kampachi_homepage_save', 'kampachi_home_nonce');
-        Seo::renderHomepagePanel();
+        if ($page !== null) {
+            Kampachi_Translations::render_dashboard_language($page);
+        }
+        if ($page !== null && $language !== 'en') {
+            Seo::renderLandingPanel($page, 'Homepage SEO');
+        } else {
+            Seo::renderHomepagePanel();
+        }
 
         echo '<section id="kc-section-layout" class="kc-panel"><h2><span class="kc-section-number">00</span> Homepage layout</h2>';
         echo '<p>Enable or disable each section. The banner stays at the top when enabled, and published outlets appear in the final section.</p>';
@@ -556,7 +658,9 @@ final class Kampachi_Homepage
         }
         check_admin_referer('kampachi_homepage_save', 'kampachi_home_nonce');
         $raw = isset($_POST['home']) && is_array($_POST['home']) ? wp_unslash($_POST['home']) : [];
-        $previous = self::options();
+        $page = Kampachi_Translations::dashboard_page(self::master_page(), $_POST['kc_language'] ?? null);
+        $language = $page !== null ? Kampachi_Translations::post_language($page) : 'en';
+        $previous = self::options($language);
         $clean = ['format' => []];
         foreach (['intro', 'offers', 'dishes', 'sake', 'outlets'] as $section) {
             $subtitle = $section . '_subtitle';
@@ -638,9 +742,19 @@ final class Kampachi_Homepage
         $clean['offer_ids'] = self::selected_posts($raw['offer_ids'] ?? $previous['offer_ids'] ?? [], 'kc_offer');
         $clean['sake_ids'] = self::selected_posts($raw['sake_ids'] ?? $previous['sake_ids'] ?? [], 'kc_sake');
         $clean['outlet_ids'] = self::selected_posts($raw['outlet_ids'] ?? [], 'kc_outlet');
-        update_option(self::OPTION, $clean, false);
-        Seo::saveHomepage($raw['seo'] ?? null);
-        wp_safe_redirect(admin_url('admin.php?page=kampachi-homepage-module&updated=1'));
+        if ($page !== null && $language !== 'en') {
+            Seo::saveLandingPanel($page);
+        } else {
+            Seo::saveHomepage($raw['seo'] ?? null);
+        }
+        self::save_translation($language, $clean);
+
+        $url = admin_url('admin.php?page=kampachi-homepage-module&updated=1');
+        if ($page !== null) {
+            Kampachi_Translations::on_save($page->ID, $page);
+            $url = Kampachi_Translations::dashboard_url($page, $url);
+        }
+        wp_safe_redirect($url);
         exit;
     }
 
@@ -699,7 +813,7 @@ final class Kampachi_Homepage
 
     public static function render(): bool
     {
-        $config = self::options();
+        $config = self::options_for_post(get_queried_object_id());
         if ($config === []) {
             return false;
         }

@@ -27,6 +27,10 @@ final class Homepage_Content
 
     public static function settings(): array
     {
+        if (is_callable([\Kampachi_Homepage::class, 'options_for_post'])) {
+            return \Kampachi_Homepage::options_for_post(get_queried_object_id());
+        }
+
         $settings = get_option(self::OPTION, []);
 
         return is_array($settings) ? $settings : [];

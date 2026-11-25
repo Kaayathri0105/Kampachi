@@ -121,7 +121,9 @@ function kampachi_native_assets(): void
     $languageSource = absint(get_post_meta(get_queried_object_id(), '_kc_translation_of', true));
     if (is_front_page()
         || get_post_field('post_name', get_queried_object_id()) === 'home'
-        || ($languageSource > 0 && get_post_field('post_name', $languageSource) === 'home')
+        || ($languageSource > 0 && (
+            get_post_field('post_name', $languageSource) === 'home' || $languageSource === absint(get_option('page_on_front'))
+        ))
     ) {
         $homeCss = get_theme_file_path('assets/home-cms.css');
         wp_enqueue_style('kampachi-home-cms', get_theme_file_uri('assets/home-cms.css'), ['kampachi-native'], (string) md5_file($homeCss));

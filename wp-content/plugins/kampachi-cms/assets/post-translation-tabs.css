@@ -1,0 +1,53 @@
+.kc-post-translations {
+    margin: 14px 0 18px;
+}
+
+.kc-language-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.kc-language-tab-item {
+    display: grid;
+    gap: 4px;
+}
+
+.kc-language-tabs .nav-tab {
+    float: none;
+    margin: 0;
+    border-radius: 3px 3px 0 0;
+    text-align: start;
+}
+
+.kc-language-tabs .nav-tab-active {
+    border-top: 3px solid #2271b1;
+    color: #135e96;
+}
+
+.kc-language-tabs button:not(:disabled) {
+    cursor: pointer;
+}
+
+.kc-language-tabs [aria-disabled="true"],
+.kc-language-tabs button:disabled {
+    color: #50575e;
+    cursor: default;
+}
+
+.kc-language-notice {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-inline-start: 4px solid #dba617;
+    background: #fcf9e8;
+}
+
+.kc-language-status {
+    display: block;
+    max-inline-size: 32ch;
+}
+
+.kc-language-status:empty {
+    display: none;
+}

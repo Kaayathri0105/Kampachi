@@ -70,6 +70,14 @@ final class Kampachi_Landings
         return $landing instanceof WP_Post ? $landing : null;
     }
 
+    public static function source_slug(WP_Post $post): string
+    {
+        $sourceId = absint(get_post_meta($post->ID, '_kc_translation_of', true));
+        $source = $sourceId > 0 ? get_post($sourceId) : null;
+
+        return $source instanceof WP_Post ? $source->post_name : $post->post_name;
+    }
+
     public static function permalink(string $url, WP_Post $post, bool $leaveName, bool $sample): string
     {
         if ($post->post_type !== self::POST_TYPE || get_option('permalink_structure') === '') {
@@ -368,7 +376,7 @@ final class Kampachi_Landings
 
     public static function save(int $postId, WP_Post $post): void
     {
-        if (! isset(self::PAGES[$post->post_name]) || ! current_user_can('edit_post', $postId)) {
+        if (! isset(self::PAGES[self::source_slug($post)]) || ! current_user_can('edit_post', $postId)) {
             return;
         }
 
@@ -396,7 +404,8 @@ final class Kampachi_Landings
     /** Save landing metadata after the caller has checked its form nonce. */
     public static function save_fields(WP_Post $post, array $raw): void
     {
-        if (! isset(self::PAGES[$post->post_name]) || ! current_user_can('edit_post', $post->ID)) {
+        $slug = self::source_slug($post);
+        if (! isset(self::PAGES[$slug]) || ! current_user_can('edit_post', $post->ID)) {
             return;
         }
 
@@ -413,7 +422,7 @@ final class Kampachi_Landings
             update_post_meta($postId, '_kampachi_' . $field, wp_slash($value));
         }
 
-        if (in_array($post->post_name, ['catering-events', 'sake'], true)) {
+        if (in_array($slug, ['catering-events', 'sake'], true)) {
             return;
         }
 
@@ -438,7 +447,7 @@ final class Kampachi_Landings
     private static function has_rich_intro(WP_Post $post): bool
     {
         return in_array(
-            $post->post_name,
+            self::source_slug($post),
             ['promotion', 'sake', 'outlets', Press::PAGE_SLUG, Awards::PAGE_SLUG],
             true
         );

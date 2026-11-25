@@ -38,7 +38,7 @@
                 }),
             });
             const result = await response.json();
-            if (!response.ok || !result.success || !result.data.url) {
+            if (!response.ok || !result.success || !result.data?.url) {
                 throw new Error(result.data?.message || 'Translation did not finish. Try again.');
             }
 
@@ -46,10 +46,15 @@
                 status.textContent = 'Translation updated. Reopen this post to load the updated text.';
             } else {
                 const link = document.createElement('a');
-                link.href = result.data.url;
-                link.textContent = 'Edit translation';
-                status.replaceChildren(link);
-                button.hidden = true;
+                link.href = button.dataset.tabUrl || result.data.url;
+                link.className = button.className;
+                link.textContent = label;
+                const shouldRestoreFocus = document.activeElement === button;
+                button.replaceWith(link);
+                status.textContent = 'Draft ready.';
+                if (shouldRestoreFocus) {
+                    link.focus();
+                }
             }
         } catch (error) {
             status.textContent = error instanceof Error ? error.message : 'Translation did not finish. Try again.';

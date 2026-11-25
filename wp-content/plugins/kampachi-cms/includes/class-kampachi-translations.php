@@ -45,7 +45,8 @@ final class Kampachi_Translations
 
     public static function boot(): void
     {
-        add_action('add_meta_boxes', [self::class, 'metabox']);
+        add_action('add_meta_boxes', [self::class, 'metabox'], 10, 2);
+        add_action('edit_form_top', [self::class, 'render_editor_tabs']);
         add_action('wp_after_insert_post', [self::class, 'on_save'], 999, 2);
         add_action('admin_enqueue_scripts', [self::class, 'admin_assets']);
         add_action('wp_ajax_' . self::JOB, [self::class, 'translate_ajax']);
@@ -103,22 +104,35 @@ final class Kampachi_Translations
         $query->set('meta_query', $metaQuery);
     }
 
-    public static function metabox(): void
+    public static function metabox(string $postType, WP_Post $post): void
     {
-        foreach (self::TYPES as $type) {
-            add_meta_box('kc-translations', 'Translate to Other Languages', [self::class, 'render_metabox'], $type, 'side', 'default');
+        if (in_array($postType, self::TYPES, true) && use_block_editor_for_post($post)) {
+            add_meta_box(
+                'kc-translation-tabs',
+                'Content languages',
+                [self::class, 'render_editor_tabs'],
+                $postType,
+                'normal',
+                'high'
+            );
         }
     }
 
     public static function admin_assets(): void
     {
         $screen = get_current_screen();
-        if ($screen === null || $screen->base !== 'post' || ! in_array($screen->post_type, self::TYPES, true)) {
+        $dashboard = $_GET['page'] ?? '';
+        $dashboard = is_string($dashboard) ? sanitize_key(wp_unslash($dashboard)) : '';
+        if (
+            ! ($screen !== null && $screen->base === 'post' && in_array($screen->post_type, self::TYPES, true))
+            && ! str_starts_with($dashboard, 'kampachi-landing-')
+            && ! in_array($dashboard, ['kampachi-homepage-module', 'kampachi-catering-module', 'kampachi-careers-landing'], true)
+        ) {
             return;
         }
 
-        $file = dirname(__DIR__) . '/assets/post-translations.js';
-        if (! is_file($file)) {
+        $directory = dirname(__DIR__) . '/assets/';
+        if (! is_file($directory . 'post-translations.js') || ! is_file($directory . 'post-translation-tabs.css')) {
             return;
         }
 
@@ -126,56 +140,153 @@ final class Kampachi_Translations
             'kc-post-translations',
             plugins_url('../assets/post-translations.js', __FILE__),
             [],
-            (string) filemtime($file),
+            (string) filemtime($directory . 'post-translations.js'),
             true
+        );
+        wp_enqueue_style(
+            'kc-post-translation-tabs',
+            plugins_url('../assets/post-translation-tabs.css', __FILE__),
+            [],
+            (string) filemtime($directory . 'post-translation-tabs.css')
         );
     }
 
-    public static function render_metabox(WP_Post $post): void
+    public static function dashboard_page(?WP_Post $master, mixed $requested): ?WP_Post
     {
+        $language = is_string($requested) ? sanitize_key(wp_unslash($requested)) : '';
+        if ($requested === null || $requested === '' || $language === 'en') {
+            return $master;
+        }
+
+        if ($master !== null && isset(Kampachi_Master_Settings::languages()[$language])) {
+            $postId = self::translated_post_id($master->ID, $language);
+            if ($postId > 0 && current_user_can('edit_post', $master->ID) && current_user_can('edit_post', $postId)) {
+                $translated = get_post($postId);
+                if ($translated instanceof WP_Post && $translated->post_type === $master->post_type) {
+                    return $translated;
+                }
+            }
+        }
+
+        wp_die('This language version has not been created or is unavailable.', '', ['response' => 403]);
+    }
+
+    public static function post_language(WP_Post $post): string
+    {
+        $language = (string) get_post_meta($post->ID, '_kc_language', true);
+
+        return isset(Kampachi_Master_Settings::languages()[$language]) ? $language : 'en';
+    }
+
+    public static function dashboard_url(WP_Post $post, string $url): string
+    {
+        $language = self::post_language($post);
+
+        return $language === 'en' ? $url : add_query_arg('kc_language', $language, $url);
+    }
+
+    public static function render_dashboard_language(WP_Post $post): void
+    {
+        echo '<input type="hidden" name="kc_language" value="' . esc_attr(self::post_language($post)) . '">';
+    }
+
+    public static function render_editor_tabs(WP_Post $post): void
+    {
+        if (in_array($post->post_type, self::TYPES, true)) {
+            self::render_tabs($post);
+        }
+    }
+
+    public static function render_tabs(WP_Post $post, string $dashboard = ''): void
+    {
+        $languages = Kampachi_Master_Settings::languages();
+        if (count($languages) < 2 || ! current_user_can('edit_post', $post->ID)) {
+            return;
+        }
+
         $origin = absint(get_post_meta($post->ID, '_kc_translation_of', true)) ?: $post->ID;
         $source = get_post($origin);
-        $languages = Kampachi_Master_Settings::languages();
         $canTranslate = $source instanceof WP_Post
             && self::is_source($source)
             && current_user_can('edit_post', $origin)
             && self::provider() !== '';
-        $showPending = $origin === $post->ID && Kampachi_Master_Settings::get('auto_translate') === '1';
+        $language = self::post_language($post);
+        $automatic = $language === 'en' && Kampachi_Master_Settings::get('auto_translate') === '1';
+        $currentLabel = self::tab_label($language, $languages[$language]);
 
-        echo '<div data-kc-translations data-source="' . esc_attr((string) $origin) . '"';
+        echo '<section class="kc-post-translations" data-kc-translations data-source="' . esc_attr((string) $origin) . '"';
         echo ' data-url="' . esc_url(admin_url('admin-ajax.php')) . '"';
         echo ' data-nonce="' . esc_attr(wp_create_nonce(self::JOB . '_' . $origin)) . '">';
-        echo '<p>Translate saved English content. Each language has its own WordPress post.</p>';
+        echo '<nav class="nav-tab-wrapper kc-language-tabs" aria-label="Content languages">';
 
-        foreach ($languages as $code => $label) {
-            $targetId = $code === 'en' ? $origin : self::translated_post_id($origin, $code);
-            $current = $targetId === $post->ID;
-            $editUrl = $targetId > 0 ? get_edit_post_link($targetId, 'raw') : null;
-            $pending = $code !== 'en' && $showPending && $targetId === 0
-                && wp_next_scheduled(self::JOB, [$origin, $code]) !== false;
-
-            echo '<p><strong>' . esc_html($label) . '</strong> ';
-            if ($current) {
-                echo '<span aria-current="page">Current</span>';
-            } elseif ($editUrl) {
-                echo '<a href="' . esc_url($editUrl) . '">Edit translation</a>';
+        foreach ($languages as $code => $name) {
+            $label = self::tab_label($code, $name);
+            $target = $code === 'en' ? $origin : self::translated_post_id($origin, $code);
+            $editorUrl = $target > 0 ? get_edit_post_link($target, 'raw') : '';
+            $tabUrl = $dashboard !== '' ? add_query_arg('kc_language', $code, $dashboard) : '';
+            echo '<div class="kc-language-tab-item">';
+            if ($code === $language) {
+                echo '<span class="nav-tab nav-tab-active" aria-current="page">' . esc_html($label) . '</span>';
+            } elseif ($editorUrl) {
+                echo '<a class="nav-tab" href="' . esc_url($tabUrl ?: $editorUrl) . '">' . esc_html($label) . '</a>';
+            } elseif ($canTranslate && $target === 0 && $code !== 'en') {
+                $pending = $automatic && wp_next_scheduled(self::JOB, [$origin, $code]) !== false;
+                self::render_action($origin, $code, $label, 0, $pending, $tabUrl, 'nav-tab');
+            } else {
+                echo '<span class="nav-tab" aria-disabled="true">' . esc_html($label) . '</span>';
             }
-
-            if ($code !== 'en' && $canTranslate && ($targetId === 0 || $current)) {
-                $button = $targetId === 0 ? 'Translate from English' : 'Retranslate from English';
-                $error = (string) get_post_meta($origin, '_kc_translation_error_' . $code, true);
-                echo '<br><button type="button" class="button button-small"';
-                echo ' data-kc-language="' . esc_attr($code) . '" data-label="' . esc_attr($label) . '"';
-                echo ' data-target="' . esc_attr((string) $targetId) . '"';
-                echo $pending ? ' data-pending="1">' : '>';
-                echo esc_html($button) . '</button>';
-                echo '<br><span data-kc-translation-status role="status">' . esc_html($error) . '</span>';
-            }
-
-            echo '</p>';
+            echo '</div>';
         }
 
-        echo '</div>';
+        echo '</nav><div class="kc-language-notice">';
+        echo '<strong>Editing language:</strong> ' . esc_html($currentLabel) . '. ';
+        echo $post->post_status === 'auto-draft'
+            ? 'Save the English content to start translating.'
+            : 'Each language saves separately. Select an available language tab to edit or create its version.';
+
+        if ($dashboard !== '' && $language !== 'en') {
+            $postUrl = get_edit_post_link($post->ID, 'raw');
+            $postLabel = $post->post_status === 'publish' ? 'Open WordPress post' : 'Review and publish draft';
+            echo '<p><a href="' . esc_url($postUrl ?: '') . '">' . esc_html($postLabel) . '</a></p>';
+        }
+
+        if ($canTranslate && $language !== 'en') {
+            echo '<p>';
+            self::render_action($origin, $language, $currentLabel, $post->ID, false, '', 'button button-small');
+            echo '</p>';
+        }
+        echo '</div></section>';
+    }
+
+    private static function tab_label(string $language, string $label): string
+    {
+        return match ($language) {
+            'en' => '🇬🇧 English',
+            'ja' => '🇯🇵 日本語',
+            'zh' => '🇨🇳 简体中文',
+            'zh-hant' => '繁體中文',
+            default => $label,
+        };
+    }
+
+    private static function render_action(
+        int $origin,
+        string $language,
+        string $label,
+        int $target,
+        bool $pending,
+        string $tabUrl,
+        string $class
+    ): void {
+        $button = $target > 0 ? 'Retranslate from English' : $label;
+        echo '<button type="button" class="' . esc_attr($class) . '"';
+        echo ' data-kc-language="' . esc_attr($language) . '" data-label="' . esc_attr($label) . '"';
+        echo ' data-target="' . esc_attr((string) $target) . '" data-tab-url="' . esc_url($tabUrl) . '"';
+        echo $pending ? ' data-pending="1">' : '>';
+        echo esc_html($button) . '</button>';
+
+        $error = $origin > 0 ? (string) get_post_meta($origin, '_kc_translation_error_' . $language, true) : '';
+        echo '<span class="kc-language-status" data-kc-translation-status role="status">' . esc_html($error) . '</span>';
     }
 
     private static function provider(): string
@@ -355,6 +466,18 @@ final class Kampachi_Translations
             return $metadata;
         }
 
+        $home = null;
+        if (Kampachi_Homepage::master_page()?->ID === $source->ID) {
+            $home = Kampachi_Homepage::prepare_translation(
+                static fn (array $texts): array|WP_Error => $provider === 'azure'
+                    ? self::azure($texts, $language)
+                    : self::deepl($texts, $language)
+            );
+            if (is_wp_error($home)) {
+                return $home;
+            }
+        }
+
         $savedSource = get_post($source->ID, OBJECT, 'raw');
         $savedTarget = $targetId > 0 ? get_post($targetId, OBJECT, 'raw') : null;
         if (! $savedSource instanceof WP_Post || ! self::is_source($savedSource) || $savedSource != $source
@@ -390,6 +513,10 @@ final class Kampachi_Translations
             }
             foreach ($metadata as $key => $value) {
                 update_post_meta($result, $key, wp_slash($value));
+            }
+
+            if ($home !== null) {
+                Kampachi_Homepage::save_translation($language, $home);
             }
 
             self::sync_images($source->ID);

@@ -32,7 +32,11 @@ while (have_posts()) {
         get_template_part('templates/privacy-dynamic');
     } elseif ($slug === 'contact-us') {
         get_template_part('templates/contact-dynamic');
-    } elseif ($slug === 'home') {
+    } elseif (
+        $slug === 'home'
+        || ($sourceId > 0 && is_callable([\Kampachi_Homepage::class, 'master_page'])
+            && $sourceId === \Kampachi_Homepage::master_page()?->ID)
+    ) {
         get_template_part('templates/home');
     } else {
         get_template_part('templates/landing');

@@ -95,7 +95,7 @@ final class Catering
             wp_die(esc_html__('You cannot edit this landing page.', 'kampachi-cms'));
         }
 
-        $page = \Kampachi_Landings::page(self::PAGE_SLUG);
+        $page = \Kampachi_Translations::dashboard_page(\Kampachi_Landings::page(self::PAGE_SLUG), $_GET['kc_language'] ?? null);
         $events = get_posts([
             'post_type' => self::POST_TYPE,
             'post_status' => ['publish', 'draft', 'pending', 'private', 'future'],
@@ -109,12 +109,15 @@ final class Catering
         echo '<p>Manage your landing page introduction, published event cards, and Trust &amp; Value Highlights in one place.</p>';
 
         self::render_notices();
+        if ($page instanceof WP_Post) {
+            \Kampachi_Translations::render_tabs($page, admin_url('admin.php?page=kampachi-catering-module'));
+        }
         self::render_page_actions($page);
 
         if (! $page instanceof WP_Post) {
             echo '<div class="notice notice-warning inline"><p>The Catering &amp; Events landing could not be loaded.</p></div>';
         } elseif (current_user_can('edit_post', $page->ID)) {
-            self::start_dashboard_form('seo');
+            self::start_dashboard_form($page, 'seo');
             Seo::renderLandingPanel($page, 'Catering & Events Landing Page SEO');
             echo '</form>';
             self::render_intro_section($page);
@@ -122,7 +125,9 @@ final class Catering
             echo '<p>You do not have permission to edit this landing page.</p>';
         }
 
-        self::render_event_order($events);
+        if (! $page instanceof WP_Post || \Kampachi_Translations::post_language($page) === 'en') {
+            self::render_event_order($events);
+        }
 
         if ($page instanceof WP_Post && current_user_can('edit_post', $page->ID)) {
             self::render_values_section($page);
@@ -163,11 +168,12 @@ final class Catering
         echo '</div>';
     }
 
-    private static function start_dashboard_form(string $section): void
+    private static function start_dashboard_form(WP_Post $page, string $section): void
     {
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="kampachi_save_catering_dashboard">';
         echo '<input type="hidden" name="section" value="' . esc_attr($section) . '">';
+        \Kampachi_Translations::render_dashboard_language($page);
         wp_nonce_field('kampachi_catering_dashboard_save', 'kampachi_catering_dashboard_nonce');
     }
 
@@ -176,7 +182,7 @@ final class Catering
         echo '<section id="kc-section-intro" class="kc-catering-section">';
         echo '<div class="kc-catering-section-head"><span>01 / HERO &amp; INTRODUCTION</span><h2>Section 1 — Hero &amp; Introduction</h2>';
         echo '<p>Add unlimited image banners and videos. Drag media into the desired order, then edit the introduction below.</p></div>';
-        self::start_dashboard_form('intro');
+        self::start_dashboard_form($page, 'intro');
         wp_nonce_field('kampachi_landing_save', 'kampachi_landing_nonce');
         self::render_hero_media_box($page);
 
@@ -240,7 +246,7 @@ final class Catering
         echo '<section id="kc-section-values" class="kc-catering-section">';
         echo '<div class="kc-catering-section-head"><span>03 / TRUST &amp; VALUE</span><h2>Section 3 — Trust &amp; Value Highlights</h2>';
         echo '<p>Customize the heading, photo gallery and as many value highlights as needed.</p></div>';
-        self::start_dashboard_form('values');
+        self::start_dashboard_form($page, 'values');
         self::render_values_box($page);
         submit_button('Save Section 3');
         echo '</form></section>';
@@ -253,7 +259,7 @@ final class Catering
         }
         check_admin_referer('kampachi_catering_dashboard_save', 'kampachi_catering_dashboard_nonce');
 
-        $page = \Kampachi_Landings::page(self::PAGE_SLUG);
+        $page = \Kampachi_Translations::dashboard_page(\Kampachi_Landings::page(self::PAGE_SLUG), $_POST['kc_language'] ?? null);
         if (! $page instanceof WP_Post || ! current_user_can('edit_post', $page->ID)) {
             wp_die(esc_html__('Landing page is missing or not editable.', 'kampachi-cms'), '', ['response' => 403]);
         }
@@ -275,7 +281,9 @@ final class Catering
             wp_die(esc_html__('Invalid catering section.', 'kampachi-cms'), '', ['response' => 400]);
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=kampachi-catering-module&saved=' . $section . '#kc-section-' . $section));
+        \Kampachi_Translations::on_save($page->ID, $page);
+        $url = \Kampachi_Translations::dashboard_url($page, admin_url('admin.php?page=kampachi-catering-module'));
+        wp_safe_redirect(add_query_arg('saved', $section, $url) . '#kc-section-' . $section);
         exit;
     }
 
@@ -626,7 +634,7 @@ final class Catering
 
     public static function save_landing(int $postId, WP_Post $post): void
     {
-        if ($post->post_name !== self::PAGE_SLUG) {
+        if (\Kampachi_Landings::source_slug($post) !== self::PAGE_SLUG) {
             return;
         }
 

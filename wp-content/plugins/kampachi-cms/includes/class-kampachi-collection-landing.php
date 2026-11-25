@@ -101,11 +101,8 @@ abstract class CollectionLanding
             return [];
         }
 
-        $settings = get_post_meta($pageId, self::metaKey(), true);
-        if (! is_array($settings)) {
-            $source = absint(get_post_meta($pageId, '_kc_translation_of', true));
-            $settings = $source > 0 ? get_post_meta($source, self::metaKey(), true) : [];
-        }
+        $source = absint(get_post_meta($pageId, '_kc_translation_of', true));
+        $settings = get_post_meta($source ?: $pageId, self::metaKey(), true);
 
         return is_array($settings) ? $settings : [];
     }
@@ -182,7 +179,7 @@ abstract class CollectionLanding
             );
         }
 
-        $page = self::page();
+        $page = \Kampachi_Translations::dashboard_page(self::page(), $_GET['kc_language'] ?? null);
         $canEdit = $page !== null && current_user_can('edit_post', $page->ID);
         echo '<div class="wrap kc-home-admin kc-shared-admin kc-collection-landing">';
         echo '<header class="kc-page-header"><h1>' . esc_html(static::TITLE) . '</h1>';
@@ -214,6 +211,8 @@ abstract class CollectionLanding
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html(static::TITLE) . ' saved.</p></div>';
         }
 
+        \Kampachi_Translations::render_tabs($page, static::adminUrl());
+
         echo '<nav class="kc-section-nav" aria-label="' . esc_attr(static::TITLE . ' sections') . '">';
         $sections = [
             'hero' => 'Hero',
@@ -221,19 +220,25 @@ abstract class CollectionLanding
             'items' => static::ITEMS_TITLE,
             'seo' => 'SEO & Social Sharing',
         ];
+        if (\Kampachi_Translations::post_language($page) !== 'en') {
+            unset($sections['items']);
+        }
         foreach ($sections as $id => $label) {
             echo '<a href="#kc-collection-' . esc_attr($id) . '">' . esc_html($label) . '</a>';
         }
         echo '</nav><form action="' . esc_url(admin_url('admin-post.php')) . '" method="post" data-kc-collection-landing>';
         echo '<input type="hidden" name="action" value="' . esc_attr(self::action()) . '">';
         wp_nonce_field(self::action());
+        \Kampachi_Translations::render_dashboard_language($page);
 
         echo '<section id="kc-collection-hero" class="kc-panel"><h2>Hero</h2>';
         static::renderHero($page);
         echo '</section>';
 
         self::renderIntroduction($page);
-        self::renderItems($page->ID);
+        if (\Kampachi_Translations::post_language($page) === 'en') {
+            self::renderItems($page->ID);
+        }
         self::renderSeo($page);
         echo '<div class="kc-save-bar"><strong>' . esc_html(static::TITLE) . '</strong>';
         echo '<button type="submit" class="button button-primary">Save Landing Page</button></div></form></div>';
@@ -487,7 +492,8 @@ abstract class CollectionLanding
 
     public static function save(): void
     {
-        $page = self::page();
+        check_admin_referer(self::action());
+        $page = \Kampachi_Translations::dashboard_page(self::page(), $_POST['kc_language'] ?? null);
         if ($page === null || ! current_user_can('edit_pages') || ! current_user_can('edit_post', $page->ID)) {
             wp_die(
                 esc_html__('You do not have permission to save this landing page.', 'kampachi-cms'),
@@ -496,7 +502,6 @@ abstract class CollectionLanding
             );
         }
 
-        check_admin_referer(self::action());
         $landing = isset($_POST['kampachi_landing']) && is_array($_POST['kampachi_landing'])
             ? wp_unslash($_POST['kampachi_landing'])
             : [];
@@ -508,11 +513,13 @@ abstract class CollectionLanding
 
         $input = $_POST[self::inputName()] ?? null;
         $raw = is_array($input) ? wp_unslash($input) : [];
-        if ($raw !== []) {
+        if ($raw !== [] && \Kampachi_Translations::post_language($page) === 'en') {
             self::saveItems($page->ID, $raw);
         }
 
-        wp_safe_redirect(add_query_arg('updated', '1', static::adminUrl()));
+        \Kampachi_Translations::on_save($page->ID, $page);
+        $url = \Kampachi_Translations::dashboard_url($page, static::adminUrl());
+        wp_safe_redirect(add_query_arg('updated', '1', $url));
         exit;
     }
 

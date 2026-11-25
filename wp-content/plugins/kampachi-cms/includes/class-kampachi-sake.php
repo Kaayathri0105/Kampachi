@@ -120,7 +120,7 @@ final class Sake
             wp_die(esc_html__('You cannot edit the Sake landing page.', 'kampachi-cms'));
         }
 
-        $page = \Kampachi_Landings::page(self::PAGE_SLUG);
+        $page = \Kampachi_Translations::dashboard_page(\Kampachi_Landings::page(self::PAGE_SLUG), $_GET['kc_language'] ?? null);
         $posts = get_posts([
             'post_type' => self::POST_TYPE,
             'post_status' => ['publish', 'draft', 'pending', 'private', 'future'],
@@ -132,6 +132,9 @@ final class Sake
         echo '<h1>Sake Breweries &amp; Brands</h1>';
         echo '<p>Edit the landing page hero and introduction, then reorder your brewery / brand posts. Published breweries appear three per row on desktop. Discover opens each brewery’s bottle collection.</p>';
         self::render_notice();
+        if ($page instanceof WP_Post) {
+            \Kampachi_Translations::render_tabs($page, admin_url('edit.php?post_type=kc_sake&page=kampachi-landing-sake'));
+        }
         echo '<div class="kc-catering-admin-actions">';
 
         if ($page instanceof WP_Post) {
@@ -146,6 +149,7 @@ final class Sake
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="kampachi_save_sake_landing">';
             echo '<input type="hidden" name="section" value="seo">';
+            \Kampachi_Translations::render_dashboard_language($page);
             wp_nonce_field('kampachi_save_sake_landing', 'kampachi_sake_landing_nonce');
             Seo::renderLandingPanel($page, 'Sake Landing Page SEO');
             echo '</form>';
@@ -154,7 +158,9 @@ final class Sake
             echo '<div class="notice notice-warning inline"><p>The Sake landing could not be loaded. Make sure you have permission to edit it.</p></div>';
         }
 
-        self::render_order($posts);
+        if (! $page instanceof WP_Post || \Kampachi_Translations::post_language($page) === 'en') {
+            self::render_order($posts);
+        }
         echo '</div>';
     }
 
@@ -186,6 +192,7 @@ final class Sake
         echo '<p>Add unlimited images and videos in any order. The first item plays first.</p></div>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="kampachi_save_sake_landing">';
+        \Kampachi_Translations::render_dashboard_language($page);
         wp_nonce_field('kampachi_save_sake_landing', 'kampachi_sake_landing_nonce');
         self::render_hero_picker($page);
 
@@ -358,15 +365,17 @@ final class Sake
         }
 
         check_admin_referer('kampachi_save_sake_landing', 'kampachi_sake_landing_nonce');
-        $page = \Kampachi_Landings::page(self::PAGE_SLUG);
+        $page = \Kampachi_Translations::dashboard_page(\Kampachi_Landings::page(self::PAGE_SLUG), $_POST['kc_language'] ?? null);
 
         if (! $page instanceof WP_Post || ! current_user_can('edit_post', $page->ID)) {
             wp_die('The Sake landing is missing or not editable.', '', ['response' => 403]);
         }
 
+        $url = \Kampachi_Translations::dashboard_url($page, admin_url('edit.php?post_type=kc_sake&page=kampachi-landing-sake'));
         if (($_POST['section'] ?? '') === 'seo') {
             Seo::saveLandingPanel($page);
-            wp_safe_redirect(admin_url('edit.php?post_type=kc_sake&page=kampachi-landing-sake&sake_saved=seo#kc-section-seo'));
+            \Kampachi_Translations::on_save($page->ID, $page);
+            wp_safe_redirect(add_query_arg('sake_saved', 'seo', $url) . '#kc-section-seo');
             exit;
         }
 
@@ -398,7 +407,8 @@ final class Sake
 
         HeroMotion::saveDashboard($page->ID, 'kampachi_sake_hero_media');
 
-        wp_safe_redirect(admin_url('edit.php?post_type=kc_sake&page=kampachi-landing-sake&sake_saved=intro#kc-sake-intro'));
+        \Kampachi_Translations::on_save($page->ID, $page);
+        wp_safe_redirect(add_query_arg('sake_saved', 'intro', $url) . '#kc-sake-intro');
         exit;
     }
 
