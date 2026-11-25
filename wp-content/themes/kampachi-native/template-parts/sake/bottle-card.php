@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\Native\Simplified_Chinese;
+
 use Kampachi\CMS\Outlets;
 use Kampachi\CMS\SakeBottles;
 
@@ -50,7 +52,7 @@ $image = $bottle['image_id'] > 0 ? wp_get_attachment_image($bottle['image_id'], 
                 <?php endif; ?>
                 <strong>RM <?php echo esc_html(number_format($pricing['discounted'], 2)); ?></strong>
                 <?php if ($pricing['percent'] > 0) : ?>
-                    <span class="kc-sake-discount-label"><?php echo esc_html($discountLabel); ?>% OFF</span>
+                    <span class="kc-sake-discount-label"><?php echo esc_html(sprintf(__('%s%% OFF', 'kampachi-native'), $discountLabel)); ?></span>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
@@ -58,10 +60,15 @@ $image = $bottle['image_id'] > 0 ? wp_get_attachment_image($bottle['image_id'], 
             <div class="kc-sake-bottle-availability">
                 <h4><?php echo esc_html(kampachi_native_label('locations')); ?></h4>
                 <ul>
-                    <?php foreach ($outlets as $outletId) : ?>
+                    <?php foreach ($outlets as $outletId) :
+                        $outletUrl = Simplified_Chinese::url((string) get_permalink($outletId));
+                        if ($outletUrl === '') {
+                            continue;
+                        }
+                        ?>
                         <li>
-                            <a href="<?php echo esc_url(get_permalink($outletId)); ?>">
-                                <?php echo esc_html(Outlets::locationName($outletId)); ?>
+                            <a href="<?php echo esc_url($outletUrl); ?>">
+                                <?php echo esc_html(Simplified_Chinese::text(Outlets::locationName($outletId))); ?>
                             </a>
                         </li>
                     <?php endforeach; ?>

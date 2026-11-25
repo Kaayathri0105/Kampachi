@@ -181,7 +181,7 @@ final class FooterNavigation
 
     public static function renderLinks(): void
     {
-        $links = self::links();
+        $links = apply_filters('kampachi_footer_links', self::links());
         if ($links === []) {
             return;
         }

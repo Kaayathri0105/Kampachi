@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\Native\Simplified_Chinese;
+
 use Kampachi\CMS\Sake;
 use Kampachi\CMS\SakeBottles;
 
@@ -29,13 +31,17 @@ while (have_posts()) :
     $description = Sake::field($id, 'description');
     $ctaText = Sake::field($id, 'enquiry_label') ?: kampachi_native_label('enquire');
     $ctaUrl = Sake::field($id, 'enquiry_url') ?: home_url('/contact-us/');
+    $ctaUrl = Simplified_Chinese::url($ctaUrl);
     ?>
     <main class="kc-catering-page kc-sake-page kc-sake-detail<?php echo $images === [] ? ' kc-sake-detail--without-gallery' : ''; ?>" id="main-content">
         <?php kampachi_native_render_hero($images, '', get_the_title() . ' hero'); ?>
         <section class="kc-catering-detail-content">
             <div class="kc-catering-container">
                 <div class="kc-sake-brand-intro">
-                    <a class="kc-catering-detail-back" href="<?php echo esc_url(home_url('/sake/')); ?>">← <?php echo esc_html(kampachi_native_label('back_sake')); ?></a>
+                    <?php $landingUrl = Simplified_Chinese::url(home_url('/sake/')); ?>
+                    <?php if ($landingUrl !== '') : ?>
+                        <a class="kc-catering-detail-back" href="<?php echo esc_url($landingUrl); ?>">← <?php echo esc_html(kampachi_native_label('back_sake')); ?></a>
+                    <?php endif; ?>
                     <p class="kc-catering-card-subtitle"><?php echo esc_html($subtitle); ?></p>
                     <h1><?php echo esc_html(get_the_title()); ?></h1>
                     <?php if ($description !== '') : ?>
@@ -43,7 +49,7 @@ while (have_posts()) :
                     <?php endif; ?>
                     <div class="kc-catering-detail-text kc-editor-area"><?php the_content(); ?></div>
                 </div>
-                <section class="kc-sake-bottle-collection" aria-label="Sake bottles">
+                <section class="kc-sake-bottle-collection" aria-label="<?php esc_attr_e('Sake bottles', 'kampachi-native'); ?>">
                     <?php if ($bottles !== []) : ?>
                         <div class="kc-sake-bottle-grid">
                             <?php foreach ($bottles as $bottle) : ?>
@@ -52,9 +58,11 @@ while (have_posts()) :
                         </div>
                     <?php endif; ?>
                 </section>
-                <div class="kc-sake-enquiry">
-                    <a class="kc-catering-detail-cta" href="<?php echo esc_url($ctaUrl); ?>"><?php echo esc_html($ctaText); ?></a>
-                </div>
+                <?php if ($ctaUrl !== '') : ?>
+                    <div class="kc-sake-enquiry">
+                        <a class="kc-catering-detail-cta" href="<?php echo esc_url($ctaUrl); ?>"><?php echo esc_html($ctaText); ?></a>
+                    </div>
+                <?php endif; ?>
             </div>
         </section>
     </main>

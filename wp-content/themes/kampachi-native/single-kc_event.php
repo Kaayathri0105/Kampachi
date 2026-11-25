@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\Native\Simplified_Chinese;
+
 use Kampachi\CMS\Catering;
 use Kampachi\CMS\Outlets;
 
@@ -28,6 +30,7 @@ while (have_posts()) {
         $ctaUrl = home_url('/contact-us/');
     }
 
+    $ctaUrl = Simplified_Chinese::url($ctaUrl);
     $images = [];
     foreach (Catering::image_ids(get_post_meta($postId, '_kampachi_event_image_ids', true)) as $imageId) {
         $url = wp_get_attachment_image_url($imageId, 'full');
@@ -52,7 +55,10 @@ while (have_posts()) {
         <?php kampachi_native_render_hero($images, '', get_the_title() . ' hero'); ?>
         <section class="kc-catering-detail-content">
             <div class="kc-catering-container">
-                <a class="kc-catering-detail-back" href="<?php echo esc_url(home_url('/catering-events/')); ?>">← <?php echo esc_html(kampachi_native_label('back_events')); ?></a>
+                <?php $landingUrl = Simplified_Chinese::url(home_url('/catering-events/')); ?>
+                <?php if ($landingUrl !== '') : ?>
+                    <a class="kc-catering-detail-back" href="<?php echo esc_url($landingUrl); ?>">← <?php echo esc_html(kampachi_native_label('back_events')); ?></a>
+                <?php endif; ?>
                 <?php if ($subtitle !== '') : ?><p class="kc-catering-eyebrow"><?php echo esc_html($subtitle); ?></p><?php endif; ?>
                 <h1><?php the_title(); ?></h1>
                 <?php if ($summary !== '') : ?><p class="kc-catering-detail-summary"><?php echo esc_html($summary); ?></p><?php endif; ?>
@@ -60,12 +66,19 @@ while (have_posts()) {
                 <?php $outletIds = Catering::outlet_ids($postId); ?>
                 <?php if ($outletIds !== []) : ?>
                     <div class="kc-catering-detail-outlets"><h2><?php echo esc_html(kampachi_native_label('locations')); ?></h2>
-                        <?php foreach ($outletIds as $outletId) : ?>
-                            <a href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?></a>
+                        <?php foreach ($outletIds as $outletId) :
+                            $outletUrl = Simplified_Chinese::url((string) get_permalink($outletId));
+                            if ($outletUrl === '') {
+                                continue;
+                            }
+                            ?>
+                            <a href="<?php echo esc_url($outletUrl); ?>"><?php echo esc_html(Simplified_Chinese::text(Outlets::locationName($outletId))); ?></a>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
-                <p><a class="kc-catering-detail-cta" href="<?php echo esc_url($ctaUrl); ?>"><?php echo esc_html($ctaLabel); ?></a></p>
+                <?php if ($ctaUrl !== '') : ?>
+                    <p><a class="kc-catering-detail-cta" href="<?php echo esc_url($ctaUrl); ?>"><?php echo esc_html($ctaLabel); ?></a></p>
+                <?php endif; ?>
             </div>
         </section>
     </main>

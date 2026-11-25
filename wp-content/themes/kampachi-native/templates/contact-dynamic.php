@@ -39,14 +39,14 @@ $notice = kampachi_native_enquiry_message($status);
                     <input type="hidden" name="action" value="kc_send_enquiry">
                     <?php wp_nonce_field('kc_send_enquiry', 'kc_enquiry_nonce'); ?>
                     <div class="kc-contact-honeypot" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-                    <label>Your Name *<input type="text" name="name" maxlength="120" required autocomplete="name"></label>
-                    <label>Email Address *<input type="email" name="email" maxlength="254" required autocomplete="email"></label>
-                    <label>Subject *<input type="text" name="subject" maxlength="160" required></label>
-                    <label>Message *<textarea name="message" rows="6" maxlength="5000" required></textarea></label>
+                    <label><?php esc_html_e('Your Name', 'kampachi-native'); ?> *<input type="text" name="name" maxlength="120" required autocomplete="name"></label>
+                    <label><?php esc_html_e('Email Address', 'kampachi-native'); ?> *<input type="email" name="email" maxlength="254" required autocomplete="email"></label>
+                    <label><?php esc_html_e('Subject', 'kampachi-native'); ?> *<input type="text" name="subject" maxlength="160" required></label>
+                    <label><?php esc_html_e('Message', 'kampachi-native'); ?> *<textarea name="message" rows="6" maxlength="5000" required></textarea></label>
                     <button type="submit"><?php echo esc_html(kampachi_native_label('enquiry_button')); ?></button>
                 </form>
             <?php else : ?>
-                <p>Contact us directly by email for enquiries.</p>
+                <p><?php esc_html_e('Contact us directly by email for enquiries.', 'kampachi-native'); ?></p>
             <?php endif; ?>
         </section>
     </div>

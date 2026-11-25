@@ -180,8 +180,27 @@ final class Kampachi_Homepage
         }
 
         $localized = get_option(self::option_name($language), []);
+        $localized = is_array($localized) ? $localized : [];
+        if ($language === 'zh') {
+            foreach (array_keys($english) as $key) {
+                if (preg_match('/_(title|subtitle|description)$/', $key)) {
+                    unset($english[$key]);
+                }
+            }
+            foreach (['hero_slides', 'dishes'] as $key) {
+                if (is_array($english[$key] ?? null)) {
+                    $english[$key] = array_map(
+                        static fn (array $row): array => array_diff_key(
+                            $row,
+                            array_flip(['title', 'text', 'description'])
+                        ),
+                        array_filter($english[$key], 'is_array')
+                    );
+                }
+            }
+        }
 
-        return is_array($localized) ? array_replace($english, $localized) : $english;
+        return array_replace($english, $localized);
     }
 
     public static function options_for_post(int $postId): array

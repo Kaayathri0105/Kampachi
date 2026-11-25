@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\Native\Simplified_Chinese;
+
 use Kampachi\CMS\Catering;
 use Kampachi\CMS\Outlets;
 
@@ -152,8 +154,13 @@ foreach (Catering::hero_media_ids($heroOwnerId) as $mediaId) {
                                 <?php if ($outletIds !== []) : ?>
                                     <div class="kc-catering-available-outlets" aria-label="<?php echo esc_attr(kampachi_native_label('locations')); ?>">
                                         <span><?php echo esc_html(kampachi_native_label('locations')); ?>:</span>
-                                        <?php foreach ($outletIds as $outletId) : ?>
-                                            <a class="kc-linked-card-action" href="<?php echo esc_url(get_permalink($outletId)); ?>"><?php echo esc_html(Outlets::locationName($outletId)); ?></a>
+                                        <?php foreach ($outletIds as $outletId) :
+                                            $outletUrl = Simplified_Chinese::url((string) get_permalink($outletId));
+                                            if ($outletUrl === '') {
+                                                continue;
+                                            }
+                                        ?>
+                                            <a class="kc-linked-card-action" href="<?php echo esc_url($outletUrl); ?>"><?php echo esc_html(Simplified_Chinese::text(Outlets::locationName($outletId))); ?></a>
                                         <?php endforeach; ?>
                                     </div>
                                 <?php endif; ?>

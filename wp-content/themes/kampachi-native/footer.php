@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\Native\Simplified_Chinese;
+
 if (! defined('ABSPATH')) {
     exit;
 }
@@ -44,6 +46,8 @@ if ($privacyUrl === '') {
         }
     }
 }
+$privacyUrl = Simplified_Chinese::url((string) $privacyUrl);
+
 /*
  * Footer icons from Bootstrap Icons (https://icons.getbootstrap.com/).
  *
@@ -124,10 +128,12 @@ $enquiryText = trim(kampachi_setting('footer_cta_text'));
 if ($enquiryText === '') {
     $enquiryText = __('Click to Enquire', 'kampachi-native');
 }
+$enquiryText = Simplified_Chinese::text($enquiryText);
 $enquiryUrl = esc_url_raw(kampachi_setting('footer_cta_url'));
 if ($enquiryUrl === '') {
     $enquiryUrl = home_url('/contact-us/#enquiry');
 }
+$enquiryUrl = Simplified_Chinese::url($enquiryUrl);
 $footerBackgroundId = absint(kampachi_setting('footer_background_id'));
 $footerBackground = $footerBackgroundId > 0
     ? wp_get_attachment_image_url($footerBackgroundId, 'full') : false;
@@ -142,7 +148,7 @@ $footerBackgroundStyle = '--kampachi-footer-bg: url(' . wp_json_encode(
 <footer class="site-footer paper-surface site-footer--brush" id="contact" style="<?php echo esc_attr($footerBackgroundStyle); ?>">
     <div class="footer-inner">
         <div class="footer-top">
-            <a class="footer-brand" href="<?php echo esc_url(home_url('/')); ?>" aria-label="Kampachi home">
+            <a class="footer-brand" href="<?php echo esc_url(Simplified_Chinese::url(home_url('/')) ?: home_url('/')); ?>" aria-label="<?php esc_attr_e('Kampachi home', 'kampachi-native'); ?>">
                 <?php if ($footerLogo !== '') : ?>
                     <img src="<?php echo esc_url($footerLogo); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?>" loading="lazy">
                 <?php else : ?>
@@ -150,7 +156,7 @@ $footerBackgroundStyle = '--kampachi-footer-bg: url(' . wp_json_encode(
                 <?php endif; ?>
             </a>
             <nav class="footer-navigation" aria-label="Footer navigation">
-                <h2 class="footer-heading"><?php echo esc_html(kampachi_setting('footer_explore_title')); ?></h2>
+                <h2 class="footer-heading"><?php echo esc_html(Simplified_Chinese::text(kampachi_setting('footer_explore_title'))); ?></h2>
                 <?php if (class_exists(\Kampachi\CMS\FooterNavigation::class) && \Kampachi\CMS\FooterNavigation::isConfigured()) : ?>
                     <?php \Kampachi\CMS\FooterNavigation::renderLinks(); ?>
                 <?php elseif (has_nav_menu('footer')) : ?>
@@ -158,11 +164,11 @@ $footerBackgroundStyle = '--kampachi-footer-bg: url(' . wp_json_encode(
                 <?php endif; ?>
             </nav>
             <section class="footer-address">
-                <h2 class="footer-heading"><?php echo esc_html(kampachi_setting('footer_office_title')); ?></h2>
+                <h2 class="footer-heading"><?php echo esc_html(Simplified_Chinese::text(kampachi_setting('footer_office_title'))); ?></h2>
                 <address><?php echo nl2br(esc_html($publicAddress)); ?></address>
             </section>
             <section class="footer-contact">
-                <h2 class="footer-heading"><?php echo esc_html(kampachi_setting('footer_contact_title')); ?></h2>
+                <h2 class="footer-heading"><?php echo esc_html(Simplified_Chinese::text(kampachi_setting('footer_contact_title'))); ?></h2>
                 <?php if (is_email($publicEmail)) : ?>
                     <a href="<?php echo esc_url('mailto:' . $publicEmail); ?>">
                         <svg class="kc-footer-icon" width="16" height="16" viewBox="0 0 16 16"
@@ -210,9 +216,9 @@ $footerBackgroundStyle = '--kampachi-footer-bg: url(' . wp_json_encode(
             <?php get_template_part('templates/footer-enquiry', null, ['label' => $enquiryText, 'url' => $enquiryUrl]); ?>
         </div>
         <div class="footer-bottom">
-            <p class="copyright">Copyright © <?php echo esc_html(wp_date('Y') . ' ' . $companyName); ?></p>
+            <p class="copyright"><?php esc_html_e('Copyright', 'kampachi-native'); ?> &copy; <?php echo esc_html(wp_date('Y') . ' ' . $companyName); ?></p>
             <?php if (is_string($privacyUrl) && $privacyUrl !== '') : ?>
-                <a class="footer-privacy" href="<?php echo esc_url($privacyUrl); ?>">Privacy &amp; Policy</a>
+                <a class="footer-privacy" href="<?php echo esc_url($privacyUrl); ?>"><?php esc_html_e('Privacy & Policy', 'kampachi-native'); ?></a>
             <?php endif; ?>
         </div>
     </div>

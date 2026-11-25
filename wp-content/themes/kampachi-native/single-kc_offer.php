@@ -8,6 +8,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\Native\Simplified_Chinese;
+
 use Kampachi\CMS\Offers;
 use Kampachi\CMS\OffersLanding;
 
@@ -39,7 +41,8 @@ while (have_posts()) :
         <?php kampachi_native_render_hero($hero, '', get_the_title() . ' hero'); ?>
 
         <div class="kc-offer-inner">
-            <nav class="kc-offer-breadcrumb" aria-label="Breadcrumb"><a href="<?php echo esc_url(home_url('/promotion/')); ?>"><?php echo esc_html(kampachi_native_label('offers')); ?></a><span aria-hidden="true">/</span><span aria-current="page"><?php echo esc_html(get_the_title()); ?></span></nav>
+            <nav class="kc-offer-breadcrumb" aria-label="Breadcrumb"><?php $offersUrl = Simplified_Chinese::url(home_url('/promotion/')); ?>
+                <?php if ($offersUrl !== '') : ?><a href="<?php echo esc_url($offersUrl); ?>"><?php echo esc_html(kampachi_native_label('offers')); ?></a><?php endif; ?><span aria-hidden="true">/</span><span aria-current="page"><?php echo esc_html(get_the_title()); ?></span></nav>
             <header class="kc-offer-introduction" id="offer-content">
                 <h1><?php echo esc_html(get_the_title()); ?></h1>
                 <?php if ($introduction !== '') : ?>
@@ -48,7 +51,9 @@ while (have_posts()) :
                 <?php if ($ctas !== []) : ?>
                     <div class="kc-offer-cta">
                         <?php foreach ($ctas as $cta) : ?>
-                            <a class="view-all-button kc-offer-cta-link" href="<?php echo esc_url($cta['url']); ?>">
+                            <?php $url = Simplified_Chinese::url($cta['url']); ?>
+                            <?php if ($url === '') { continue; } ?>
+                            <a class="view-all-button kc-offer-cta-link" href="<?php echo esc_url($url); ?>">
                                 <?php echo esc_html($cta['label']); ?>
                             </a>
                         <?php endforeach; ?>
@@ -110,9 +115,12 @@ while (have_posts()) :
                         'previous' => [__('Previous', 'kampachi-native'), 'prev'],
                         'next' => [__('Next', 'kampachi-native'), 'next'],
                     ] as $direction => [$label, $relation]) : ?>
-                        <?php $neighbor = $neighbors[$direction]; ?>
-                        <?php if ($neighbor !== null) : ?>
-                            <a class="kc-offer-pagination-link" href="<?php echo esc_url(get_permalink($neighbor)); ?>"
+                        <?php
+                        $neighbor = $neighbors[$direction];
+                        $neighborUrl = $neighbor !== null ? Simplified_Chinese::url((string) get_permalink($neighbor)) : '';
+                        ?>
+                        <?php if ($neighborUrl !== '') : ?>
+                            <a class="kc-offer-pagination-link" href="<?php echo esc_url($neighborUrl); ?>"
                                 rel="<?php echo esc_attr($relation); ?>">
                                 <?php echo esc_html($label); ?>
                             </a>

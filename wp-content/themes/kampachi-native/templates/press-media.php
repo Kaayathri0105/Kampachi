@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\Native\Simplified_Chinese;
+
 use Kampachi\CMS\Awards;
 use Kampachi\CMS\AwardsLanding;
 use Kampachi\CMS\Press;
@@ -45,8 +47,9 @@ $yearPattern = $isAwards
     ? '/(?<!\d)([1-9]\d{3})(?!\d)(?:\s*[-–—]\s*([1-9]\d{3})(?!\d))?/u'
     : '/(?<!\d)([1-9]\d{3})(?!\d)/';
 
-foreach ($landingEditor::posts($pageId) as $article) {
-    if ($landingEditor::isHighlight($article->ID)) {
+foreach (Simplified_Chinese::posts($landingEditor::posts($pageId)) as $article) {
+    $sourceId = absint(get_post_meta($article->ID, '_kc_translation_of', true)) ?: $article->ID;
+    if ($landingEditor::isHighlight($sourceId)) {
         $highlights[] = $article;
         continue;
     }

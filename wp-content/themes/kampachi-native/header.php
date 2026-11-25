@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\Native\Simplified_Chinese;
+
 use Kampachi\CMS\OffersLanding;
 use Kampachi\CMS\Outlets;
 
@@ -26,7 +28,7 @@ if (! defined('ABSPATH')) {
 <script>window.kampachiNativeShell = true;</script>
 <header class="site-header" id="site-header">
     <div class="header-inner">
-        <a class="brand" href="<?php echo esc_url(home_url('/')); ?>" aria-label="Kampachi home">
+        <a class="brand" href="<?php echo esc_url(Simplified_Chinese::url(home_url('/')) ?: home_url('/')); ?>" aria-label="<?php esc_attr_e('Kampachi home', 'kampachi-native'); ?>">
             <?php
             $headerLogoId = absint(kampachi_setting('header_logo_id'));
             if ($headerLogoId <= 0) {
@@ -84,12 +86,12 @@ if (! defined('ABSPATH')) {
             <?php if (kampachi_setting('reservation_enabled', '1') !== '0' && $bookingLinks !== []) : ?>
                 <div class="reservation-wrap">
                     <button class="reservation-link reservation-trigger" type="button" aria-controls="reservation-menu" aria-expanded="false">
-                        <span class="reservation-label"><?php echo esc_html(kampachi_setting('reservation_label', 'RESERVATION')); ?></span>
+                        <span class="reservation-label"><?php echo esc_html(Simplified_Chinese::text(kampachi_setting('reservation_label', 'RESERVATION'))); ?></span>
                         <span class="reservation-chevron" aria-hidden="true"></span>
                     </button>
                     <div class="reservation-menu" id="reservation-menu" aria-label="Choose a Kampachi outlet" aria-hidden="true" inert hidden>
                         <?php foreach ($bookingLinks as $bookingLink) : ?>
-                            <a class="reservation-option" href="<?php echo esc_url($bookingLink['url']); ?>"><?php echo esc_html($bookingLink['title']); ?></a>
+                            <a class="reservation-option" href="<?php echo esc_url($bookingLink['url']); ?>"><?php echo esc_html(Simplified_Chinese::text($bookingLink['title'])); ?></a>
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -166,6 +168,7 @@ if (! defined('ABSPATH')) {
         $offerUrl = $offerLanding?->post_status === 'publish'
             ? get_permalink($offerLanding)
             : get_post_type_archive_link('kc_offer');
+        $offerUrl = Simplified_Chinese::url((string) $offerUrl);
         if (count($offerCategories) > 1 && is_string($offerUrl) && $offerUrl !== '') {
             $hasOfferCategories = true;
             $sectionNav = ['label' => __('Offer categories', 'kampachi-native'), 'links' => []];
@@ -202,7 +205,7 @@ if (! defined('ABSPATH')) {
         </nav>
     <?php endif; ?>
 </header>
-<nav class="menu-overlay" id="site-menu" aria-label="Main navigation" aria-hidden="false">
+<nav class="menu-overlay" id="site-menu" aria-label="<?php esc_attr_e('Main navigation', 'kampachi-native'); ?>" aria-hidden="false">
     <div class="primary-nav">
         <?php
         $headerNav = array_key_exists('header_nav_items', $headerSettings)
@@ -228,6 +231,8 @@ if (! defined('ABSPATH')) {
                         $navChildren = Kampachi_Header_Editor::location_children();
                     }
 
+                    $navTitle = Simplified_Chinese::text($navTitle);
+                    $navUrl = Simplified_Chinese::url($navUrl);
                     $hasChildren = $navChildren !== [];
                     ?>
                     <li class="nav-item<?php echo $hasChildren ? ' nav-item--dropdown' : ''; ?>">
@@ -243,7 +248,10 @@ if (! defined('ABSPATH')) {
                             <ul class="nav-sublist" id="header-submenu-<?php echo esc_attr((string) $navIndex); ?>" hidden>
                                 <?php foreach ($navChildren as $navChild) : ?>
                                     <?php if (is_array($navChild) && ! empty($navChild['title']) && ! empty($navChild['url'])) : ?>
-                                        <li><a class="nav-sublink" href="<?php echo esc_url((string) $navChild['url']); ?>"><?php echo esc_html((string) $navChild['title']); ?></a></li>
+                                        <?php $childUrl = Simplified_Chinese::url((string) $navChild['url']); ?>
+                                        <?php if ($childUrl !== '') : ?>
+                                            <li><a class="nav-sublink" href="<?php echo esc_url($childUrl); ?>"><?php echo esc_html(Simplified_Chinese::text((string) $navChild['title'])); ?></a></li>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
                             </ul>

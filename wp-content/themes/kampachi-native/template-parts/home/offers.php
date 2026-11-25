@@ -3,6 +3,8 @@
 
 declare(strict_types=1);
 
+use Kampachi\Native\Simplified_Chinese;
+
 use Kampachi\Native\Homepage_Content;
 
 $offers = Homepage_Content::posts($kampachiHome + ['offer_ids' => []], 'offer_ids', 'kc_offer');
@@ -59,8 +61,11 @@ $perView = Homepage_Content::items_per_view(
                 <?php endforeach; ?>
             </div>
         </div>
-        <div class="view-all-wrap">
-            <a class="view-all-button" href="<?php echo esc_url(home_url('/promotion/')); ?>"><?php echo esc_html(kampachi_native_label('more')); ?></a>
-        </div>
+        <?php $offersUrl = Simplified_Chinese::url(home_url('/promotion/')); ?>
+        <?php if ($offersUrl !== '') : ?>
+            <div class="view-all-wrap">
+                <a class="view-all-button" href="<?php echo esc_url($offersUrl); ?>"><?php echo esc_html(kampachi_native_label('more')); ?></a>
+            </div>
+        <?php endif; ?>
     </div>
 </section>

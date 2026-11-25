@@ -3,10 +3,12 @@
 
 declare(strict_types=1);
 
+use Kampachi\Native\Simplified_Chinese;
+
 use Kampachi\CMS\Outlets;
 use Kampachi\Native\Homepage_Content;
 
-$outlets = class_exists(Outlets::class) ? Outlets::publishedLocations() : [];
+$outlets = class_exists(Outlets::class) ? Simplified_Chinese::posts(Outlets::publishedLocations()) : [];
 $hasCarousel = count($outlets) > 3;
 
 if ($outlets === []) {
@@ -45,7 +47,7 @@ if ($outlets === []) {
                     <?php
                     $imageUrl = Homepage_Content::image($outlet->ID, 'outlet');
                     $excerpt = get_the_excerpt($outlet);
-                    $name = Outlets::locationName($outlet);
+                    $name = Simplified_Chinese::text(Outlets::locationName($outlet));
                     ?>
                     <article class="outlet-card kc-linked-card">
                         <div class="outlet-card__media">
@@ -56,7 +58,7 @@ if ($outlets === []) {
                         <div class="outlet-card__content">
                             <h3><?php echo esc_html($name); ?></h3>
                             <?php if ($excerpt !== '') : ?><p class="outlet-card__description"><?php echo esc_html($excerpt); ?></p><?php endif; ?>
-                            <a class="kc-discover kc-discover--card kc-linked-card-link" href="<?php echo esc_url(get_permalink($outlet)); ?>" aria-label="<?php echo esc_attr('Discover Kampachi at ' . $name); ?>">
+                            <a class="kc-discover kc-discover--card kc-linked-card-link" href="<?php echo esc_url(get_permalink($outlet)); ?>" aria-label="<?php echo esc_attr(sprintf(__('Discover %s', 'kampachi-native'), $name)); ?>">
                                 <?php echo esc_html(kampachi_native_label('discover')); ?>
                             </a>
                         </div>

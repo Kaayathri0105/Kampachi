@@ -7,6 +7,7 @@
 
 declare(strict_types=1);
 
+
 namespace Kampachi\Native;
 
 use Kampachi\CMS\OffersLanding;
@@ -49,13 +50,15 @@ $promotionPosts = class_exists(OffersLanding::class) ? OffersLanding::posts($pro
 $promotionCards = [];
 $promotionCategories = [];
 
-foreach ($promotionPosts as $promotion) {
+foreach (Simplified_Chinese::posts($promotionPosts) as $promotion) {
     if (! $promotion instanceof WP_Post) {
         continue;
     }
 
     if (class_exists(OffersLanding::class)) {
-        $categories = OffersLanding::offerCategories($promotion);
+        $sourceId = absint(get_post_meta($promotion->ID, '_kc_translation_of', true));
+        $categoryPost = $sourceId > 0 ? get_post($sourceId) : $promotion;
+        $categories = OffersLanding::offerCategories($categoryPost instanceof WP_Post ? $categoryPost : $promotion);
     } else {
         $categories = [];
         $terms = get_the_terms($promotion->ID, 'kc_offer_category');
@@ -1719,7 +1722,7 @@ $selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selected
                         <div class="promotion-filters" role="group" aria-label="Filter promotions">
                             <?php foreach ($promotionCategories as $categoryKey => $categoryName) : ?>
                                 <?php $isSelected = $categoryKey === $selectedCategory; ?>
-                                <button class="promotion-filter<?php echo $isSelected ? ' is-active' : ''; ?>" type="button" data-promotion-filter="<?php echo esc_attr($categoryKey); ?>" aria-pressed="<?php echo $isSelected ? 'true' : 'false'; ?>"><?php echo esc_html($categoryName); ?></button>
+                                <button class="promotion-filter<?php echo $isSelected ? ' is-active' : ''; ?>" type="button" data-promotion-filter="<?php echo esc_attr($categoryKey); ?>" aria-pressed="<?php echo $isSelected ? 'true' : 'false'; ?>"><?php echo esc_html(Simplified_Chinese::text($categoryName)); ?></button>
                             <?php endforeach; ?>
                         </div>
 
@@ -1769,12 +1772,12 @@ $selectedCategory = class_exists(OffersLanding::class) ? OffersLanding::selected
                             </article>
                         <?php endforeach; ?>
                     </div>
-                    <p class="promotion-empty-state" role="status"<?php echo $promotionCards !== [] ? ' hidden' : ''; ?>>No offers are currently available.</p>
+                    <p class="promotion-empty-state" role="status"<?php echo $promotionCards !== [] ? ' hidden' : ''; ?>><?php esc_html_e('No offers are currently available.', 'kampachi-native'); ?></p>
 
                     <nav class="promotion-pagination" aria-label="Promotion pages">
-                        <button class="content-button content-button--outline promotion-page-button" type="button" data-page-previous aria-label="Previous page">Previous</button>
+                        <button class="content-button content-button--outline promotion-page-button" type="button" data-page-previous aria-label="<?php esc_attr_e('Previous', 'kampachi-native'); ?>"><?php esc_html_e('Previous', 'kampachi-native'); ?></button>
                         <div class="promotion-page-list" aria-label="Select a page"></div>
-                        <button class="content-button content-button--outline promotion-page-button" type="button" data-page-next aria-label="Next page">Next <span aria-hidden="true">→</span></button>
+                        <button class="content-button content-button--outline promotion-page-button" type="button" data-page-next aria-label="<?php esc_attr_e('Next', 'kampachi-native'); ?>"><?php esc_html_e('Next', 'kampachi-native'); ?> <span aria-hidden="true">→</span></button>
                     </nav>
                 </div>
             </section>

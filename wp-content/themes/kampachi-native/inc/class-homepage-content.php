@@ -67,7 +67,7 @@ final class Homepage_Content
             return is_string($settings[$key]) ? $settings[$key] : '';
         }
 
-        return $default;
+        return Simplified_Chinese::text($default);
     }
 
     public static function description(array $settings, string $section, string $default = ''): string
@@ -108,7 +108,7 @@ final class Homepage_Content
                 : wp_strip_all_tags($value);
             $html = nl2br(esc_html($text), false);
         } else {
-            $html = wp_kses_post($value);
+            $html = Simplified_Chinese::rich_links(wp_kses_post($value));
         }
 
         return '<' . $tag . $attrs . '>' . $html . '</' . $tag . '>';
@@ -169,24 +169,28 @@ final class Homepage_Content
                     $posts[] = $post;
                 }
 
-                if ($limit > 0 && count($posts) >= $limit) {
+                if (! Simplified_Chinese::active() && $limit > 0 && count($posts) >= $limit) {
                     break;
                 }
             }
 
-            return $posts;
+            $localized = Simplified_Chinese::posts($posts);
+
+            return $limit > 0 ? array_slice($localized, 0, $limit) : $localized;
         }
 
         $posts = get_posts([
             'post_type' => $postType,
             'post_status' => 'publish',
-            'posts_per_page' => $limit > 0 ? $limit : -1,
+            'posts_per_page' => ! Simplified_Chinese::active() && $limit > 0 ? $limit : -1,
             'orderby' => ['menu_order' => 'ASC', 'date' => 'DESC'],
             'no_found_rows' => true,
             'suppress_filters' => false,
         ]);
 
-        return is_array($posts) ? $posts : [];
+        $localized = Simplified_Chinese::posts($posts);
+
+        return $limit > 0 ? array_slice($localized, 0, $limit) : $localized;
     }
 
     public static function image(int $postId, string $type): string
