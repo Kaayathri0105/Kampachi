@@ -345,11 +345,7 @@ final class Kampachi_Landings
         $slideIds = get_post_meta($post->ID, '_kampachi_hero_image_ids', true);
         $slideIds = is_array($slideIds) ? array_map('absint', $slideIds) : [];
         echo '<div class="kc-landing-media">';
-        echo '<p><strong>Hero video (MP4)</strong></p>';
-        echo '<input type="hidden" id="kc-landing-video" name="kampachi_landing[hero_video_id]" value="' . esc_attr((string) $videoId) . '">';
-        echo '<button class="button kc-landing-media-picker" type="button" data-field="kc-landing-video" data-type="video">Choose video</button> ';
-        echo '<button class="button kc-landing-media-clear" type="button" data-field="kc-landing-video">Clear</button>';
-        echo '<p id="kc-landing-video-preview" class="description">' . esc_html($videoId ? (string) get_the_title($videoId) : 'No video selected') . '</p>';
+        self::render_video_picker($videoId, 'Hero video (MP4)');
         echo '<p><strong>Hero images (multi-select; recommended 2560 × 1440 WebP)</strong></p>';
         echo '<input type="hidden" id="kc-landing-images" name="kampachi_landing[hero_image_ids]" value="' . esc_attr(implode(',', $slideIds)) . '">';
         echo '<button class="button kc-landing-media-picker" type="button" data-field="kc-landing-images" data-type="image" data-multiple="1">Choose hero images</button> ';
@@ -372,6 +368,18 @@ final class Kampachi_Landings
         echo '</ul>';
         HeroMotion::editor($post->ID, 'kampachi_landing[hero_image_ids]');
         echo '</div>';
+    }
+
+    public static function render_video_picker(int $videoId, string $label): void
+    {
+        echo '<p><strong>' . esc_html($label) . '</strong></p>';
+        echo '<input type="hidden" id="kc-landing-video" name="kampachi_landing[hero_video_id]" value="'
+            . esc_attr((string) $videoId) . '">';
+        echo '<button class="button kc-landing-media-picker" type="button" data-field="kc-landing-video"'
+            . ' data-type="video">Choose video</button> ';
+        echo '<button class="button kc-landing-media-clear" type="button" data-field="kc-landing-video">Clear</button>';
+        echo '<p id="kc-landing-video-preview" class="description">'
+            . esc_html($videoId > 0 ? get_the_title($videoId) : 'No video selected') . '</p>';
     }
 
     public static function save(int $postId, WP_Post $post): void

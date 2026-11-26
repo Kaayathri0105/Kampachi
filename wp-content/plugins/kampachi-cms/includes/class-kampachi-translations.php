@@ -589,6 +589,7 @@ final class Kampachi_Translations
             'event_label', 'event_subtitle', 'event_description', 'event_cta_label',
             'offer_introduction', 'offer_cta_label',
             'award_organisation',
+            'press_video_title', 'press_video_description', 'press_video_cta_label',
             'seo_title', 'seo_description',
         ];
         $structured = [

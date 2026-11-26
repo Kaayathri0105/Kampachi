@@ -19,6 +19,7 @@ abstract class CollectionLanding
     protected const ITEMS_LABEL = '';
     protected const ITEMS_TITLE = 'Dynamic Items';
     protected const ITEMS_HELP = '';
+    protected const HERO_TITLE = 'Hero';
     protected const POST_TYPE = '';
     protected const PAGE_SLUG = '';
     protected const PAGE_TITLE = '';
@@ -215,7 +216,7 @@ abstract class CollectionLanding
 
         echo '<nav class="kc-section-nav" aria-label="' . esc_attr(static::TITLE . ' sections') . '">';
         $sections = [
-            'hero' => 'Hero',
+            'hero' => static::HERO_TITLE,
             'introduction' => 'Introduction',
             'items' => static::ITEMS_TITLE,
             'seo' => 'SEO & Social Sharing',
@@ -231,7 +232,7 @@ abstract class CollectionLanding
         wp_nonce_field(self::action());
         \Kampachi_Translations::render_dashboard_language($page);
 
-        echo '<section id="kc-collection-hero" class="kc-panel"><h2>Hero</h2>';
+        echo '<section id="kc-collection-hero" class="kc-panel"><h2>' . esc_html(static::HERO_TITLE) . '</h2>';
         static::renderHero($page);
         echo '</section>';
 

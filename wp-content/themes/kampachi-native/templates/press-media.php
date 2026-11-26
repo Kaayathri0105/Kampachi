@@ -1,6 +1,6 @@
 <?php
 /**
- * Press and awards landing page carousel and archive.
+ * Press and awards landing page features and archive.
  *
  * @package KampachiNative
  */
@@ -48,8 +48,8 @@ $yearPattern = $isAwards
     : '/(?<!\d)([1-9]\d{3})(?!\d)/';
 
 foreach (Site_Language::posts($landingEditor::posts($pageId)) as $article) {
-    $sourceId = absint(get_post_meta($article->ID, '_kc_translation_of', true)) ?: $article->ID;
-    if ($landingEditor::isHighlight($sourceId)) {
+    $sourceId = $isAwards ? absint(get_post_meta($article->ID, '_kc_translation_of', true)) : 0;
+    if ($isAwards && AwardsLanding::isHighlight($sourceId ?: $article->ID)) {
         $highlights[] = $article;
         continue;
     }
@@ -130,8 +130,40 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
 <main class="kc-landing-page kc-press-page <?php echo esc_attr($moduleClass); ?>">
     <?php kampachi_native_render_intro($args['title'], '', $args['description']); ?>
 
+    <?php $videoUrl = $isAwards ? '' : PressLanding::videoUrl($pageId); ?>
+    <?php if ($videoUrl !== '') : ?>
+        <?php
+        $featureTitle = kampachi_native_meta($pageId, 'press_video_title');
+        $featureDescription = kampachi_native_meta($pageId, 'press_video_description');
+        $ctaLabel = kampachi_native_meta($pageId, 'press_video_cta_label');
+        $ctaUrl = esc_url(Site_Language::navigation_url(kampachi_native_meta($pageId, 'press_video_cta_url')));
+        ?>
+        <section class="kc-press-section kc-press-feature">
+            <video class="kc-press-feature-video" src="<?php echo esc_url($videoUrl); ?>"
+                aria-label="<?php echo esc_attr($featureTitle !== '' ? $featureTitle : $args['title']); ?>"
+                controls playsinline preload="metadata"></video>
+            <?php if ($featureTitle !== '' || $featureDescription !== '' || ($ctaLabel !== '' && $ctaUrl !== '')) : ?>
+                <div class="kc-press-feature-copy">
+                    <?php if ($featureTitle !== '') : ?>
+                        <h2><?php echo esc_html($featureTitle); ?></h2>
+                    <?php endif; ?>
+                    <?php if ($featureDescription !== '') : ?>
+                        <div class="kc-press-feature-description">
+                            <?php echo wp_kses_post(wpautop(esc_html($featureDescription))); ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($ctaLabel !== '' && $ctaUrl !== '') : ?>
+                        <a class="view-all-button" href="<?php echo $ctaUrl; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above. ?>">
+                            <?php echo esc_html($ctaLabel); ?>
+                        </a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+        </section>
+    <?php endif; ?>
+
     <?php if ($highlights !== []) : ?>
-        <section class="kc-press-section" aria-label="<?php echo esc_attr($isAwards ? __('Highlighted awards', 'kampachi-native') : __('Press highlights', 'kampachi-native')); ?>">
+        <section class="kc-press-section" aria-label="<?php esc_attr_e('Highlighted awards', 'kampachi-native'); ?>">
             <div class="kc-press-carousel" data-press-carousel>
                 <div class="kc-press-controls" data-press-controls hidden>
                     <button type="button" data-press-previous aria-controls="press-highlights-track"
@@ -145,15 +177,14 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                 </div>
                 <div class="kc-press-track" id="press-highlights-track" tabindex="0" role="region"
                     aria-roledescription="carousel"
-                    aria-label="<?php echo esc_attr($isAwards ? __('Highlighted awards', 'kampachi-native') : __('Highlighted press articles', 'kampachi-native')); ?>">
+                    aria-label="<?php esc_attr_e('Highlighted awards', 'kampachi-native'); ?>">
                     <?php foreach ($highlights as $article) : ?>
                         <?php
                         $image = kampachi_native_post_image($article->ID);
-                        $url = $isAwards ? '' : Press::originalUrl($article->ID);
                         $title = get_the_title($article);
                         $excerpt = wp_strip_all_tags(get_the_excerpt($article));
                         ?>
-                        <article class="kc-press-card<?php echo $url !== '' ? ' kc-linked-card' : ''; ?>">
+                        <article class="kc-press-card">
                             <?php if ($image !== '') : ?>
                                 <div class="kc-press-card-media">
                                     <img src="<?php echo esc_url($image); ?>" alt="" loading="lazy" decoding="async">
@@ -163,13 +194,6 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                                 <h3><?php echo esc_html($title); ?></h3>
                                 <?php if ($excerpt !== '') : ?>
                                     <p><?php echo esc_html($excerpt); ?></p>
-                                <?php endif; ?>
-                                <?php if ($url !== '') : ?>
-                                    <a class="kc-discover kc-discover--card kc-linked-card-link" href="<?php echo esc_url($url); ?>"
-                                        target="_blank" rel="noopener noreferrer"
-                                        aria-label="<?php echo esc_attr(sprintf(__('Discover %s', 'kampachi-native'), $title)); ?>">
-                                        <?php echo esc_html(kampachi_native_label('discover')); ?>
-                                    </a>
                                 <?php endif; ?>
                             </div>
                         </article>
