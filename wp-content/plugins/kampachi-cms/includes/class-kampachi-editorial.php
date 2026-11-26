@@ -78,7 +78,7 @@ final class Kampachi_Editorial
         self::field('apply_url', 'Apply link (optional)', self::job_meta($post->ID, 'apply_url'), 'url');
         self::field('apply_email', 'Application email (optional)', self::job_meta($post->ID, 'apply_email') ?: self::job_meta($post->ID, 'email'), 'email');
         self::field('apply_whatsapp', 'WhatsApp number or wa.me URL (optional)', self::job_meta($post->ID, 'apply_whatsapp') ?: self::job_meta($post->ID, 'whatsapp'));
-        echo '<p class="description">Any configured application method will appear below the vacancy details. Leave unused methods empty.</p>';
+        echo '<p class="description">The application form sends résumés to the application email above. If left blank, it uses the Careers email in Kampachi Settings. Configured application links are also shown below the vacancy details.</p>';
         echo '</div>';
     }
 
