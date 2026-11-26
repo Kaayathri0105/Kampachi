@@ -5,6 +5,14 @@
 .home-sake-heading .home-cms-description { margin-inline: auto; }
 .experience-card img { object-fit: cover; }
 
+.experiences-section:has(+ .home-signature-section) {
+    padding-block-end: clamp(24px, 2.5vw, 44px);
+}
+
+.experiences-section + .home-signature-section {
+    padding-block-start: clamp(24px, 2.5vw, 44px);
+}
+
 .home-feature-carousel-shell {
     inline-size: min(1365px, calc(100% - 64px));
     margin-inline: auto;
