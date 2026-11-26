@@ -40,6 +40,23 @@ h3 {
     line-height: 1.3 !important;
 }
 
+:is(
+    .experience-card,
+    .home-sake-layout,
+    .outlet-card,
+    .promotion-card,
+    .kc-catering-card,
+    .kc-module-card,
+    .kc-sake-bottle-card,
+    .kc-outlet-dish,
+    .dining-card,
+    .kampachi-native-card,
+    .kc-press-card,
+    .kc-press-entry
+) :is(h2, h3) {
+    font-size: 20px !important;
+}
+
 h4,
 h5,
 h6 {
