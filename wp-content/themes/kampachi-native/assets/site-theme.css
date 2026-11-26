@@ -208,6 +208,11 @@ body {
     height: 16px;
 }
 
+.site-footer .kc-footer-icon--wordmark {
+    width: 28px;
+    height: 28px;
+}
+
 .site-footer .social-links {
     display: flex !important;
     justify-content: flex-start !important;

@@ -37,6 +37,8 @@ final class Kampachi_Shell_Settings
             'facebook_url' => ['Facebook URL', 'url'],
             'youtube_url' => ['YouTube URL', 'url'],
             'tiktok_url' => ['TikTok URL', 'url'],
+            'xiaohongshu_url' => ['Xiaohongshu (XHS) URL', 'url'],
+            'dianping_url' => ['Dianping URL', 'url'],
         ],
         'enquiry' => [
             'enquiry_recipients' => ['Send enquiries to (comma-separated email addresses)', 'emails'],
