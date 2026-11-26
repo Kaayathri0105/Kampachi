@@ -130,18 +130,28 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
 <main class="kc-landing-page kc-press-page <?php echo esc_attr($moduleClass); ?>">
     <?php kampachi_native_render_intro($args['title'], '', $args['description']); ?>
 
-    <?php $videoUrl = $isAwards ? '' : PressLanding::videoUrl($pageId); ?>
-    <?php if ($videoUrl !== '') : ?>
+    <?php
+    $youtubeUrl = $isAwards ? '' : PressLanding::youtubeEmbedUrl($pageId);
+    $videoUrl = ! $isAwards && $youtubeUrl === '' ? PressLanding::videoUrl($pageId) : '';
+    ?>
+    <?php if ($youtubeUrl !== '' || $videoUrl !== '') : ?>
         <?php
         $featureTitle = kampachi_native_meta($pageId, 'press_video_title');
+        $videoLabel = $featureTitle !== '' ? $featureTitle : $args['title'];
         $featureDescription = kampachi_native_meta($pageId, 'press_video_description');
         $ctaLabel = kampachi_native_meta($pageId, 'press_video_cta_label');
         $ctaUrl = esc_url(Site_Language::navigation_url(kampachi_native_meta($pageId, 'press_video_cta_url')));
         ?>
         <section class="kc-press-section kc-press-feature">
-            <video class="kc-press-feature-video" src="<?php echo esc_url($videoUrl); ?>"
-                aria-label="<?php echo esc_attr($featureTitle !== '' ? $featureTitle : $args['title']); ?>"
-                controls playsinline preload="metadata"></video>
+            <?php if ($youtubeUrl !== '') : ?>
+                <iframe class="kc-press-feature-video kc-press-feature-youtube" data-press-youtube
+                    src="<?php echo esc_url($youtubeUrl); ?>" title="<?php echo esc_attr($videoLabel); ?>"
+                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen
+                    referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            <?php else : ?>
+                <video class="kc-press-feature-video" src="<?php echo esc_url($videoUrl); ?>"
+                    aria-label="<?php echo esc_attr($videoLabel); ?>" controls playsinline preload="metadata"></video>
+            <?php endif; ?>
             <?php if ($featureTitle !== '' || $featureDescription !== '' || ($ctaLabel !== '' && $ctaUrl !== '')) : ?>
                 <div class="kc-press-feature-copy">
                     <?php if ($featureTitle !== '') : ?>

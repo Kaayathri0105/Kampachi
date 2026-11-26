@@ -1,4 +1,41 @@
 (() => {
+    const iframe = document.querySelector('[data-press-youtube]');
+    if (!iframe) {
+        return;
+    }
+
+    const startPlayer = () => {
+        new window.YT.Player(iframe, {
+            events: {
+                onReady: ({target}) => {
+                    target.mute();
+                    target.playVideo();
+                },
+            },
+        });
+    };
+
+    if (window.YT?.Player) {
+        startPlayer();
+        return;
+    }
+
+    const previousReady = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+        previousReady?.();
+        startPlayer();
+    };
+
+    const apiUrl = 'https://www.youtube.com/iframe_api';
+    if (!document.querySelector(`script[src="${apiUrl}"]`)) {
+        const script = document.createElement('script');
+        script.src = apiUrl;
+        script.async = true;
+        document.head.appendChild(script);
+    }
+})();
+
+(() => {
     const form = document.querySelector('.kc-press-filters');
     const results = document.querySelector('#press-archive-results');
     const status = document.querySelector('[data-press-status]');

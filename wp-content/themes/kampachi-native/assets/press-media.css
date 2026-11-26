@@ -17,6 +17,11 @@
     object-fit: contain;
 }
 
+.kc-press-feature-youtube {
+    min-block-size: 200px;
+    border: 0;
+}
+
 .kc-press-feature-copy {
     display: grid;
     justify-items: center;

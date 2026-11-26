@@ -24,6 +24,8 @@ final class PressLanding extends CollectionLanding
     protected const PAGE_SLUG = Press::PAGE_SLUG;
     protected const PAGE_TITLE = 'Press & Media';
 
+    private const YOUTUBE_META = '_kampachi_press_youtube_url';
+
     private const FIELDS = [
         'press_video_title' => 'Title',
         'press_video_description' => 'Description',
@@ -34,6 +36,12 @@ final class PressLanding extends CollectionLanding
     protected static function renderHero(WP_Post $page): void
     {
         if (Kampachi_Translations::post_language($page) === 'en') {
+            $youtube = (string) get_post_meta($page->ID, self::YOUTUBE_META, true);
+            echo '<div class="kc-field"><label class="kc-label" for="kc-press-youtube-url">YouTube URL</label>';
+            echo '<input class="widefat" type="url" id="kc-press-youtube-url" name="kampachi_landing[press_youtube_url]"'
+                . ' value="' . esc_attr($youtube) . '" placeholder="https://www.youtube.com/watch?v=…">';
+            echo '<p class="description">A YouTube link takes priority over the uploaded MP4. The YouTube player'
+                . ' starts muted when the browser allows autoplay.</p></div>';
             $videoId = absint(get_post_meta($page->ID, '_kampachi_hero_video_id', true));
             echo '<input type="hidden" name="kampachi_landing[hero_touched]" value="0"'
                 . ' data-kc-collection-hero-touched>';
@@ -63,10 +71,27 @@ final class PressLanding extends CollectionLanding
 
     protected static function saveLandingFields(WP_Post $page, array $landing): void
     {
+        $youtube = null;
         if (Kampachi_Translations::post_language($page) !== 'en') {
             unset($landing['hero_video_id']);
+        } elseif (is_string($landing['press_youtube_url'] ?? null)) {
+            $input = trim($landing['press_youtube_url']);
+            $youtube = self::youtubeId($input);
+            if ($input !== '' && $youtube === '') {
+                wp_die(
+                    esc_html__('Enter a YouTube link for a single video.', 'kampachi-cms'),
+                    '',
+                    ['response' => 400, 'back_link' => true]
+                );
+            }
         }
+
         parent::saveLandingFields($page, $landing);
+
+        if ($youtube !== null) {
+            $url = $youtube === '' ? '' : 'https://www.youtube.com/watch?v=' . $youtube;
+            update_post_meta($page->ID, self::YOUTUBE_META, $url);
+        }
 
         foreach (array_keys(self::FIELDS) as $key) {
             $raw = $landing[$key] ?? null;
@@ -85,12 +110,65 @@ final class PressLanding extends CollectionLanding
 
     public static function videoUrl(int $pageId): string
     {
-        $sourceId = absint(get_post_meta($pageId, '_kc_translation_of', true));
-        $id = absint(get_post_meta($sourceId ?: $pageId, '_kampachi_hero_video_id', true));
+        $id = absint(get_post_meta(self::videoOwner($pageId), '_kampachi_hero_video_id', true));
         if ($id === 0 || ! wp_attachment_is('video', $id)) {
             return '';
         }
 
         return wp_get_attachment_url($id) ?: '';
+    }
+
+    public static function youtubeEmbedUrl(int $pageId): string
+    {
+        $url = (string) get_post_meta(self::videoOwner($pageId), self::YOUTUBE_META, true);
+        $video = self::youtubeId($url);
+        if ($video === '') {
+            return '';
+        }
+
+        $home = wp_parse_url(home_url('/'));
+        $origin = $home['scheme'] . '://' . $home['host'];
+        if (isset($home['port'])) {
+            $origin .= ':' . $home['port'];
+        }
+
+        return add_query_arg(
+            ['enablejsapi' => '1', 'origin' => $origin, 'playsinline' => '1'],
+            'https://www.youtube-nocookie.com/embed/' . $video
+        );
+    }
+
+    private static function videoOwner(int $pageId): int
+    {
+        return absint(get_post_meta($pageId, '_kc_translation_of', true)) ?: $pageId;
+    }
+
+    private static function youtubeId(string $url): string
+    {
+        $parts = wp_parse_url($url);
+        if (
+            ! is_array($parts)
+            || ! in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true)
+            || isset($parts['user'])
+            || isset($parts['pass'])
+        ) {
+            return '';
+        }
+
+        $host = strtolower($parts['host'] ?? '');
+        $path = trim($parts['path'] ?? '', '/');
+        $video = '';
+        if ($host === 'youtu.be') {
+            $video = $path;
+        } elseif (in_array($host, ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'www.youtube-nocookie.com'], true)) {
+            if ($path === 'watch') {
+                wp_parse_str($parts['query'] ?? '', $query);
+                $video = $query['v'] ?? '';
+            } elseif (preg_match('~\A(?:embed|live|shorts)/([A-Za-z0-9_-]{11})\z~', $path, $matches)) {
+                $video = $matches[1];
+            }
+        }
+
+        return is_string($video) && preg_match('/\A[A-Za-z0-9_-]{11}\z/', $video) ? $video : '';
     }
 }
