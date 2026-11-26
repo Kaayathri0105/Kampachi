@@ -149,8 +149,7 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                     <?php foreach ($highlights as $article) : ?>
                         <?php
                         $image = kampachi_native_post_image($article->ID);
-                        $sourceUrl = $postType::originalUrl($article->ID);
-                        $url = $sourceUrl !== '' || ! $isAwards ? $sourceUrl : (string) get_permalink($article);
+                        $url = $isAwards ? '' : Press::originalUrl($article->ID);
                         $title = get_the_title($article);
                         $excerpt = wp_strip_all_tags(get_the_excerpt($article));
                         ?>
@@ -167,7 +166,7 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                                 <?php endif; ?>
                                 <?php if ($url !== '') : ?>
                                     <a class="kc-discover kc-discover--card kc-linked-card-link" href="<?php echo esc_url($url); ?>"
-                                        <?php if ($sourceUrl !== '') : ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>
+                                        target="_blank" rel="noopener noreferrer"
                                         aria-label="<?php echo esc_attr(sprintf(__('Discover %s', 'kampachi-native'), $title)); ?>">
                                         <?php echo esc_html(kampachi_native_label('discover')); ?>
                                     </a>
@@ -217,8 +216,7 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                     <?php foreach ($archive as $entry) : ?>
                         <?php
                         $title = get_the_title($entry['post']);
-                        $sourceUrl = $postType::originalUrl($entry['post']->ID);
-                        $url = $sourceUrl !== '' || ! $isAwards ? $sourceUrl : (string) get_permalink($entry['post']);
+                        $url = $isAwards ? '' : Press::originalUrl($entry['post']->ID);
                         $logo = $isAwards ? kampachi_native_post_image($entry['post']->ID, 'medium') : '';
                         $excerpt = $isAwards ? wp_strip_all_tags(get_the_excerpt($entry['post'])) : '';
                         $meta = implode(' · ', array_filter([$entry['publication'], $entry['date']]));
@@ -239,7 +237,7 @@ wp_parse_str((string) wp_parse_url($landingUrl, PHP_URL_QUERY), $landingParams);
                             </div>
                             <?php if ($url !== '') : ?>
                                 <a class="kc-discover kc-linked-card-link" href="<?php echo esc_url($url); ?>"
-                                    <?php if ($sourceUrl !== '') : ?>target="_blank" rel="noopener noreferrer"<?php endif; ?>
+                                    target="_blank" rel="noopener noreferrer"
                                     aria-label="<?php echo esc_attr(sprintf(__('Discover %s', 'kampachi-native'), $title)); ?>">
                                     <?php echo esc_html(kampachi_native_label('discover')); ?>
                                 </a>
