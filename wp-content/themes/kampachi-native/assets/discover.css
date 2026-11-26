@@ -1,3 +1,9 @@
+.kc-discover,
+.kch-discover {
+    --kampachi-font-link: 13px;
+    font-size: var(--kampachi-font-link);
+}
+
 .kc-discover {
     display: inline-flex;
     align-items: center;
@@ -8,7 +14,6 @@
     border-block-end: 1px solid currentColor;
     color: inherit;
     font-family: var(--kampachi-font-family);
-    font-size: var(--kampachi-font-link);
     font-weight: 400;
     line-height: 1.25;
     letter-spacing: 0.12em;
