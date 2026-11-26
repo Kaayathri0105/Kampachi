@@ -311,6 +311,21 @@ body {
     height: 16px;
 }
 
+.kc-language-flag {
+    display: block;
+    flex: none;
+    inline-size: 20px;
+    block-size: 15px;
+    border-radius: 2px;
+    object-fit: contain;
+}
+
+.kc-language-option-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+}
+
 .kc-language-chevron {
     width: 7px;
     height: 7px;
@@ -382,8 +397,14 @@ body {
         gap: 7px !important;
     }
 
-    #site-header .kc-language-icon {
+    #site-header .kc-language-icon,
+    #site-header .language-button:has(.kc-language-flag) .kc-language-code {
         display: none;
+    }
+
+    #site-header .language-button .kc-language-flag {
+        inline-size: 16px;
+        block-size: 12px;
     }
 }
 

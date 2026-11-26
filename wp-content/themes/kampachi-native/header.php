@@ -111,15 +111,29 @@ if (! defined('ABSPATH')) {
                 $shortLabels = ['zh' => '简', 'zh-hant' => '繁'];
                 $languageTags = ['zh' => 'zh-Hans', 'zh-hant' => 'zh-Hant'];
                 $currentLabel = $nativeLabels[$currentLang] ?? $languages[$currentLang];
+                $languageFlags = ['en' => 'gb', 'zh' => 'cn', 'zh-hant' => 'tw', 'ja' => 'jp'];
+                $renderLanguageFlag = static function (string $code) use ($languageFlags): void {
+                    if (! isset($languageFlags[$code])) {
+                        return;
+                    }
+
+                    $flagUrl = get_theme_file_uri('assets/flags/' . $languageFlags[$code] . '.svg');
+                    echo '<img class="kc-language-flag" src="' . esc_url($flagUrl) . '"'
+                        . ' width="20" height="15" alt="" aria-hidden="true">';
+                };
                 ?>
                 <div class="language-wrap">
                     <button class="language-button" type="button" aria-controls="language-menu" aria-expanded="false"
                         aria-label="<?php echo esc_attr(sprintf(__('Choose language (%s)', 'kampachi-native'), $currentLabel)); ?>">
-                        <svg class="kc-language-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="1.6" aria-hidden="true" focusable="false">
-                            <circle cx="12" cy="12" r="9"></circle>
-                            <path d="M3 12h18M12 3a15 15 0 0 0 0 18 15 15 0 0 0 0-18Z"></path>
-                        </svg>
+                        <?php if (isset($languageFlags[$currentLang])) : ?>
+                            <?php $renderLanguageFlag($currentLang); ?>
+                        <?php else : ?>
+                            <svg class="kc-language-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.6" aria-hidden="true" focusable="false">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <path d="M3 12h18M12 3a15 15 0 0 0 0 18 15 15 0 0 0 0-18Z"></path>
+                            </svg>
+                        <?php endif; ?>
                         <span class="kc-language-code"><?php echo esc_html($shortLabels[$currentLang] ?? strtoupper($currentLang)); ?></span>
                         <span class="kc-language-chevron" aria-hidden="true"></span>
                     </button>
@@ -132,14 +146,25 @@ if (! defined('ABSPATH')) {
                             ?>
                             <?php if ($code === $currentLang) : ?>
                                 <span class="language-option" aria-current="page" lang="<?php echo esc_attr($tag); ?>">
-                                    <?php echo esc_html($name); ?>
+                                    <span class="kc-language-option-label">
+                                        <?php $renderLanguageFlag($code); ?>
+                                        <?php echo esc_html($name); ?>
+                                    </span>
                                 </span>
                             <?php elseif ($url !== '') : ?>
                                 <a class="language-option" href="<?php echo esc_url($url); ?>" hreflang="<?php echo esc_attr($tag); ?>"
-                                    lang="<?php echo esc_attr($tag); ?>"><?php echo esc_html($name); ?></a>
+                                    lang="<?php echo esc_attr($tag); ?>">
+                                    <span class="kc-language-option-label">
+                                        <?php $renderLanguageFlag($code); ?>
+                                        <?php echo esc_html($name); ?>
+                                    </span>
+                                </a>
                             <?php else : ?>
                                 <span class="language-option" aria-disabled="true">
-                                    <span lang="<?php echo esc_attr($tag); ?>"><?php echo esc_html($name); ?></span>
+                                    <span class="kc-language-option-label" lang="<?php echo esc_attr($tag); ?>">
+                                        <?php $renderLanguageFlag($code); ?>
+                                        <?php echo esc_html($name); ?>
+                                    </span>
                                     <small><?php esc_html_e('Unavailable', 'kampachi-native'); ?></small>
                                 </span>
                             <?php endif; ?>
