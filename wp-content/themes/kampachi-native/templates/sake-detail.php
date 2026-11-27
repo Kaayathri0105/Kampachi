@@ -29,9 +29,6 @@ while (have_posts()) :
     $bottles = SakeBottles::all($id);
     $subtitle = kampachi_native_meta($id, 'subtitle');
     $description = Sake::field($id, 'description');
-    $ctaText = Sake::field($id, 'enquiry_label') ?: kampachi_native_label('enquire');
-    $ctaUrl = Sake::field($id, 'enquiry_url') ?: home_url('/contact-us/');
-    $ctaUrl = Site_Language::url($ctaUrl);
     ?>
     <main class="kc-catering-page kc-sake-page kc-sake-detail<?php echo $images === [] ? ' kc-sake-detail--without-gallery' : ''; ?>" id="main-content">
         <?php kampachi_native_render_hero($images, '', get_the_title() . ' hero'); ?>
@@ -58,11 +55,6 @@ while (have_posts()) :
                         </div>
                     <?php endif; ?>
                 </section>
-                <?php if ($ctaUrl !== '') : ?>
-                    <div class="kc-sake-enquiry">
-                        <a class="kc-catering-detail-cta" href="<?php echo esc_url($ctaUrl); ?>"><?php echo esc_html($ctaText); ?></a>
-                    </div>
-                <?php endif; ?>
             </div>
         </section>
     </main>

@@ -24,13 +24,6 @@ while (have_posts()) {
     $postId = get_the_ID();
     $subtitle = Catering::event_field($postId, 'subtitle');
     $summary = Catering::event_field($postId, 'description');
-    $ctaLabel = Catering::event_field($postId, 'cta_label') ?: kampachi_native_label('enquire');
-    $ctaUrl = Catering::event_field($postId, 'cta_url');
-    if ($ctaUrl === '') {
-        $ctaUrl = home_url('/contact-us/');
-    }
-
-    $ctaUrl = Site_Language::url($ctaUrl);
     $images = [];
     foreach (Catering::image_ids(get_post_meta($postId, '_kampachi_event_image_ids', true)) as $imageId) {
         $url = wp_get_attachment_image_url($imageId, 'full');
@@ -75,9 +68,6 @@ while (have_posts()) {
                             <a href="<?php echo esc_url($outletUrl); ?>"><?php echo esc_html(Site_Language::text(Outlets::locationName($outletId))); ?></a>
                         <?php endforeach; ?>
                     </div>
-                <?php endif; ?>
-                <?php if ($ctaUrl !== '') : ?>
-                    <p><a class="kc-catering-detail-cta" href="<?php echo esc_url($ctaUrl); ?>"><?php echo esc_html($ctaLabel); ?></a></p>
                 <?php endif; ?>
             </div>
         </section>
