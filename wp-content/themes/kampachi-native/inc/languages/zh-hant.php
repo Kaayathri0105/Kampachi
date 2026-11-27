@@ -140,7 +140,6 @@ return [
     'apply online' => '線上申請',
     'apply by email' => '透過電子郵件申請',
     'apply via whatsapp' => '透過 WhatsApp 申請',
-    'whatsapp %s' => '透過 WhatsApp 聯絡%s',
     'thank you. your enquiry has been sent.' => '感謝您的洽詢。您的訊息已傳送。',
     'too many submissions. please try again later.' => '提交次數過多，請稍後再試。',
     'please complete all required fields and try again.' => '請填寫所有必填欄位後重試。',

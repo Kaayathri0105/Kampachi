@@ -140,7 +140,6 @@ return [
     'apply online' => 'オンラインで応募',
     'apply by email' => 'メールで応募',
     'apply via whatsapp' => 'WhatsAppで応募',
-    'whatsapp %s' => '%sにWhatsAppで問い合わせ',
     'thank you. your enquiry has been sent.' => 'お問い合わせありがとうございます。メッセージを送信しました。',
     'too many submissions. please try again later.' => '送信回数が上限に達しました。しばらくしてからお試しください。',
     'please complete all required fields and try again.' => '必須項目をすべて入力し、もう一度お試しください。',

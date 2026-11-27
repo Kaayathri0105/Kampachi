@@ -141,14 +141,3 @@ body:not(.home){background:var(--kc-paper)!important;color:var(--kc-ink)}
 .kc47-page .kc47-intro .kappou-intro-copy{max-width:760px;color:#65584e;line-height:2}
 @media(max-width:900px){.kc47-page .kc47-collection .kc-module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){.kc47-page .kc47-collection .kc-module-grid{grid-template-columns:1fr}}
-
-.kc-whatsapp-ctas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin: 20px 0;
-}
-
-.kc-offer-introduction .kc-whatsapp-ctas {
-    justify-content: center;
-}
