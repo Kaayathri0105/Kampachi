@@ -140,6 +140,7 @@ return [
     'apply online' => '在线申请',
     'apply by email' => '通过电子邮件申请',
     'apply via whatsapp' => '通过 WhatsApp 申请',
+    'whatsapp %s' => '通过 WhatsApp 联系%s',
     'thank you. your enquiry has been sent.' => '感谢您的咨询。您的留言已发送。',
     'too many submissions. please try again later.' => '提交次数过多，请稍后再试。',
     'please complete all required fields and try again.' => '请填写所有必填项后重试。',

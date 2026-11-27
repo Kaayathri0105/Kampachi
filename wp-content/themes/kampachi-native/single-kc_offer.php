@@ -35,6 +35,8 @@ while (have_posts()) :
     $details = Offers::details($offerId);
     $menus = Offers::menus($offerId);
     $ctas = Offers::ctas($offerId);
+    $sourceId = absint(get_post_meta($offerId, '_kc_translation_of', true)) ?: $offerId;
+    $isGifting = has_term('gifting', 'kc_offer_category', $sourceId);
     $neighbors = OffersLanding::adjacentOffers($offerId);
     ?>
     <main class="kc-offer-page<?php echo $hero === [] ? ' kc-offer-page--no-hero' : ''; ?>" id="main-content">
@@ -58,6 +60,13 @@ while (have_posts()) :
                             </a>
                         <?php endforeach; ?>
                     </div>
+                <?php endif; ?>
+                <?php if ($isGifting) : ?>
+                    <?php get_template_part('template-parts/whatsapp-ctas', null, [
+                        'outlet_ids' => get_post_meta($sourceId, '_kampachi_offer_outlet_ids', true),
+                        'existing_urls' => array_column($ctas, 'url'),
+                        'button_class' => 'view-all-button kc-offer-cta-link',
+                    ]); ?>
                 <?php endif; ?>
             </header>
 

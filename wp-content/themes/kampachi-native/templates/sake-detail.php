@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 use Kampachi\Native\Site_Language;
 
+use Kampachi\CMS\Outlets;
 use Kampachi\CMS\Sake;
 use Kampachi\CMS\SakeBottles;
 
@@ -27,6 +28,10 @@ while (have_posts()) :
     }
     unset($image);
     $bottles = SakeBottles::all($id);
+    $outletIds = array_merge(...array_column($bottles, 'outlet_ids'));
+    if ($outletIds === []) {
+        $outletIds = Outlets::locationIds(get_post_meta($id, '_kampachi_sake_outlet_ids', true));
+    }
     $subtitle = kampachi_native_meta($id, 'subtitle');
     $description = Sake::field($id, 'description');
     $ctaText = Sake::field($id, 'enquiry_label') ?: kampachi_native_label('enquire');
@@ -47,6 +52,10 @@ while (have_posts()) :
                     <?php if ($description !== '') : ?>
                         <div class="kc-catering-detail-summary"><?php echo wp_kses_post(wpautop($description)); ?></div>
                     <?php endif; ?>
+                    <?php get_template_part('template-parts/whatsapp-ctas', null, [
+                        'outlet_ids' => $outletIds,
+                        'existing_urls' => [$ctaUrl],
+                    ]); ?>
                     <div class="kc-catering-detail-text kc-editor-area"><?php the_content(); ?></div>
                 </div>
                 <section class="kc-sake-bottle-collection" aria-label="<?php esc_attr_e('Sake bottles', 'kampachi-native'); ?>">

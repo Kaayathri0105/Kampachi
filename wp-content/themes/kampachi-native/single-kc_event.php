@@ -24,6 +24,7 @@ while (have_posts()) {
     $postId = get_the_ID();
     $subtitle = Catering::event_field($postId, 'subtitle');
     $summary = Catering::event_field($postId, 'description');
+    $outletIds = Catering::outlet_ids($postId);
     $ctaLabel = Catering::event_field($postId, 'cta_label') ?: kampachi_native_label('enquire');
     $ctaUrl = Catering::event_field($postId, 'cta_url');
     if ($ctaUrl === '') {
@@ -62,8 +63,11 @@ while (have_posts()) {
                 <?php if ($subtitle !== '') : ?><p class="kc-catering-eyebrow"><?php echo esc_html($subtitle); ?></p><?php endif; ?>
                 <h1><?php the_title(); ?></h1>
                 <?php if ($summary !== '') : ?><p class="kc-catering-detail-summary"><?php echo esc_html($summary); ?></p><?php endif; ?>
+                <?php get_template_part('template-parts/whatsapp-ctas', null, [
+                    'outlet_ids' => $outletIds,
+                    'existing_urls' => [$ctaUrl],
+                ]); ?>
                 <div class="kc-catering-detail-text"><?php the_content(); ?></div>
-                <?php $outletIds = Catering::outlet_ids($postId); ?>
                 <?php if ($outletIds !== []) : ?>
                     <div class="kc-catering-detail-outlets"><h2><?php echo esc_html(kampachi_native_label('locations')); ?></h2>
                         <?php foreach ($outletIds as $outletId) :
