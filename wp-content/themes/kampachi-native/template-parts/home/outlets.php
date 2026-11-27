@@ -47,7 +47,7 @@ if ($outlets === []) {
                     <?php
                     $imageUrl = Homepage_Content::image($outlet->ID, 'outlet');
                     $excerpt = get_the_excerpt($outlet);
-                    $name = Site_Language::text(Outlets::locationName($outlet));
+                    $name = get_the_title($outlet);
                     ?>
                     <article class="outlet-card kc-linked-card">
                         <div class="outlet-card__media">
