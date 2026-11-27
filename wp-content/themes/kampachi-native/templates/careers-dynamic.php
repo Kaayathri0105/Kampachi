@@ -30,6 +30,7 @@ $jobs = class_exists(CareersLanding::class)
     ]);
 $jobs = Site_Language::posts($jobs);
 $applicationLabel = Site_Language::text('Apply');
+$expandLabel = Site_Language::text('Expand to apply');
 $status = isset($_GET['kc_application']) && is_string($_GET['kc_application'])
     ? sanitize_key(wp_unslash($_GET['kc_application'])) : '';
 $selectedJob = isset($_GET['kc_vacancy']) && is_string($_GET['kc_vacancy']) ? absint($_GET['kc_vacancy']) : 0;
@@ -85,7 +86,7 @@ $applicationMessage = match ($status) {
             <details class="kc-vacancy" id="vacancy-<?php echo esc_attr((string) $jobId); ?>" <?php echo $showStatus ? 'open' : ''; ?>>
                 <summary>
                     <span><?php echo esc_html($jobTitle); ?></span>
-                    <span class="kc-vacancy-button"><?php echo esc_html($applicationLabel); ?></span>
+                    <span class="kc-vacancy-toggle" data-tooltip="<?php echo esc_attr($expandLabel); ?>" aria-hidden="true"></span>
                 </summary>
                 <div class="kc-vacancy-details">
                     <?php if ($salary !== '') : ?><p class="kc-vacancy-salary"><strong><?php echo esc_html(kampachi_native_label('salary')); ?>:</strong> <?php echo esc_html($salary); ?></p><?php endif; ?>

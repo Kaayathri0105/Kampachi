@@ -15,8 +15,42 @@
     text-transform: uppercase;
     cursor: pointer;
 }
-.kc-vacancy > summary:hover .kc-vacancy-button,
-.kc-vacancy[open] > summary .kc-vacancy-button,
+.kc-vacancy-toggle {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #bcb6ae;
+    border-radius: 50%;
+    color: #382b25;
+    font: 22px/1 Arial, sans-serif;
+}
+.kc-vacancy-toggle::before {
+    content: '+';
+}
+.kc-vacancy[open] > summary .kc-vacancy-toggle::before {
+    content: '−';
+}
+.kc-vacancy-toggle::after {
+    position: absolute;
+    z-index: 1;
+    inset-inline-end: calc(100% + 8px);
+    padding: 6px 9px;
+    border-radius: 3px;
+    background: #382b25;
+    color: #fffefa;
+    content: attr(data-tooltip);
+    font: 13px/1.4 Arial, sans-serif;
+    white-space: nowrap;
+    visibility: hidden;
+    pointer-events: none;
+}
+.kc-vacancy:not([open]) > summary .kc-vacancy-toggle:hover::after,
+.kc-vacancy:not([open]) > summary:focus-visible .kc-vacancy-toggle::after {
+    visibility: visible;
+}
 .kc-vacancy-application > summary:hover,
 .kc-vacancy-application[open] > summary {
     background: #382b25;

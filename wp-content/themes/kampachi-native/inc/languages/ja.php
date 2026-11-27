@@ -127,6 +127,7 @@ return [
     'subject' => '件名',
     'message' => 'お問い合わせ内容',
     'apply' => '応募する',
+    'expand to apply' => '詳細を開いて応募',
     'open vacancies' => '募集中の職種',
     'upload résumé' => '履歴書をアップロード',
     'pdf only, up to %s.' => 'PDF形式のみ、最大%s。',

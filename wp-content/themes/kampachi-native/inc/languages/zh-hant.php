@@ -127,6 +127,7 @@ return [
     'subject' => '主旨',
     'message' => '留言',
     'apply' => '申請',
+    'expand to apply' => '展開以申請',
     'open vacancies' => '招聘職位',
     'upload résumé' => '上傳履歷',
     'pdf only, up to %s.' => '僅限 PDF，最大 %s。',
