@@ -61,7 +61,7 @@ $image = $bottle['image_id'] > 0 ? wp_get_attachment_image($bottle['image_id'], 
                 <h4><?php echo esc_html(kampachi_native_label('locations')); ?></h4>
                 <ul>
                     <?php foreach ($outlets as $outletId) :
-                        $outletUrl = Site_Language::url((string) get_permalink($outletId));
+                        $outletUrl = kampachi_native_outlet_enquiry_url($outletId);
                         if ($outletUrl === '') {
                             continue;
                         }

@@ -625,6 +625,16 @@ function kampachi_native_legacy_offer_redirect(): void
 }
 add_action('template_redirect', 'kampachi_native_legacy_offer_redirect');
 
+function kampachi_native_outlet_enquiry_url(int $outletId): string
+{
+    return match (Outlets::locationName($outletId)) {
+        'EQ Kuala Lumpur' => 'https://wa.me/60122789110',
+        'Plaza33 Petaling Jaya' => 'https://wa.me/60126758860',
+        'Pavilion Kuala Lumpur' => 'https://wa.me/60123740886',
+        default => Site_Language::url((string) get_permalink($outletId)),
+    };
+}
+
 /**
  * Resolve old outlet-page links to their published CMS-managed outlet posts.
  * Historic WordPress Pages are kept (not deleted) for safe migration.

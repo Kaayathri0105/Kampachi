@@ -155,7 +155,7 @@ foreach (Catering::hero_media_ids($heroOwnerId) as $mediaId) {
                                     <div class="kc-catering-available-outlets" aria-label="<?php echo esc_attr(kampachi_native_label('locations')); ?>">
                                         <span><?php echo esc_html(kampachi_native_label('locations')); ?>:</span>
                                         <?php foreach ($outletIds as $outletId) :
-                                            $outletUrl = Site_Language::url((string) get_permalink($outletId));
+                                            $outletUrl = kampachi_native_outlet_enquiry_url($outletId);
                                             if ($outletUrl === '') {
                                                 continue;
                                             }

@@ -60,7 +60,7 @@ while (have_posts()) {
                 <?php if ($outletIds !== []) : ?>
                     <div class="kc-catering-detail-outlets"><h2><?php echo esc_html(kampachi_native_label('locations')); ?></h2>
                         <?php foreach ($outletIds as $outletId) :
-                            $outletUrl = Site_Language::url((string) get_permalink($outletId));
+                            $outletUrl = kampachi_native_outlet_enquiry_url($outletId);
                             if ($outletUrl === '') {
                                 continue;
                             }
